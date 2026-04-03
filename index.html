@@ -10,6 +10,446 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --cream:      #F5F0E8;
+  --white:      #FFFFFF;
+  --ink:        #0F0F0F;
+  --gray:       #6B6560;
+  --gray2:      #A09890;
+  --border:     #E2DDD5;
+
+  --lav:        #C4B5FD;
+  --lav-mid:    #A78BFA;
+  --lav-lt:     #F3F0FF;
+  --lav-dk:     #7C3AED;
+
+  --mint:       #86EFAC;
+  --mint-lt:    #F0FDF4;
+  --mint-dk:    #16A34A;
+
+  --coral:      #FB7185;
+  --coral-lt:   #FFF1F2;
+
+  --sky:        #93C5FD;
+  --sky-lt:     #EFF6FF;
+  --sky-dk:     #1D4ED8;
+
+  --navy:       #1E3A5F;
+  --navy-lt:    #E8EEF5;
+}
+
+html, body { min-height: 100vh; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ─────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 58px;
+  background: rgba(245,240,232,0.96);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 48px;
+}
+.nav-logo {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic; font-size: 21px;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 24px; }
+.nav-link { font-size: 14px; color: var(--gray); cursor: pointer; }
+.nav-btn {
+  background: var(--ink); color: white; font-weight: 600;
+  padding: 9px 22px; border-radius: 6px; font-size: 13px;
+  border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.2s; letter-spacing: 0.01em;
+}
+.nav-btn:hover { opacity: 0.85; }
+
+/* ── HERO ─────────────────────────────── */
+.hero-wrap {
+  min-height: 100vh;
+  padding-top: 58px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 64px;
+  padding-right: 48px;
+  gap: 0;
+  align-items: center;
+}
+
+/* LEFT */
+.hero-left { padding: 72px 60px 72px 0; }
+
+.hero-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lav-mid);
+  margin-bottom: 28px;
+}
+
+.hero-headline {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(50px, 5.5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 0;
+  display: block;
+}
+.hero-headline-accent {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(50px, 5.5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.025em;
+  color: var(--lav-mid);
+  display: block;
+  margin-bottom: 4px;
+}
+.hero-tagline {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(18px, 1.8vw, 24px);
+  color: var(--lav-mid);
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.hero-body {
+  font-size: 16px; color: var(--gray);
+  line-height: 1.65; max-width: 400px;
+  margin-bottom: 36px; font-weight: 300;
+}
+
+.hero-actions { display: flex; align-items: center; gap: 12px; }
+.btn-cta {
+  background: var(--ink); color: white; font-weight: 600;
+  padding: 14px 32px; border-radius: 6px; font-size: 15px;
+  border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s; letter-spacing: 0.01em;
+}
+.btn-cta:hover { background: var(--ink); box-shadow: 0 4px 16px rgba(17,16,16,0.2); }
+.btn-ghost {
+  font-size: 14px; color: var(--gray); background: transparent;
+  padding: 13px 24px; border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--gray); color: var(--ink); }
+
+/* RIGHT — profile preview */
+.hero-right {
+  height: 100%;
+  display: flex; align-items: center;
+  border-left: 1px solid var(--border);
+  padding-left: 56px;
+}
+
+.profile-preview {
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.07);
+}
+
+/* Profile header */
+.pp-header {
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.pp-status {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 20px;
+}
+.pp-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--mint-dk); flex-shrink: 0;
+}
+.pp-status-text {
+  font-size: 11px; font-weight: 600; color: var(--mint-dk);
+  letter-spacing: 0.06em; font-family: 'DM Mono', monospace;
+}
+.pp-status-sep { width: 1px; height: 12px; background: var(--border); }
+.pp-status-type {
+  font-size: 11px; color: var(--gray); font-family: 'DM Mono', monospace;
+}
+
+.pp-name {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 32px; line-height: 1.0;
+  letter-spacing: -0.02em; color: var(--ink);
+  margin-bottom: 4px;
+}
+.pp-title {
+  font-size: 13px; color: var(--gray2);
+  margin-bottom: 20px;
+}
+
+.pp-quote {
+  background: var(--lav-lt);
+  border-left: 2px solid var(--lav-mid);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 13px; color: var(--ink);
+  line-height: 1.55;
+}
+
+/* Companies */
+.pp-companies {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.pp-co-label {
+  font-size: 10px; font-family: 'DM Mono', monospace;
+  color: var(--gray2); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.pp-co-list { display: flex; flex-direction: column; gap: 8px; }
+.pp-co-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--cream);
+  border-radius: 8px;
+}
+.pp-co-left { display: flex; align-items: center; gap: 10px; }
+.pp-co-initial {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+  flex-shrink: 0; letter-spacing: 0;
+}
+.ci-lemon  { background: var(--navy); }
+.ci-moe    { background: var(--lav-mid); }
+.ci-alice  { background: var(--sky-dk); }
+.ci-sf     { background: var(--navy); }
+.pp-co-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.pp-co-meta { font-size: 11px; color: var(--gray2); }
+.pp-co-badge {
+  font-size: 10px; font-family: 'DM Mono', monospace;
+  padding: 2px 8px; border-radius: 4px; font-weight: 500;
+  flex-shrink: 0;
+}
+.cb-exit { background: var(--navy-lt); color: var(--navy); }
+.cb-raise { background: var(--lav-lt); color: var(--lav-dk); }
+.cb-first { background: var(--mint-lt); color: var(--mint-dk); }
+.cb-300   { background: var(--sky-lt); color: var(--sky-dk); }
+
+/* Stats */
+.pp-stats {
+  padding: 18px 32px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border);
+  gap: 0;
+}
+.pp-stat {
+  text-align: center; padding: 0 8px;
+  border-right: 1px solid var(--border);
+}
+.pp-stat:last-child { border-right: none; }
+.pp-stat-val {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; color: var(--ink); line-height: 1;
+  margin-bottom: 3px;
+}
+.pp-stat-label {
+  font-size: 9px; font-family: 'DM Mono', monospace;
+  color: var(--gray2); letter-spacing: 0.08em;
+  text-transform: uppercase; line-height: 1.3;
+}
+
+/* Footer */
+.pp-footer {
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pp-url {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray2);
+}
+.pp-url span { color: var(--lav-mid); }
+.pp-cta-sm {
+  font-size: 11px; font-weight: 600; color: var(--lav-dk);
+  background: var(--lav-lt); border: none; padding: 6px 14px;
+  border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+
+/* Skills in preview */
+.pp-skills {
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.pp-skill-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sk-chip {
+  padding: 4px 10px; border-radius: 4px;
+  font-size: 11px; font-family: 'DM Mono', monospace;
+  font-weight: 500; border: 1px solid;
+}
+.sk-exp { background: var(--coral-lt); color: var(--coral); border-color: var(--coral); }
+.sk-adv { background: var(--lav-lt); color: var(--lav-dk); border-color: var(--lav); }
+
+/* ── STRIP ────────────────────────────── */
+.strip {
+  border-top: 1px solid var(--border);
+  background: var(--white);
+  display: flex;
+  position: relative;
+}
+.strip-inner {
+  display: flex;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 64px;
+  width: 100%;
+}
+.strip-step {
+  flex: 1; padding: 22px 0 22px 24px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.strip-step:first-child { padding-left: 0; }
+.strip-step:last-child { border-right: none; }
+.ss-num {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--lav); margin-bottom: 6px; font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.ss-title {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  margin-bottom: 3px; letter-spacing: -0.01em;
+}
+.ss-sub { font-size: 11px; color: var(--gray2); line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .hero-wrap { grid-template-columns: 1fr; padding: 24px; gap: 40px; }
+  .hero-right { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 40px; }
+  .hero-left { padding: 40px 0 0; }
+  .strip-inner { overflow-x: auto; padding: 0 24px; }
+  .strip-step { min-width: 180px; }
+}
+
+/* Full profile modal */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(17,16,16,0.6);
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 40px 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--white); border-radius: 16px;
+  width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+  position: relative;
+}
+.modal-close {
+  position: sticky; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 24px; background: var(--white);
+  border-bottom: 1px solid var(--border); z-index: 10;
+}
+.modal-close-url { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--lav-mid); }
+.modal-close-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 14px; font-size: 13px;
+  color: var(--gray); cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+.modal-close-btn:hover { color: var(--ink); border-color: var(--ink); }
+.modal-body { padding: 28px 32px 40px; }
+
+/* Modal sections */
+.m-header { padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.m-name { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 40px; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 6px; }
+.m-title { font-size: 14px; color: var(--gray2); margin-bottom: 14px; }
+.m-badges { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.m-badge { padding: 4px 11px; border-radius: 4px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500; border: 1px solid; }
+.mb-l { background: var(--lav-lt); color: var(--lav-dk); border-color: var(--lav); }
+.mb-m { background: var(--mint-lt); color: var(--mint-dk); border-color: var(--mint); }
+.mb-n { background: var(--cream); color: var(--gray); border-color: var(--border); }
+.m-url { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gray2); }
+.m-url span { color: var(--lav-mid); }
+
+.m-pull {
+  background: var(--lav-lt); border-left: 2px solid var(--lav-mid);
+  border-radius: 0 8px 8px 0; padding: 14px 18px;
+  font-family: 'DM Serif Display', serif; font-style: italic;
+  font-size: 16px; color: var(--ink); line-height: 1.55;
+  margin-bottom: 28px;
+}
+
+.m-section { margin-bottom: 28px; }
+.m-sec-label {
+  font-size: 10px; font-family: 'DM Mono', monospace;
+  color: var(--gray2); letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.m-sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Experience rows in modal */
+.m-exp-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.m-exp-row:last-child { border-bottom: none; }
+.m-exp-role { font-size: 14px; font-weight: 600; color: var(--ink); }
+.m-exp-co { font-size: 13px; color: var(--gray); }
+.m-exp-date { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--gray2); }
+
+/* Stats in modal */
+.m-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+.m-stat { padding: 16px 12px; text-align: center; border-right: 1px solid var(--border); }
+.m-stat:last-child { border-right: none; }
+.m-stat-v { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--ink); margin-bottom: 3px; }
+.m-stat-l { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--gray2); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Skills in modal */
+.m-skill-group { margin-bottom: 12px; }
+.m-skill-tier-lbl { font-size: 10px; font-family: 'DM Mono', monospace; margin-bottom: 8px; }
+.t-exp { color: var(--coral); }
+.t-adv { color: var(--lav); }
+.t-prof { color: var(--gray2); }
+.m-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.m-chip { padding: 4px 11px; border-radius: 4px; font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid; }
+.mc-exp { background: var(--coral-lt); color: var(--coral); border-color: var(--coral); }
+.mc-adv { background: var(--lav-lt); color: var(--lav-dk); border-color: var(--lav); }
+.mc-prof { background: var(--cream); color: var(--gray); border-color: var(--border); }
+
+/* Insight */
+.m-insight { margin-bottom: 14px; }
+.m-insight-lbl { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--lav-mid); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.m-insight-txt { font-size: 14px; color: var(--ink); line-height: 1.7; }
+
+/* Leadership */
+.m-arch { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.m-arch-card { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 140px; }
+.m-arch-card.primary { border-color: var(--lav-mid); background: var(--lav-lt); }
+.m-arch-lbl { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--gray2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+.m-arch-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.m-arch-str { font-size: 11px; color: var(--mint-dk); }
+
+
+
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
   --cream:   #F5F0E8;
   --white:   #FFFFFF;
   --ink:     #111010;
@@ -856,137 +1296,143 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
 /* Override dark company pills for light background */
 .card-hero-light .co-pill { opacity: 0.92; }
 
+
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-logo">marquee</div>
-  <button class="nav-cta" onclick="goTo('scr-upload')">Build my Marquee</button>
+  <div class="nav-right">
+    <span class="nav-link">Sign in</span>
+    <button class="nav-btn">Build my Marquee</button>
+  </div>
 </nav>
 
-<div class="scr on" id="scr-welcome">
 <!-- HERO -->
-<div class="hero">
+<div class="hero-wrap">
 
   <!-- LEFT -->
   <div class="hero-left">
-    <div class="hero-kicker">
-      <span class="kicker-line"></span>
-      The Personal Brand Platform for Professionals
-    </div>
+    <div class="hero-eyebrow">The Personal Brand Platform for Professionals</div>
 
-    <h1 class="hero-h1">Your Work Deserves</h1>
-    <h2 class="hero-h2">the Spotlight</h2>
-    <p class="hero-battle">Be Known, Not Filtered.</p>
+    <span class="hero-headline">Your Work Deserves</span>
+    <span class="hero-headline-accent">the Spotlight.</span>
+    <p class="hero-tagline">Be Known, Not Filtered.</p>
 
-    <p class="hero-sub">
-      Upload your resume and build your professional story. One link. Share it anywhere.
+    <p class="hero-body">
+      Upload your resume and build your professional story.
+      One link. Share it anywhere.
     </p>
 
     <div class="hero-actions">
-      <button class="btn-primary" onclick="goTo('scr-upload')">Build my Marquee →</button>
-      <button class="btn-secondary" onclick="goTo('scr-profile');buildDemo()">See an example ↓</button>
+      <button class="btn-cta">Build my Marquee →</button>
+      <button class="btn-ghost" onclick="openProfile()">See an example</button>
     </div>
-
-
   </div>
 
-  <!-- RIGHT — PROFILE CARD -->
+  <!-- RIGHT — actual profile preview -->
   <div class="hero-right">
-    <div class="profile-card">
+    <div class="profile-preview">
 
-      <!-- Light hero card -->
-      <div class="card-hero-light">
-        <div class="card-kicker">
-          <span class="ck-pill ck-open">● Open now</span>
-          <span class="ck-pill ck-frac">Fractional</span>
-          <span class="ck-pill ck-ver">✓ Verified</span>
+      <div class="pp-header">
+        <div class="pp-status">
+          <div class="pp-dot"></div>
+          <span class="pp-status-text">Open now</span>
+          <div class="pp-status-sep"></div>
+          <span class="pp-status-type">Full-time</span>
+          <div class="pp-status-sep"></div>
+          <span class="pp-status-type">New York, NY</span>
         </div>
 
-        <div class="card-name">Sarah Reilly Engel</div>
-        <div class="card-role">CMO · Founder · Operator · Westport, CT</div>
+        <div class="pp-name">Jordan Hayes</div>
+        <div class="pp-title">Head of Growth · GTM Strategist</div>
 
-        <div class="card-quote">
-          "I'm not just a marketer, I'm a builder. Every company I've joined, I've left with more infrastructure than it had when I arrived."
+        <div class="pp-quote">
+          "I find the growth lever that everyone else missed. Every company I've joined has scaled faster because we stopped guessing and started building systems."
         </div>
+      </div>
 
-        <div class="card-cos">
-          <div class="co-pill co-lemon">
-            <div class="co-pill-dot"></div>
-            <div>
-              <div class="co-pill-name">Lemon</div>
-              <div class="co-pill-meta">Founder · 7fig</div>
+      <div class="pp-companies">
+        <div class="pp-co-label">Experience</div>
+        <div class="pp-co-list">
+          <div class="pp-co-row">
+            <div class="pp-co-left">
+              <div class="pp-co-initial ci-lemon">La</div>
+              <div>
+                <div class="pp-co-name">Lattice</div>
+                <div class="pp-co-meta">Head of Growth</div>
+              </div>
             </div>
+            <span class="pp-co-badge cb-exit">Series B</span>
           </div>
-          <div class="co-pill co-moe">
-            <div class="co-pill-dot"></div>
-            <div>
-              <div class="co-pill-name">Moe Assist</div>
-              <div class="co-pill-meta">CMO/COO · M&A</div>
+          <div class="pp-co-row">
+            <div class="pp-co-left">
+              <div class="pp-co-initial ci-moe">F</div>
+              <div>
+                <div class="pp-co-name">Figma</div>
+                <div class="pp-co-meta">Growth Lead</div>
+              </div>
             </div>
+            <span class="pp-co-badge cb-raise">IPO → $20B</span>
           </div>
-          <div class="co-pill co-alice">
-            <div class="co-pill-dot"></div>
-            <div>
-              <div class="co-pill-name">Hello Alice</div>
-              <div class="co-pill-meta">First hire</div>
+          <div class="pp-co-row">
+            <div class="pp-co-left">
+              <div class="pp-co-initial ci-alice">N</div>
+              <div>
+                <div class="pp-co-name">Notion</div>
+                <div class="pp-co-meta">Sr. Growth Mgr</div>
+              </div>
             </div>
+            <span class="pp-co-badge cb-first">Seed → Series A</span>
           </div>
-          <div class="co-pill co-sf">
-            <div class="co-pill-dot"></div>
-            <div>
-              <div class="co-pill-name">Salesforce</div>
-              <div class="co-pill-meta">Emp. #300</div>
+          <div class="pp-co-row">
+            <div class="pp-co-left">
+              <div class="pp-co-initial ci-sf">H</div>
+              <div>
+                <div class="pp-co-name">HubSpot</div>
+                <div class="pp-co-meta">Account Executive</div>
+              </div>
             </div>
-          </div>
-          <div class="co-pill co-ltk">
-            <div class="co-pill-dot"></div>
-            <div>
-              <div class="co-pill-name">LTK</div>
-              <div class="co-pill-meta">VP · 50 person team</div>
-            </div>
+            <span class="pp-co-badge cb-300">Top 1% quota</span>
           </div>
         </div>
       </div>
-      <!-- Stats section -->
-      <div class="card-body">
-        <div class="card-body-top">
-          <div class="cb-stat">
-            <div class="cb-stat-val">20+</div>
-            <div class="cb-stat-label">Years exp.</div>
-          </div>
-          <div class="cb-div"></div>
-          <div class="cb-stat">
-            <div class="cb-stat-val">4</div>
-            <div class="cb-stat-label">Startups</div>
-          </div>
-          <div class="cb-div"></div>
-          <div class="cb-stat">
-            <div class="cb-stat-val">12</div>
-            <div class="cb-stat-label">Yrs leadership</div>
-          </div>
-          <div class="cb-div"></div>
-          <div class="cb-stat">
-            <div class="cb-stat-val">$3M</div>
-            <div class="cb-stat-label">Raised</div>
-          </div>
-        </div>
 
-        <div class="card-values">
-          <span class="cv-tag cv-lav">Builder</span>
-          <span class="cv-tag cv-mint">Fixer</span>
-          <span class="cv-tag cv-sky">ENFJ</span>
-          <span class="cv-tag cv-coral">Accountability #1</span>
-          <span class="cv-tag cv-lav">Impact #2</span>
-          <span class="cv-tag cv-mint">Integrity #3</span>
+      <div class="pp-stats">
+        <div class="pp-stat">
+          <div class="pp-stat-val">11</div>
+          <div class="pp-stat-label">Years exp.</div>
         </div>
+        <div class="pp-stat">
+          <div class="pp-stat-val">4</div>
+          <div class="pp-stat-label">Startups built</div>
+        </div>
+        <div class="pp-stat">
+          <div class="pp-stat-val">50+</div>
+          <div class="pp-stat-label">Team built</div>
+        </div>
+        <div class="pp-stat">
+          <div class="pp-stat-val">$3M</div>
+          <div class="pp-stat-label">Raised</div>
+        </div>
+      </div>
 
-        <div class="card-url">
-          <span>marquee.bio/<span>sarahreillyengel</span></span>
-          <span class="card-url-arrow">→</span>
+      <div class="pp-skills">
+        <div class="pp-co-label">Known for</div>
+        <div class="pp-skill-chips">
+          <span class="sk-chip sk-exp">GTM Strategy</span>
+          <span class="sk-chip sk-exp">Demand Generation</span>
+          <span class="sk-chip sk-exp">Pipeline Architecture</span>
+          <span class="sk-chip sk-adv">Product Marketing</span>
+          <span class="sk-chip sk-adv">Revenue Operations</span>
+          <span class="sk-chip sk-adv">Analytics</span>
         </div>
+      </div>
+
+      <div class="pp-footer">
+        <div class="pp-url">marquee.bio/<span>jordanhayes</span></div>
+        <button class="pp-cta-sm" onclick="openProfile()">View full profile →</button>
       </div>
 
     </div>
@@ -995,34 +1441,173 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
 </div>
 
 <!-- STEPS STRIP -->
-<div class="steps-strip">
-  <div class="strip-step">
-    <div class="ss-num">01</div>
-    <div class="ss-title">Upload your resume.</div>
-    <div class="ss-sub">We read it so you don't have to start from scratch.</div>
-  </div>
-  <div class="strip-step">
-    <div class="ss-num">02</div>
-    <div class="ss-title">Refine your story.</div>
-    <div class="ss-sub">Answer questions that reveal how you think, lead, and create impact.</div>
-  </div>
-  <div class="strip-step">
-    <div class="ss-num">03</div>
-    <div class="ss-title">Build your Marquee.</div>
-    <div class="ss-sub">We turn your professional story into a dynamic profile.</div>
-  </div>
-  <div class="strip-step">
-    <div class="ss-num">04</div>
-    <div class="ss-title">Share it.</div>
-    <div class="ss-sub">One link. Send it anywhere.</div>
-  </div>
-  <div class="strip-step">
-    <div class="ss-num">05</div>
-    <div class="ss-title">Be Known.</div>
-    <div class="ss-sub">Let the right people find you.</div>
+<div class="strip">
+  <div class="strip-inner">
+    <div class="strip-step">
+      <div class="ss-num">01</div>
+      <div class="ss-title">Upload your resume.</div>
+      <div class="ss-sub">We read it so you don't have to start from scratch.</div>
+    </div>
+    <div class="strip-step">
+      <div class="ss-num">02</div>
+      <div class="ss-title">Refine your story.</div>
+      <div class="ss-sub">Answer questions that reveal how you think, lead, and create impact.</div>
+    </div>
+    <div class="strip-step">
+      <div class="ss-num">03</div>
+      <div class="ss-title">Build your Marquee.</div>
+      <div class="ss-sub">We turn your professional story into a dynamic profile.</div>
+    </div>
+    <div class="strip-step">
+      <div class="ss-num">04</div>
+      <div class="ss-title">Share it.</div>
+      <div class="ss-sub">One link. Send it anywhere.</div>
+    </div>
+    <div class="strip-step">
+      <div class="ss-num">05</div>
+      <div class="ss-title">Be Known.</div>
+      <div class="ss-sub">Let the right people find you.</div>
+    </div>
   </div>
 </div>
+
+
+<!-- FULL PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal" onclick="if(event.target===this)closeProfile()">
+  <div class="modal-box">
+    <div class="modal-close">
+      <div class="modal-close-url">marquee.bio/jordanhayes</div>
+      <button class="modal-close-btn" onclick="closeProfile()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="m-header">
+        <div class="m-name">Jordan Hayes</div>
+        <div class="m-title">Head of Growth · GTM Strategist · New York, NY</div>
+        <div class="m-badges">
+          <span class="m-badge mb-m">● Open now</span>
+          <span class="m-badge mb-l">Full-time</span>
+          <span class="m-badge mb-n">ENTJ</span>
+          <span class="m-badge mb-n">Enneagram 3w4</span>
+        </div>
+        <div class="m-url">marquee.bio/<span>jordanhayes</span></div>
+      </div>
+
+      <div class="m-pull">"I find the growth lever that everyone else missed. Every company I've joined has scaled faster because we stopped guessing and started building systems."</div>
+
+      <div class="m-stats">
+        <div class="m-stat"><div class="m-stat-v">11</div><div class="m-stat-l">Years exp.</div></div>
+        <div class="m-stat"><div class="m-stat-v">4</div><div class="m-stat-l">Companies</div></div>
+        <div class="m-stat"><div class="m-stat-v">3×</div><div class="m-stat-l">Pipeline growth</div></div>
+        <div class="m-stat"><div class="m-stat-v">$40M</div><div class="m-stat-l">Pipeline built</div></div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">E · Experience</div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Head of Growth</div><div class="m-exp-co">Lattice · Series B</div></div><div class="m-exp-date">2022–Present</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Growth Lead</div><div class="m-exp-co">Figma · Pre-IPO → $20B</div></div><div class="m-exp-date">2019–2022</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Sr. Growth Manager</div><div class="m-exp-co">Notion · Seed → Series A</div></div><div class="m-exp-date">2017–2019</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Account Executive</div><div class="m-exp-co">HubSpot · Top 1% quota</div></div><div class="m-exp-date">2014–2017</div></div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">L · Leadership</div>
+        <div class="m-arch">
+          <div class="m-arch-card primary"><div class="m-arch-lbl">Primary archetype</div><div class="m-arch-name">The Strategist</div><div class="m-arch-str">↑ Patterns, positioning, bets</div></div>
+          <div class="m-arch-card"><div class="m-arch-lbl">Secondary</div><div class="m-arch-name">The Builder</div><div class="m-arch-str">↑ 0→1, speed, systems</div></div>
+        </div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">Leadership belief</div>
+          <div class="m-insight-txt">"Growth is a system, not a campaign. Most teams are optimizing the wrong thing at every stage — I find the constraint and remove it."</div>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">S · Skills</div>
+        <div class="m-skill-group">
+          <div class="m-skill-tier-lbl t-exp">Known for it</div>
+          <div class="m-chips">
+            <span class="m-chip mc-exp">GTM Strategy</span>
+            <span class="m-chip mc-exp">Demand Generation</span>
+            <span class="m-chip mc-exp">Pipeline Architecture</span>
+          </div>
+        </div>
+        <div class="m-skill-group">
+          <div class="m-skill-tier-lbl t-adv">Advanced</div>
+          <div class="m-chips">
+            <span class="m-chip mc-adv">Product Marketing</span>
+            <span class="m-chip mc-adv">Revenue Operations</span>
+            <span class="m-chip mc-adv">Analytics</span>
+            <span class="m-chip mc-adv">Sales Enablement</span>
+          </div>
+        </div>
+        <div class="m-skill-group">
+          <div class="m-skill-tier-lbl t-prof">Proficient</div>
+          <div class="m-chips">
+            <span class="m-chip mc-prof">Paid Acquisition</span>
+            <span class="m-chip mc-prof">Content Strategy</span>
+            <span class="m-chip mc-prof">CRM Systems</span>
+            <span class="m-chip mc-prof">Partner Marketing</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">I · Insights</div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What most people get wrong</div>
+          <div class="m-insight-txt">Most growth teams chase channels instead of understanding conversion. The real leverage is almost always in the middle of the funnel — not the top.</div>
+        </div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What I bring that doesn't show up in a JD</div>
+          <div class="m-insight-txt">I can read a data set and tell you what question it's actually answering — then reframe the whole strategy around the right one.</div>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">V · Values</div>
+        <div style="display:flex;gap:28px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Top values</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">Impact</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">Accountability</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">Excellence</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">4</span><span style="font-size:14px;color:var(--ink)">Curiosity</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">5</span><span style="font-size:14px;color:var(--ink)">Directness</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">What I need at work</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">I matter</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">I'm enabled</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">I contribute</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
+
+<script>
+
+function openProfile() {
+  document.getElementById('profile-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeProfile(); });
+
+</script>
+</body>
+</html>
+
 
 <!-- ══ UPLOAD ════════════════════════════════════════════════════════════════ -->
 <div class="scr" id="scr-upload">
@@ -1080,12 +1665,12 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
   <div class="setup-in">
     <h2 class="setup-h">Quick setup.</h2>
     <p class="setup-s">Takes 2 minutes. Change anything later.</p>
-    <div class="field"><label class="f-lbl">Your name</label><input class="f-in" id="s-nm" value="Sarah Reilly Engel" placeholder="Full name"></div>
-    <div class="field"><label class="f-lbl">Location</label><input class="f-in" id="s-loc" value="Westport, CT" placeholder="City, State"></div>
-    <div class="field"><label class="f-lbl">Your Marquee URL</label><input class="f-in" id="s-user" value="sarahreillyengel" placeholder="yourname" oninput="document.getElementById('up').textContent=this.value||'yourname'"><div class="f-hint">marquee.bio/<span id="up">sarahreillyengel</span></div></div>
+    <div class="field"><label class="f-lbl">Your name</label><input class="f-in" id="s-nm" value="" placeholder="Full name"></div>
+    <div class="field"><label class="f-lbl">Location</label><input class="f-in" id="s-loc" value="" placeholder="City, State"></div>
+    <div class="field"><label class="f-lbl">Your Marquee URL</label><input class="f-in" id="s-user" value="" placeholder="yourname" oninput="document.getElementById('up').textContent=this.value||'yourname'"><div class="f-hint">marquee.bio/<span id="up">sarahreillyengel</span></div></div>
     <div class="field"><label class="f-lbl" style="margin-bottom:10px">How are you building your career?</label>
       <div class="type-grid" id="tg">
-        <div class="type-card on" onclick="pT(this,'fractional')"><div class="tc-n">Fractional</div><div class="tc-s">Multiple clients</div></div>
+        <div class="type-card" onclick="pT(this,'fractional')"><div class="tc-n">Fractional</div><div class="tc-s">Multiple clients</div></div>
         <div class="type-card" onclick="pT(this,'fulltime')"><div class="tc-n">Full-time</div><div class="tc-s">Single role</div></div>
         <div class="type-card" onclick="pT(this,'both')"><div class="tc-n">Both</div><div class="tc-s">Open to either</div></div>
         <div class="type-card" onclick="pT(this,'exploring')"><div class="tc-n">Exploring</div><div class="tc-s">Just discoverable</div></div>
@@ -1093,7 +1678,7 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
     </div>
     <div class="field"><label class="f-lbl" style="margin-bottom:10px">Work status</label>
       <div class="pill-row" id="sr">
-        <div class="s-pill on" onclick="pS(this,'open')">Open now</div>
+        <div class="s-pill" onclick="pS(this,'open')">Open now</div>
         <div class="s-pill" onclick="pS(this,'selective')">Selectively open</div>
         <div class="s-pill" onclick="pS(this,'passive')">Not looking</div>
       </div>
@@ -1120,40 +1705,24 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
 
 <div class="toast" id="toast"></div>
 
+
+
+
+
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────────
 const S={
-  name:'Sarah Reilly Engel',loc:'Westport, CT',user:'sarahreillyengel',
-  wt:'fractional',ws:'open',mbti:'ENFJ',ennea:'3w2',lYrs:12,lTeam:50,
-  archetypes:['The Builder','The Fixer'],
-  vals:['Accountability','Impact','Integrity','Innovation','Directness','Excellence','Resilience','Transparency','Empathy','Drive','Curiosity','Humility','Respect'],
+  name:'',loc:'',user:'',
+  wt:'',ws:'open',mbti:'',ennea:'',lYrs:0,lTeam:0,
+  archetypes:[],
+  vals:['Accountability','Integrity','Transparency','Directness','Humility','Self-awareness','Resilience','Curiosity','Excellence','Innovation','Impact','Respect','Drive'],
   needs:[{l:'I matter',d:'My work has purpose and meaning.'},{l:"I'm respected",d:"I'm trusted, heard, and treated fairly."},{l:'I contribute',d:'My work is recognized and valued.'},{l:'I belong',d:'I feel part of a team with shared values.'},{l:"I'm enabled",d:'I have the tools and support to do my best.'}],
-  depths:{'CMO / Marketing Leader':'defining','GTM Strategist':'deep','Founder / Operator':'deep','Growth & Demand Gen':'deep','Brand & Storytelling':'defining','People Leader / Team Builder':'deep'},
-  lV:'all',lE:'solve',lSP:'order',lH:'process',
-  now:'Building Marquee — a personal brand platform for professionals that replaces the resume with a living, shareable profile. Also running fractional marketing engagements.',
-  next:'Scaling Marquee as founding CEO — or a C-suite fractional or full-time role at a high-growth startup where I own the full marketing and GTM motion.',
-  tl:"Gets called in when something is broken, undefined, or needs to be built from scratch — and turns ambiguity into a working system that actually drives growth.",
-  lSt:'High EQ, high standards — I lead with clarity and create the conditions for people to do the best work of their careers.',
-  lFl:"That moving fast without alignment costs more time than slowing down to get it right. I've learned to build the coalition before the sprint.",
-  lBl:"Hiring for potential and actually investing in developing it is the highest-leverage thing a leader can do. Most leaders say this but few do it.",
-  cG:'A great work culture is one where people are trusted to do their best work, standards are high, and the mission is real.',
-  cB:'A poor work culture is one where politics trump performance and people spend more energy managing up than creating value.',
-  wish:"I've been operating at the intersection of brand and revenue my entire career — I'm not just a marketer, I'm a builder. Every company I've joined, I've left with more infrastructure.",
-  bring:"The ability to walk into ambiguity and make it legible — for the team, for the board, for the customer.",
-  changed:"I used to think working harder was the answer. Now I know working on the right things with the right people matters infinitely more.",
-  field:"Most people think brand and performance marketing are in tension. They're not — great brand work is performance work. When positioning is right, everything downstream gets cheaper.",
-  impact:[
-    {t:'Scaled Lemon to Seven Figures',n:"Co-founded and built a digital marketing agency to seven-figure revenue. 600M+ impressions for Brilliant Earth, Armani, and Evolus. One Brilliant Earth campaign: 171M impressions, nearly $1M in EMV."},
-    {t:'Built Moe Assist 0→M&A',n:"Led end-to-end from launch through M&A exit. Raised $3M, built cross-functional teams, created the operating model that made the company acquirable. Zero to exit in 4 years."},
-    {t:'First Executive Hire — Hello Alice',n:"Joined at Seed as first executive hire. Built the entire marketing engine from scratch through Series A. Designed a global accelerator projected to generate $10M in revenue."}
-  ],
-  quotes:[
-    {t:"Sarah walks into chaos and leaves infrastructure. Every team she's been part of has come out better organized, better positioned, and better performing.",n:'Jamie K.',r:'CEO, Hello Alice'},
-    {t:"She's the rare person who can hold the big picture and the details at the same time — and does it with clarity that makes the people around her better.",n:'Marcus T.',r:'Co-founder, Moe Assist'}
-  ],
-  skills:['GTM Strategy','Brand Marketing','Influencer Marketing','Positioning & Messaging','Team Building','Demand Generation','Product Marketing','P&L Ownership','Lifecycle Marketing','Fundraising','Content Strategy','Sales Strategy','Analytics & Reporting','Startup Operations','Customer Success','Paid Media'],
-  skR:{'GTM Strategy':3,'Brand Marketing':3,'Influencer Marketing':3,'Positioning & Messaging':3,'Team Building':3,'Demand Generation':2,'Product Marketing':2,'P&L Ownership':2,'Lifecycle Marketing':2,'Fundraising':2,'Content Strategy':1,'Sales Strategy':2,'Analytics & Reporting':1,'Startup Operations':2,'Customer Success':2,'Paid Media':1},
-  wl:['Fully remote','Remote-first with occasional onsite'],wh:25,wr:12000,av:'Immediately',plus:[]
+  depths:{},
+  lV:'',lE:'',lSP:'',lH:'',
+  now:'',next:'',tl:'',lSt:'',lFl:'',lBl:'',
+  cG:'',cB:'',wish:'',bring:'',changed:'',field:'',
+  impact:[],quotes:[],skills:[],skR:{},
+  wl:[],wh:20,wr:8000,av:'',plus:[]
 };
 
 // ── NAV ────────────────────────────────────────────────────────────────────────
