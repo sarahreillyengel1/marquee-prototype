@@ -1305,7 +1305,7 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
   <div class="nav-logo">marquee</div>
   <div class="nav-right">
     <span class="nav-link">Sign in</span>
-    <button class="nav-btn">Build my Marquee</button>
+    <button class="nav-btn" onclick="goTo('scr-upload')">Build my Marquee</button>
   </div>
 </nav>
 
@@ -1326,7 +1326,7 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
     </p>
 
     <div class="hero-actions">
-      <button class="btn-cta">Build my Marquee →</button>
+      <button class="btn-cta" onclick="goTo('scr-upload')">Build my Marquee →</button>
       <button class="btn-ghost" onclick="openProfile()">See an example</button>
     </div>
   </div>
@@ -1622,7 +1622,7 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeProf
     </div>
     <div class="or-line">or</div>
     <button class="btn-ink full" onclick="doScan()">Browse files</button>
-    <button class="btn-ghost2" onclick="doScan()">Use Sarah's resume (demo)</button>
+    <button class="btn-ghost2" onclick="doScan()">Use a sample resume (demo)</button>
   </div>
 
   <div class="scan-spin-wrap" id="scan-spin">
