@@ -1860,7 +1860,17 @@ const S={
 };
 
 // ── NAV ────────────────────────────────────────────────────────────────────────
-function goTo(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);const isQ=id==='scr-q';document.getElementById('prog-wrap').style.display=isQ?'block':'none';document.getElementById('t-skip').style.display='none';}
+function goTo(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  const target=document.getElementById(id);
+  if(target) target.classList.add('on');
+  window.scrollTo(0,0);
+  const isQ=id==='scr-q';
+  const pw=document.getElementById('prog-wrap');
+  const ts=document.getElementById('t-skip');
+  if(pw) pw.style.display=isQ?'block':'none';
+  if(ts) ts.style.display='none';
+}
 
 // ── UPLOAD ─────────────────────────────────────────────────────────────────────
 function doDrop(e){e.preventDefault();document.getElementById('drop-z').classList.remove('drag');doScan();}
