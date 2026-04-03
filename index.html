@@ -1297,6 +1297,21 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
 .card-hero-light .co-pill { opacity: 0.92; }
 
 
+
+/* Modal extras */
+.ic-card { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+.ic-t { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.ic-n { font-size: 13px; color: var(--gray); line-height: 1.7; }
+.qc-card { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+.qc-t { font-size: 13px; color: var(--ink); line-height: 1.65; font-style: italic; margin-bottom: 6px; }
+.qc-a { font-size: 11px; color: var(--gray2); font-family: 'DM Mono', monospace; }
+.plus-si { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.plus-si:last-child { border-bottom: none; }
+.plus-si-tp { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--lav-dk); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.plus-si-ti { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.plus-si-d { font-size: 13px; color: var(--gray); margin-bottom: 4px; line-height: 1.6; }
+.plus-si-u { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--lav-dk); }
+
 </style>
 </head>
 <body>
@@ -1481,20 +1496,31 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
     </div>
     <div class="modal-body">
 
+      <!-- HEADER -->
       <div class="m-header">
-        <div class="m-name">Jordan Hayes</div>
-        <div class="m-title">Head of Growth · GTM Strategist · New York, NY</div>
-        <div class="m-badges">
-          <span class="m-badge mb-m">● Open now</span>
-          <span class="m-badge mb-l">Full-time</span>
-          <span class="m-badge mb-n">ENTJ</span>
-          <span class="m-badge mb-n">Enneagram 3w4</span>
+        <div style="display:flex;align-items:flex-start;gap:18px;margin-bottom:16px">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#A78BFA,#1E3A5F);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-style:italic;font-size:22px;color:white;flex-shrink:0">J</div>
+          <div style="flex:1">
+            <div class="m-name">Jordan Hayes</div>
+            <div class="m-title">Head of Growth · GTM Strategist · New York, NY</div>
+            <div class="m-badges">
+              <span class="m-badge mb-m">● Open now</span>
+              <span class="m-badge mb-l">Full-time</span>
+              <span class="m-badge mb-n">11 yrs exp</span>
+              <span class="m-badge mb-n">ENTJ</span>
+            </div>
+          </div>
         </div>
         <div class="m-url">marquee.bio/<span>jordanhayes</span></div>
       </div>
 
+      <!-- PULL QUOTE -->
       <div class="m-pull">"I find the growth lever that everyone else missed. Every company I've joined has scaled faster because we stopped guessing and started building systems."</div>
 
+      <!-- CAREER ARC -->
+      <div style="font-size:14px;color:var(--gray);line-height:1.8;padding-left:18px;border-left:2px solid var(--border);margin-bottom:32px;font-style:italic">I've spent 11 years at the intersection of product and revenue — joining companies right before their inflection point and building the growth infrastructure that made scale possible. The through-line: I show up when the old playbook stops working and leave behind systems that run without me.</div>
+
+      <!-- STATS -->
       <div class="m-stats">
         <div class="m-stat"><div class="m-stat-v">11</div><div class="m-stat-l">Years exp.</div></div>
         <div class="m-stat"><div class="m-stat-v">4</div><div class="m-stat-l">Companies</div></div>
@@ -1502,26 +1528,139 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
         <div class="m-stat"><div class="m-stat-v">$40M</div><div class="m-stat-l">Pipeline built</div></div>
       </div>
 
+      <!-- EXPERIENCE -->
       <div class="m-section">
         <div class="m-sec-label">E · Experience</div>
-        <div class="m-exp-row"><div><div class="m-exp-role">Head of Growth</div><div class="m-exp-co">Lattice · Series B</div></div><div class="m-exp-date">2022–Present</div></div>
-        <div class="m-exp-row"><div><div class="m-exp-role">Growth Lead</div><div class="m-exp-co">Figma · Pre-IPO → $20B</div></div><div class="m-exp-date">2019–2022</div></div>
-        <div class="m-exp-row"><div><div class="m-exp-role">Sr. Growth Manager</div><div class="m-exp-co">Notion · Seed → Series A</div></div><div class="m-exp-date">2017–2019</div></div>
-        <div class="m-exp-row"><div><div class="m-exp-role">Account Executive</div><div class="m-exp-co">HubSpot · Top 1% quota</div></div><div class="m-exp-date">2014–2017</div></div>
+        <div class="m-exp-row">
+          <div>
+            <div class="m-exp-role">Head of Growth</div>
+            <div class="m-exp-co">Lattice · Series B · HR Tech <span class="m-badge mb-l" style="font-size:9px;padding:2px 7px">Current</span></div>
+            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Built the first demand gen function from scratch. Grew inbound pipeline 3× in 18 months. Hired and managed a team of 6 across paid, content, and lifecycle.</div>
+          </div>
+          <div class="m-exp-date">2022–Now</div>
+        </div>
+        <div class="m-exp-row">
+          <div>
+            <div class="m-exp-role">Growth Lead</div>
+            <div class="m-exp-co">Figma · Pre-IPO → $20B valuation <span class="m-badge mb-n" style="font-size:9px;padding:2px 7px">IPO exit</span></div>
+            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Owned self-serve growth and PLG expansion. Rebuilt the activation flow, improving 30-day retention from 34% to 61%. Collaborated directly with product on pricing and packaging.</div>
+          </div>
+          <div class="m-exp-date">2019–2022</div>
+        </div>
+        <div class="m-exp-row">
+          <div>
+            <div class="m-exp-role">Senior Growth Manager</div>
+            <div class="m-exp-co">Notion · Seed → Series A <span class="m-badge mb-m" style="font-size:9px;padding:2px 7px">First hire</span></div>
+            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Employee 23. Built the referral program that drove 40% of early user growth. Designed the team onboarding flow still in use today.</div>
+          </div>
+          <div class="m-exp-date">2017–2019</div>
+        </div>
+        <div class="m-exp-row">
+          <div>
+            <div class="m-exp-role">Account Executive</div>
+            <div class="m-exp-co">HubSpot · Enterprise <span class="m-badge mb-n" style="font-size:9px;padding:2px 7px">Top 1% quota</span></div>
+            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Closed $2.8M ARR in year 2. Specialized in mid-market SaaS. This is where I learned that the best growth is just a better sales process, systematized.</div>
+          </div>
+          <div class="m-exp-date">2014–2017</div>
+        </div>
       </div>
 
+      <!-- LEADERSHIP -->
       <div class="m-section">
         <div class="m-sec-label">L · Leadership</div>
         <div class="m-arch">
-          <div class="m-arch-card primary"><div class="m-arch-lbl">Primary archetype</div><div class="m-arch-name">The Strategist</div><div class="m-arch-str">↑ Patterns, positioning, bets</div></div>
-          <div class="m-arch-card"><div class="m-arch-lbl">Secondary</div><div class="m-arch-name">The Builder</div><div class="m-arch-str">↑ 0→1, speed, systems</div></div>
+          <div class="m-arch-card primary">
+            <div class="m-arch-lbl">Primary archetype</div>
+            <div class="m-arch-name">The Strategist</div>
+            <div class="m-arch-str">↑ Patterns, positioning, long bets</div>
+            <div style="font-size:11px;color:var(--gray2);margin-top:2px">→ Can be slow to act without full picture</div>
+          </div>
+          <div class="m-arch-card">
+            <div class="m-arch-lbl">Secondary</div>
+            <div class="m-arch-name">The Builder</div>
+            <div class="m-arch-str">↑ 0→1, speed, systems from scratch</div>
+          </div>
+        </div>
+        <div class="m-insight" style="margin-top:14px">
+          <div class="m-insight-lbl">Leadership style</div>
+          <div class="m-insight-txt">I hire people smarter than me in their lane, give them real ownership, and hold a high bar on outcomes not methods. I find the 10% of decisions that actually matter and leave everything else to the team.</div>
         </div>
         <div class="m-insight">
-          <div class="m-insight-lbl">Leadership belief</div>
-          <div class="m-insight-txt">"Growth is a system, not a campaign. Most teams are optimizing the wrong thing at every stage — I find the constraint and remove it."</div>
+          <div class="m-insight-lbl">What I learned from failure</div>
+          <div class="m-insight-txt">I shipped a major product-led growth initiative at Figma that flopped because I optimized for activation instead of retention. The lesson: the metric you choose to move is a strategic bet, not a tactical one. Choose wrong and you build the wrong machine.</div>
+        </div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What I believe that most leaders don't</div>
+          <div class="m-insight-txt">"Most people think culture is about values on a wall. It's actually about what you tolerate. The things leaders let slide define the culture more than anything they say out loud."</div>
         </div>
       </div>
 
+      <!-- VALUES -->
+      <div class="m-section">
+        <div class="m-sec-label">V · Values</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:16px">
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Top values</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">Impact</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">Accountability</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">Excellence</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">4</span><span style="font-size:14px;color:var(--ink)">Curiosity</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">5</span><span style="font-size:14px;color:var(--ink)">Directness</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">What I need at work</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">1</span><div><div style="font-size:14px;color:var(--ink)">I matter</div><div style="font-size:11px;color:var(--gray2)">My work has purpose and visible impact.</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">2</span><div><div style="font-size:14px;color:var(--ink)">I'm enabled</div><div style="font-size:11px;color:var(--gray2)">Tools, data, and support to do my best.</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">3</span><div><div style="font-size:14px;color:var(--ink)">I'm respected</div><div style="font-size:11px;color:var(--gray2)">Trusted, heard, treated fairly.</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:#ECFDF5;border-radius:8px;font-size:13px;color:var(--gray);font-style:italic;line-height:1.6">"A great work culture is one where the best idea wins regardless of who said it — and poor performance is addressed before it becomes everyone's problem."</div>
+      </div>
+
+      <!-- IMPACT -->
+      <div class="m-section">
+        <div class="m-sec-label">I · Impact — Career Highlights</div>
+        <div class="ic-card" style="margin-bottom:10px">
+          <div class="ic-t">3× Pipeline Growth at Lattice</div>
+          <div class="ic-n">Built the growth function from zero — hired the team, chose the stack, designed the playbook. Inbound pipeline grew from $4M to $13M ARR contribution in 18 months. Core lever: shifted budget from brand to high-intent SEO and bottom-of-funnel retargeting.</div>
+        </div>
+        <div class="ic-card" style="margin-bottom:10px">
+          <div class="ic-t">Rebuilt Figma Activation → 34% to 61% Retention</div>
+          <div class="ic-n">Identified that 60% of churned users never completed a second project. Redesigned the Day 1 experience around template completion instead of blank canvas. 30-day retention improved from 34% to 61% in 90 days. This one change compounded across every acquisition channel.</div>
+        </div>
+        <div class="ic-card">
+          <div class="ic-t">Notion Referral Program — 40% of Early Growth</div>
+          <div class="ic-n">Designed and shipped Notion's first referral program as employee 23. Drove 40% of user acquisition in the first year post-launch. The mechanic: give credit, not cash — turned sharing into a status signal for early adopters.</div>
+        </div>
+      </div>
+
+      <!-- INSIGHTS -->
+      <div class="m-section">
+        <div class="m-sec-label">I · Insights</div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What most people in my field get wrong</div>
+          <div class="m-insight-txt">Most growth teams chase channels instead of conversion. The real leverage is almost always in the middle of the funnel — not the top. I've seen companies 10× their CAC efficiency just by fixing what happens after the click.</div>
+        </div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What I changed my mind about</div>
+          <div class="m-insight-txt">I used to think data was the answer to every growth question. Now I know data tells you what happened — it almost never tells you why. The best insights I've had came from a 20-minute user interview, not a dashboard.</div>
+        </div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What I bring that doesn't show up in a JD</div>
+          <div class="m-insight-txt">I can read a dataset and tell you what question it's actually answering — then reframe the whole strategy around the right one. Most teams are solving the wrong problem with great execution.</div>
+        </div>
+        <div style="margin-top:20px">
+          <div class="m-insight-lbl" style="margin-bottom:10px">What colleagues say</div>
+          <div class="qc-card" style="margin-bottom:8px"><div class="qc-t">"Jordan has this rare ability to zoom out to strategy and zoom in to a specific funnel step in the same conversation — and be right about both."</div><div class="qc-a">Priya K. · VP Product, Lattice</div></div>
+          <div class="qc-card"><div class="qc-t">"The growth system Jordan built is still running 2 years after he left. That's the real test."</div><div class="qc-a">Marcus W. · CEO, Notion (early)</div></div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
       <div class="m-section">
         <div class="m-sec-label">S · Skills</div>
         <div class="m-skill-group">
@@ -1537,8 +1676,9 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
           <div class="m-chips">
             <span class="m-chip mc-adv">Product Marketing</span>
             <span class="m-chip mc-adv">Revenue Operations</span>
-            <span class="m-chip mc-adv">Analytics</span>
+            <span class="m-chip mc-adv">Analytics & Attribution</span>
             <span class="m-chip mc-adv">Sales Enablement</span>
+            <span class="m-chip mc-adv">PLG Strategy</span>
           </div>
         </div>
         <div class="m-skill-group">
@@ -1548,47 +1688,41 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
             <span class="m-chip mc-prof">Content Strategy</span>
             <span class="m-chip mc-prof">CRM Systems</span>
             <span class="m-chip mc-prof">Partner Marketing</span>
+            <span class="m-chip mc-prof">Email Lifecycle</span>
           </div>
         </div>
       </div>
 
+      <!-- ELVIIS+ -->
       <div class="m-section">
-        <div class="m-sec-label">I · Insights</div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What most people get wrong</div>
-          <div class="m-insight-txt">Most growth teams chase channels instead of understanding conversion. The real leverage is almost always in the middle of the funnel — not the top.</div>
+        <div class="m-sec-label">+ Beyond the Resume</div>
+        <div class="plus-si">
+          <div class="plus-si-tp">📰 Newsletter</div>
+          <div class="plus-si-ti">Growth Mechanics</div>
+          <div class="plus-si-d">Weekly breakdown of growth strategy for B2B SaaS — 4,200 subscribers. Featured in Lenny's Newsletter and First Round Review.</div>
+          <div class="plus-si-u">substack.com/jordanhayes</div>
         </div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What I bring that doesn't show up in a JD</div>
-          <div class="m-insight-txt">I can read a data set and tell you what question it's actually answering — then reframe the whole strategy around the right one.</div>
+        <div class="plus-si">
+          <div class="plus-si-tp">💼 Portfolio</div>
+          <div class="plus-si-ti">Lattice Growth Playbook — Full Case Study</div>
+          <div class="plus-si-d">36-page breakdown of how we built the demand gen function: strategy, team structure, channel mix, and what didn't work.</div>
+          <div class="plus-si-u">notion.so/jordan/lattice-case-study</div>
         </div>
-      </div>
-
-      <div class="m-section">
-        <div class="m-sec-label">V · Values</div>
-        <div style="display:flex;gap:28px;flex-wrap:wrap">
-          <div>
-            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Top values</div>
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">Impact</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">Accountability</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">Excellence</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">4</span><span style="font-size:14px;color:var(--ink)">Curiosity</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">5</span><span style="font-size:14px;color:var(--ink)">Directness</span></div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">What I need at work</div>
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">I matter</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">I'm enabled</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">I contribute</span></div>
-            </div>
-          </div>
+        <div class="plus-si">
+          <div class="plus-si-tp">🎤 Speaking</div>
+          <div class="plus-si-ti">SaaStr 2024 — "PLG After Product-Market Fit: What Changes"</div>
+          <div class="plus-si-d">45-min session on why PLG playbooks break at Series B and how to evolve them.</div>
+          <div class="plus-si-u">saastr.com/sessions/jordan-hayes-2024</div>
+        </div>
+        <div class="plus-si">
+          <div class="plus-si-tp">🌐 Community</div>
+          <div class="plus-si-ti">Advisor — Reforge Growth Program</div>
+          <div class="plus-si-d">Curriculum advisor and guest lecturer since 2022. Review growth case studies and guest on 2 cohort calls per year.</div>
         </div>
       </div>
 
     </div>
+  </div>
   </div>
 </div>
 
