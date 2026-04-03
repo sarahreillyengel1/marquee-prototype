@@ -810,7 +810,7 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
 .t-skip:hover { color: var(--ink); }
 
 /* ─ WELCOME ────────────────────────────── */
-#scr-welcome { padding-top: 60px; background: var(--cream); align-items: center; justify-content: center; }
+#scr-welcome.on { display: block; padding-top: 60px; background: var(--cream); }
 .hero {
   width: 100%; max-width: 860px;
   margin: 0 auto; padding: 80px 40px 60px;
@@ -1324,6 +1324,7 @@ body { background: var(--cream); color: var(--ink); font-family: var(--sans); -w
   </div>
 </nav>
 
+<div class="scr on" id="scr-welcome">
 <!-- HERO -->
 <div class="hero-wrap">
 
@@ -1741,7 +1742,7 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeProf
 </script>
 </body>
 </html>
-
+</div>
 
 <!-- ══ UPLOAD ════════════════════════════════════════════════════════════════ -->
 <div class="scr" id="scr-upload">
