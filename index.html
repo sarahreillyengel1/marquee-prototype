@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Marquee — The Personal Brand Platform for Professionals</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -36,6 +36,33 @@
   --navy:       #1E3A5F;
   --navy-lt:    #E8EEF5;
 }
+
+/* v3 screen variables — light theme */
+:root {
+  --bg: #F5F0E8;
+  --surface: #FFFFFF;
+  --surface2: #EDE8DF;
+  --border: #E0D9CE;
+  --border2: #CEC6B8;
+  --cream: #F5F0E8;
+  --cream2: rgba(15,15,15,0.65);
+  --cream3: rgba(15,15,15,0.38);
+  --muted: #6B6560;
+  --subtle: #A09890;
+  --violet: #A78BFA;
+  --violet-dim: rgba(167,139,250,0.12);
+  --mint: #16A34A;
+  --mint-dim: rgba(22,163,74,0.1);
+  --amber: #FB7185;
+  --amber-dim: rgba(251,113,133,0.1);
+  --coral: #FB7185;
+  --sky: #1D4ED8;
+  --rose: #FB7185;
+  --sage: #16A34A;
+}
+/* Text color for questionnaire screens */
+.screen { color: #0F0F0F; }
+
 
 html, body { min-height: 100vh; }
 body {
@@ -85,7 +112,7 @@ nav {
 }
 
 /* LEFT */
-.hero-left { display:flex; flex-direction:column; justify-content:center; padding:0 60px 0 0; min-height:calc(100vh - 58px); }
+.hero-left { padding: 72px 60px 72px 0; display: flex; flex-direction: column; justify-content: center; }
 
 .hero-eyebrow {
   font-family: 'DM Sans', sans-serif;
@@ -341,7 +368,7 @@ nav {
 @media (max-width: 900px) {
   .hero-wrap { grid-template-columns: 1fr; padding: 24px; gap: 40px; }
   .hero-right { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 40px; }
-  .hero-left { display:flex; flex-direction:column; justify-content:center; padding:0 60px 0 0; min-height:calc(100vh - 58px); }
+  .hero-left { padding: 40px 0 0; }
   .strip-inner { overflow-x: auto; padding: 0 24px; }
   .strip-step { min-width: 180px; }
 }
@@ -445,28 +472,13 @@ nav {
 .m-arch-str { font-size: 11px; color: var(--mint-dk); }
 
 
-/* Modal extras */
-.ic-card { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
-.ic-t { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-.ic-n { font-size: 13px; color: var(--gray); line-height: 1.7; }
-.qc-card { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
-.qc-t { font-size: 13px; color: var(--ink); line-height: 1.65; font-style: italic; margin-bottom: 6px; }
-.qc-a { font-size: 11px; color: var(--gray2); font-family: 'DM Mono', monospace; }
-.plus-si { padding: 14px 0; border-bottom: 1px solid var(--border); }
-.plus-si:last-child { border-bottom: none; }
-.plus-si-tp { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--lav-dk); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
-.plus-si-ti { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
-.plus-si-d { font-size: 13px; color: var(--gray); margin-bottom: 4px; line-height: 1.6; }
-.plus-si-u { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--lav-dk); }
-
-
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 
 
-html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+
 
 /* SCREENS */
 .screen { display: none; min-height: 100vh; flex-direction: column; }
@@ -477,20 +489,20 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 ═══════════════════════ */
 .topbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  background: rgba(10,10,10,0.97);
+  background: rgba(245,240,232,0.96);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 0 20px;
   height: 60px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.logo { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 20px; color: var(--cream); cursor: pointer; }
+.logo { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 20px; color: #0F0F0F; cursor: pointer; }
 .progress-section { flex: 1; max-width: 320px; margin: 0 16px; }
 .progress-track { height: 2px; background: var(--border); border-radius: 1px; }
 .progress-fill { height: 100%; background: var(--violet); border-radius: 1px; transition: width 0.5s ease; width: 0%; }
 .progress-text { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); margin-top: 5px; text-align: center; }
 .topbar-action { font-size: 13px; color: var(--muted); cursor: pointer; padding: 6px 10px; border-radius: 4px; background: none; border: none; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
-.topbar-action:hover { color: var(--cream); }
+.topbar-action:hover { color: #0F0F0F; }
 
 /* ═══════════════════════
    WELCOME
@@ -501,10 +513,10 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
   background: radial-gradient(ellipse at 50% 20%, rgba(155,143,255,0.08) 0%, transparent 60%);
 }
 .welcome-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--violet); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 24px; }
-.welcome-h1 { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(36px, 8vw, 64px); line-height: 1.05; color: var(--cream); margin-bottom: 20px; letter-spacing: -0.02em; }
+.welcome-h1 { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(36px, 8vw, 64px); line-height: 1.05; color: #0F0F0F; margin-bottom: 20px; letter-spacing: -0.02em; }
 .welcome-h1 em { color: var(--violet); font-style: normal; }
-.welcome-body { font-size: 16px; color: var(--cream2); line-height: 1.7; max-width: 440px; margin: 0 auto 32px; font-weight: 300; }
-.welcome-body strong { color: var(--cream); font-weight: 500; }
+.welcome-
+.welcome-body strong { color: #0F0F0F; font-weight: 500; }
 .welcome-meta { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
 .welcome-meta span { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .welcome-meta span::before { content: '·'; color: var(--border2); }
@@ -518,7 +530,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .btn-primary.mint { background: var(--mint); }
 .btn-primary.mint:hover { background: #00eabd; }
 .btn-secondary { background: transparent; color: var(--muted); font-size: 14px; padding: 14px 20px; border: 1px solid var(--border2); border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; width: 100%; max-width: 360px; display: block; margin: 12px auto 0; }
-.btn-secondary:hover { border-color: var(--subtle); color: var(--cream); }
+.btn-secondary:hover { border-color: var(--subtle); color: #0F0F0F; }
 
 /* ═══════════════════════
    RESUME UPLOAD
@@ -526,7 +538,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 #screen-upload { padding: 80px 0 0; }
 .upload-inner { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
 .upload-icon { width: 72px; height: 72px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 28px; }
-.upload-h { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 28px; color: var(--cream); margin-bottom: 10px; }
+.upload-h { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 28px; color: #0F0F0F; margin-bottom: 10px; }
 .upload-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
 .upload-zone {
   width: 100%; max-width: 400px; border: 1.5px dashed var(--border2); border-radius: 12px;
@@ -552,7 +564,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .scan-results.active { display: flex; }
 .scan-success { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
 .scan-check { width: 28px; height: 28px; background: var(--mint-dim); border: 1px solid var(--mint); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--mint); flex-shrink: 0; }
-.scan-success-text { font-size: 15px; color: var(--cream); }
+.scan-success-text { font-size: 15px; color: #0F0F0F; }
 .scan-success-sub { font-size: 12px; color: var(--muted); }
 
 .found-section { margin-bottom: 24px; }
@@ -571,7 +583,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .role-checkbox-check { font-size: 11px; color: white; display: none; font-weight: 700; }
 .role-check-item.picked .role-checkbox-check { display: block; }
 .role-info { flex: 1; }
-.role-title-text { font-size: 14px; font-weight: 500; color: var(--cream); }
+.role-title-text { font-size: 14px; font-weight: 500; color: #0F0F0F; }
 .role-co-text { font-size: 12px; color: var(--muted); margin-top: 1px; }
 .role-date-text { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--subtle); }
 
@@ -582,12 +594,12 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 ═══════════════════════ */
 #screen-setup { padding: 80px 0 0; }
 .setup-inner { flex: 1; display: flex; flex-direction: column; padding: 32px 24px; max-width: 480px; width: 100%; margin: 0 auto; }
-.setup-greeting { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 30px; color: var(--cream); margin-bottom: 6px; }
+.setup-greeting { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 30px; color: #0F0F0F; margin-bottom: 6px; }
 .setup-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
 
 .field-group { margin-bottom: 22px; }
 .field-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 7px; display: block; }
-.field-input { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--border2); padding: 10px 0; color: var(--cream); font-size: 17px; font-family: 'DM Sans', sans-serif; font-weight: 300; outline: none; transition: border-color 0.2s; }
+.field-input { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--border2); padding: 10px 0; color: #0F0F0F; font-size: 17px; font-family: 'DM Sans', sans-serif; font-weight: 300; outline: none; transition: border-color 0.2s; }
 .field-input:focus { border-bottom-color: var(--violet); }
 .field-input::placeholder { color: var(--subtle); }
 .field-hint { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--subtle); margin-top: 5px; }
@@ -597,7 +609,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .type-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; }
 .type-card:hover { border-color: var(--border2); }
 .type-card.on { border-color: var(--violet); background: var(--violet-dim); }
-.type-card-label { font-size: 14px; font-weight: 500; color: var(--cream); margin-bottom: 3px; }
+.type-card-label { font-size: 14px; font-weight: 500; color: #0F0F0F; margin-bottom: 3px; }
 .type-card-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
 .status-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -619,20 +631,20 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 }
 .sec-letter { width: 64px; height: 64px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--violet); margin-bottom: 24px; }
 .sec-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--violet); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
-.sec-title { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(28px, 6vw, 42px); color: var(--cream); margin-bottom: 14px; line-height: 1.1; }
+.sec-title { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(28px, 6vw, 42px); color: #0F0F0F; margin-bottom: 14px; line-height: 1.1; }
 .sec-desc { font-size: 15px; color: var(--cream2); line-height: 1.7; font-weight: 300; max-width: 420px; }
 
 /* QUESTION BODY */
-.q-body { flex: 1; padding: 32px 24px 0; max-width: 560px; width: 100%; margin: 0 auto; }
+.q-
 .q-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--violet); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 .q-tag::before { content: ''; width: 16px; height: 1px; background: var(--violet); }
-.q-headline { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(22px, 5vw, 34px); color: var(--cream); line-height: 1.2; margin-bottom: 10px; }
+.q-headline { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(22px, 5vw, 34px); color: #0F0F0F; line-height: 1.2; margin-bottom: 10px; }
 .q-why { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 8px; font-weight: 300; }
 .q-example { font-size: 13px; color: var(--subtle); font-style: italic; line-height: 1.5; margin-bottom: 24px; padding: 10px 14px; border-left: 2px solid var(--border); border-radius: 0 4px 4px 0; }
 .q-example strong { color: var(--cream3); font-style: normal; font-weight: 400; }
 
 /* TEXT INPUT */
-.q-textarea { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--border2); padding: 12px 0; color: var(--cream); font-size: 17px; font-family: 'DM Sans', sans-serif; font-weight: 300; resize: none; min-height: 72px; outline: none; line-height: 1.6; transition: border-color 0.2s; margin-bottom: 6px; }
+.q-textarea { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--border2); padding: 12px 0; color: #0F0F0F; font-size: 17px; font-family: 'DM Sans', sans-serif; font-weight: 300; resize: none; min-height: 72px; outline: none; line-height: 1.6; transition: border-color 0.2s; margin-bottom: 6px; }
 .q-textarea:focus { border-bottom-color: var(--violet); }
 .q-textarea::placeholder { color: var(--subtle); font-style: italic; }
 .char-hint { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--subtle); text-align: right; margin-bottom: 24px; }
@@ -649,7 +661,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .choice-item.on-mint .choice-dot { background: var(--mint); border-color: var(--mint); }
 .choice-square .choice-dot { border-radius: 4px; }
 .choice-text { flex: 1; }
-.choice-label { font-size: 15px; color: var(--cream); line-height: 1.3; }
+.choice-label { font-size: 15px; color: #0F0F0F; line-height: 1.3; }
 .choice-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 /* TAP TO RANK */
@@ -659,7 +671,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .tap-item.ranked { border-color: var(--violet); background: var(--violet-dim); }
 .tap-num { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); flex-shrink: 0; transition: all 0.18s; font-weight: 500; }
 .tap-item.ranked .tap-num { background: var(--violet); border-color: var(--violet); color: white; }
-.tap-name { flex: 1; font-size: 15px; color: var(--cream); }
+.tap-name { flex: 1; font-size: 15px; color: #0F0F0F; }
 .tap-hint { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
 
 /* NEEDS RANK */
@@ -670,19 +682,19 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .need-num { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); flex-shrink: 0; transition: all 0.18s; font-weight: 500; margin-top: 1px; }
 .need-item.ranked .need-num { background: var(--mint); border-color: var(--mint); color: #0A0A0A; }
 .need-content { flex: 1; }
-.need-label { font-size: 15px; font-weight: 500; color: var(--cream); margin-bottom: 3px; }
+.need-label { font-size: 15px; font-weight: 500; color: #0F0F0F; margin-bottom: 3px; }
 .need-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
 /* SKILLS */
 .skill-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .skill-chip { padding: 9px 16px; border-radius: 100px; font-size: 13px; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--muted); transition: all 0.18s; user-select: none; }
 .skill-chip:hover { color: var(--cream2); border-color: var(--border2); }
-.skill-chip.on { border-color: var(--violet); background: var(--violet-dim); color: var(--cream); }
+.skill-chip.on { border-color: var(--violet); background: var(--violet-dim); color: #0F0F0F; }
 .skill-tier-section { margin-bottom: 28px; }
 .skill-tier-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
 .skill-tier-items { display: flex; flex-direction: column; gap: 8px; }
 .skill-tier-row { display: flex; align-items: center; gap: 12px; }
-.skill-tier-name { font-size: 14px; color: var(--cream); flex: 1; min-width: 0; }
+.skill-tier-name { font-size: 14px; color: #0F0F0F; flex: 1; min-width: 0; }
 .skill-tiers { display: flex; gap: 5px; }
 .skill-tier-btn { padding: 7px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.15s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .skill-tier-btn:hover { border-color: var(--border2); color: var(--cream2); }
@@ -692,12 +704,12 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 
 /* DEPTH CARDS */
 .depth-row { margin-bottom: 18px; }
-.depth-role-name { font-size: 15px; font-weight: 500; color: var(--cream); margin-bottom: 8px; }
+.depth-role-name { font-size: 15px; font-weight: 500; color: #0F0F0F; margin-bottom: 8px; }
 .depth-role-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
 .depth-levels { display: flex; gap: 7px; }
 .depth-level { flex: 1; padding: 10px 4px; text-align: center; font-size: 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.15s; line-height: 1.3; }
 .depth-level:hover { border-color: var(--border2); color: var(--cream2); }
-.depth-level.on { border-color: var(--violet); background: var(--violet-dim); color: var(--cream); font-weight: 500; }
+.depth-level.on { border-color: var(--violet); background: var(--violet-dim); color: #0F0F0F; font-weight: 500; }
 .depth-level.on-gold { border-color: var(--amber); background: var(--amber-dim); color: var(--amber); font-weight: 500; }
 
 /* ARCHETYPE */
@@ -705,7 +717,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .arch-card { padding: 16px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.18s; }
 .arch-card:hover { border-color: var(--border2); }
 .arch-card.on { border-color: var(--violet); background: var(--violet-dim); }
-.arch-card-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 5px; }
+.arch-card-name { font-size: 14px; font-weight: 600; color: #0F0F0F; margin-bottom: 5px; }
 .arch-card-str { font-size: 11px; color: var(--mint); margin-bottom: 2px; }
 .arch-card-edge { font-size: 11px; color: var(--amber); }
 .arch-hint { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
@@ -726,10 +738,10 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .impact-remove-btn { font-size: 12px; color: var(--subtle); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 3px 7px; border-radius: 4px; transition: color 0.2s; }
 .impact-remove-btn:hover { color: var(--coral); }
 .impact-field-lbl { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-.impact-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); padding: 8px 0; color: var(--cream); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; margin-bottom: 12px; }
+.impact-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); padding: 8px 0; color: #0F0F0F; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; margin-bottom: 12px; }
 .impact-input:focus { border-bottom-color: var(--violet); }
 .impact-input::placeholder { color: var(--subtle); font-style: italic; }
-.impact-ta { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); padding: 8px 0; color: var(--cream); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; resize: none; min-height: 56px; line-height: 1.6; transition: border-color 0.2s; }
+.impact-ta { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); padding: 8px 0; color: #0F0F0F; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; resize: none; min-height: 56px; line-height: 1.6; transition: border-color 0.2s; }
 .impact-ta:focus { border-bottom-color: var(--violet); }
 .impact-ta::placeholder { color: var(--subtle); font-style: italic; }
 .add-card-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: transparent; border: 1px dashed var(--border2); border-radius: 10px; color: var(--muted); font-size: 14px; cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif; margin-bottom: 24px; }
@@ -748,20 +760,20 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .plus-card.on { border-color: var(--violet); background: var(--violet-dim); }
 .plus-card-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .plus-card-content { flex: 1; }
-.plus-card-name { font-size: 15px; font-weight: 500; color: var(--cream); margin-bottom: 2px; }
+.plus-card-name { font-size: 15px; font-weight: 500; color: #0F0F0F; margin-bottom: 2px; }
 .plus-card-desc { font-size: 12px; color: var(--muted); }
 .plus-card-arrow { font-size: 16px; color: var(--subtle); transition: color 0.2s; }
 .plus-card.on .plus-card-arrow { color: var(--violet); }
 
 .plus-form { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 10px; }
-.plus-form-title { font-size: 14px; font-weight: 500; color: var(--cream); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.plus-form-title { font-size: 14px; font-weight: 500; color: #0F0F0F; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 .plus-close { font-size: 12px; color: var(--subtle); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
 .plus-close:hover { color: var(--coral); }
 
 /* Q NAV */
 .q-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; max-width: 560px; width: 100%; margin: 0 auto; position: sticky; bottom: 0; background: linear-gradient(to top, var(--bg) 60%, transparent); padding-top: 32px; }
 .q-nav-back { background: transparent; color: var(--muted); font-size: 14px; padding: 13px 18px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-.q-nav-back:hover { color: var(--cream); border-color: var(--border2); }
+.q-nav-back:hover { color: #0F0F0F; border-color: var(--border2); }
 .q-nav-next { background: var(--violet); color: #0A0A0A; font-weight: 600; padding: 13px 28px; border-radius: 8px; font-size: 15px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; min-width: 120px; }
 .q-nav-next:hover { background: #b0a6ff; }
 .q-nav-next.mint { background: var(--mint); }
@@ -769,7 +781,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 
 /* GENERATING */
 #screen-generating { align-items: center; justify-content: center; text-align: center; padding: 40px 24px; }
-.gen-logo { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 44px; color: var(--cream); margin-bottom: 40px; }
+.gen-logo { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 44px; color: #0F0F0F; margin-bottom: 40px; }
 .gen-msg { font-size: 16px; color: var(--cream2); margin-bottom: 40px; min-height: 24px; transition: opacity 0.4s; font-weight: 300; }
 .gen-track { width: 240px; height: 2px; background: var(--border); border-radius: 1px; margin: 0 auto 40px; }
 .gen-fill { height: 100%; background: var(--violet); border-radius: 1px; transition: width 0.8s ease; }
@@ -789,7 +801,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .share-btn { background: var(--violet); color: #0A0A0A; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
 .p-header { padding-bottom: 36px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-.p-name { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(36px, 7vw, 54px); color: var(--cream); line-height: 1.0; margin-bottom: 12px; }
+.p-name { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(36px, 7vw, 54px); color: #0F0F0F; line-height: 1.0; margin-bottom: 12px; }
 .p-headline-text { font-size: 16px; color: var(--cream2); line-height: 1.5; margin-bottom: 16px; font-weight: 300; max-width: 520px; }
 .p-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
 .p-badge { padding: 5px 12px; border-radius: 100px; font-size: 11px; font-family: 'DM Mono', monospace; border: 1px solid; }
@@ -799,7 +811,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .p-url-line { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--subtle); }
 .p-url-line span { color: var(--violet); }
 
-.p-pull { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(17px, 3vw, 22px); color: var(--cream); line-height: 1.55; padding: 24px 26px; background: var(--surface); border-left: 3px solid var(--violet); border-radius: 0 10px 10px 0; margin-bottom: 28px; }
+.p-pull { font-family: 'DM Serif Display', serif; font-style: italic; font-size: clamp(17px, 3vw, 22px); color: #0F0F0F; line-height: 1.55; padding: 24px 26px; background: var(--surface); border-left: 3px solid var(--violet); border-radius: 0 10px 10px 0; margin-bottom: 28px; }
 .p-arc { font-size: 14px; color: var(--muted); line-height: 1.8; padding-left: 18px; border-left: 2px solid var(--border); margin-bottom: 48px; font-style: italic; max-width: 560px; }
 
 .p-section { margin-bottom: 48px; }
@@ -810,7 +822,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .exp-item { padding: 20px 0; border-bottom: 1px solid var(--border); }
 .exp-item:last-child { border-bottom: none; }
 .exp-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; flex-wrap: wrap; gap: 4px; }
-.exp-role { font-size: 15px; font-weight: 600; color: var(--cream); }
+.exp-role { font-size: 15px; font-weight: 600; color: #0F0F0F; }
 .exp-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--subtle); }
 .exp-co { font-size: 13px; color: var(--muted); margin-bottom: 7px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ep { padding: 2px 8px; border-radius: 100px; font-size: 10px; font-family: 'DM Mono', monospace; border: 1px solid; }
@@ -822,7 +834,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .exp-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
 .ic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; }
-.ic-title { font-size: 15px; font-weight: 600; color: var(--cream); margin-bottom: 7px; }
+.ic-title { font-size: 15px; font-weight: 600; color: #0F0F0F; margin-bottom: 7px; }
 .ic-text { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
 .ins-row { margin-bottom: 20px; }
@@ -830,24 +842,24 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .ins-txt { font-size: 14px; color: var(--cream2); line-height: 1.7; }
 
 .qc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 10px; }
-.qc-text { font-size: 13px; color: var(--cream); line-height: 1.65; font-style: italic; margin-bottom: 8px; }
+.qc-text { font-size: 13px; color: #0F0F0F; line-height: 1.65; font-style: italic; margin-bottom: 8px; }
 .qc-attr { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
 
 .vals-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .vals-col-lbl { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
 .val-row-p { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
 .val-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--violet); min-width: 16px; }
-.val-name { font-size: 14px; color: var(--cream); }
+.val-name { font-size: 14px; color: #0F0F0F; }
 .need-row-p { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 9px; }
 .need-n { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--mint); min-width: 16px; padding-top: 2px; }
-.need-lbl-p { font-size: 14px; color: var(--cream); }
+.need-lbl-p { font-size: 14px; color: #0F0F0F; }
 .need-desc-p { font-size: 11px; color: var(--muted); }
 
 .arch-display { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
 .arch-prim { flex: 1; min-width: 160px; background: var(--surface); border: 1px solid var(--violet); border-radius: 10px; padding: 16px 18px; }
 .arch-sec { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
 .arch-lbl { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-.arch-name-p { font-size: 16px; font-weight: 600; color: var(--cream); margin-bottom: 5px; }
+.arch-name-p { font-size: 16px; font-weight: 600; color: #0F0F0F; margin-bottom: 5px; }
 .arch-str-p { font-size: 12px; color: var(--mint); margin-bottom: 2px; }
 .arch-edge-p { font-size: 12px; color: var(--amber); }
 .l-belief { background: var(--surface); border-left: 2px solid var(--violet); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13px; color: var(--cream2); font-style: italic; line-height: 1.6; margin-top: 14px; }
@@ -867,7 +879,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 .plus-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
 .plus-item:last-child { border-bottom: none; }
 .plus-item-type { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--violet); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
-.plus-item-title { font-size: 15px; font-weight: 500; color: var(--cream); margin-bottom: 4px; }
+.plus-item-title { font-size: 15px; font-weight: 500; color: #0F0F0F; margin-bottom: 4px; }
 .plus-item-desc { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .plus-item-link { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--violet); }
 
@@ -881,12 +893,12 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
   .skill-tiers { flex-direction: column; gap: 4px; }
 }
 
+.screen{display:none;min-height:100vh;flex-direction:column;padding-top:60px;}
+.screen.active{display:flex;}
+#screen-welcome.active{display:block;padding-top:0;}
 
-.screen { display:none !important; }
-.screen.active { display:flex !important; flex-direction:column; min-height:100vh; }
-#screen-welcome { display:block !important; }
-#screen-welcome.active { display:block !important; }
-
+/* FORCE LIGHT THEME */
+html, body { background: #F5F0E8 !important; color: #0F0F0F !important; }
 </style>
 </head>
 <body>
@@ -1073,31 +1085,20 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
     </div>
     <div class="modal-body">
 
-      <!-- HEADER -->
       <div class="m-header">
-        <div style="display:flex;align-items:flex-start;gap:18px;margin-bottom:16px">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#A78BFA,#1E3A5F);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-style:italic;font-size:22px;color:white;flex-shrink:0">J</div>
-          <div style="flex:1">
-            <div class="m-name">Jordan Hayes</div>
-            <div class="m-title">Head of Growth · GTM Strategist · New York, NY</div>
-            <div class="m-badges">
-              <span class="m-badge mb-m">● Open now</span>
-              <span class="m-badge mb-l">Full-time</span>
-              <span class="m-badge mb-n">11 yrs exp</span>
-              <span class="m-badge mb-n">ENTJ</span>
-            </div>
-          </div>
+        <div class="m-name">Jordan Hayes</div>
+        <div class="m-title">Head of Growth · GTM Strategist · New York, NY</div>
+        <div class="m-badges">
+          <span class="m-badge mb-m">● Open now</span>
+          <span class="m-badge mb-l">Full-time</span>
+          <span class="m-badge mb-n">ENTJ</span>
+          <span class="m-badge mb-n">Enneagram 3w4</span>
         </div>
         <div class="m-url">marquee.bio/<span>jordanhayes</span></div>
       </div>
 
-      <!-- PULL QUOTE -->
       <div class="m-pull">"I find the growth lever that everyone else missed. Every company I've joined has scaled faster because we stopped guessing and started building systems."</div>
 
-      <!-- CAREER ARC -->
-      <div style="font-size:14px;color:var(--gray);line-height:1.8;padding-left:18px;border-left:2px solid var(--border);margin-bottom:32px;font-style:italic">I've spent 11 years at the intersection of product and revenue — joining companies right before their inflection point and building the growth infrastructure that made scale possible. The through-line: I show up when the old playbook stops working and leave behind systems that run without me.</div>
-
-      <!-- STATS -->
       <div class="m-stats">
         <div class="m-stat"><div class="m-stat-v">11</div><div class="m-stat-l">Years exp.</div></div>
         <div class="m-stat"><div class="m-stat-v">4</div><div class="m-stat-l">Companies</div></div>
@@ -1105,139 +1106,26 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
         <div class="m-stat"><div class="m-stat-v">$40M</div><div class="m-stat-l">Pipeline built</div></div>
       </div>
 
-      <!-- EXPERIENCE -->
       <div class="m-section">
         <div class="m-sec-label">E · Experience</div>
-        <div class="m-exp-row">
-          <div>
-            <div class="m-exp-role">Head of Growth</div>
-            <div class="m-exp-co">Lattice · Series B · HR Tech <span class="m-badge mb-l" style="font-size:9px;padding:2px 7px">Current</span></div>
-            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Built the first demand gen function from scratch. Grew inbound pipeline 3× in 18 months. Hired and managed a team of 6 across paid, content, and lifecycle.</div>
-          </div>
-          <div class="m-exp-date">2022–Now</div>
-        </div>
-        <div class="m-exp-row">
-          <div>
-            <div class="m-exp-role">Growth Lead</div>
-            <div class="m-exp-co">Figma · Pre-IPO → $20B valuation <span class="m-badge mb-n" style="font-size:9px;padding:2px 7px">IPO exit</span></div>
-            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Owned self-serve growth and PLG expansion. Rebuilt the activation flow, improving 30-day retention from 34% to 61%. Collaborated directly with product on pricing and packaging.</div>
-          </div>
-          <div class="m-exp-date">2019–2022</div>
-        </div>
-        <div class="m-exp-row">
-          <div>
-            <div class="m-exp-role">Senior Growth Manager</div>
-            <div class="m-exp-co">Notion · Seed → Series A <span class="m-badge mb-m" style="font-size:9px;padding:2px 7px">First hire</span></div>
-            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Employee 23. Built the referral program that drove 40% of early user growth. Designed the team onboarding flow still in use today.</div>
-          </div>
-          <div class="m-exp-date">2017–2019</div>
-        </div>
-        <div class="m-exp-row">
-          <div>
-            <div class="m-exp-role">Account Executive</div>
-            <div class="m-exp-co">HubSpot · Enterprise <span class="m-badge mb-n" style="font-size:9px;padding:2px 7px">Top 1% quota</span></div>
-            <div style="font-size:12px;color:var(--gray2);line-height:1.6;margin-top:5px">Closed $2.8M ARR in year 2. Specialized in mid-market SaaS. This is where I learned that the best growth is just a better sales process, systematized.</div>
-          </div>
-          <div class="m-exp-date">2014–2017</div>
-        </div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Head of Growth</div><div class="m-exp-co">Lattice · Series B</div></div><div class="m-exp-date">2022–Present</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Growth Lead</div><div class="m-exp-co">Figma · Pre-IPO → $20B</div></div><div class="m-exp-date">2019–2022</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Sr. Growth Manager</div><div class="m-exp-co">Notion · Seed → Series A</div></div><div class="m-exp-date">2017–2019</div></div>
+        <div class="m-exp-row"><div><div class="m-exp-role">Account Executive</div><div class="m-exp-co">HubSpot · Top 1% quota</div></div><div class="m-exp-date">2014–2017</div></div>
       </div>
 
-      <!-- LEADERSHIP -->
       <div class="m-section">
         <div class="m-sec-label">L · Leadership</div>
         <div class="m-arch">
-          <div class="m-arch-card primary">
-            <div class="m-arch-lbl">Primary archetype</div>
-            <div class="m-arch-name">The Strategist</div>
-            <div class="m-arch-str">↑ Patterns, positioning, long bets</div>
-            <div style="font-size:11px;color:var(--gray2);margin-top:2px">→ Can be slow to act without full picture</div>
-          </div>
-          <div class="m-arch-card">
-            <div class="m-arch-lbl">Secondary</div>
-            <div class="m-arch-name">The Builder</div>
-            <div class="m-arch-str">↑ 0→1, speed, systems from scratch</div>
-          </div>
-        </div>
-        <div class="m-insight" style="margin-top:14px">
-          <div class="m-insight-lbl">Leadership style</div>
-          <div class="m-insight-txt">I hire people smarter than me in their lane, give them real ownership, and hold a high bar on outcomes not methods. I find the 10% of decisions that actually matter and leave everything else to the team.</div>
+          <div class="m-arch-card primary"><div class="m-arch-lbl">Primary archetype</div><div class="m-arch-name">The Strategist</div><div class="m-arch-str">↑ Patterns, positioning, bets</div></div>
+          <div class="m-arch-card"><div class="m-arch-lbl">Secondary</div><div class="m-arch-name">The Builder</div><div class="m-arch-str">↑ 0→1, speed, systems</div></div>
         </div>
         <div class="m-insight">
-          <div class="m-insight-lbl">What I learned from failure</div>
-          <div class="m-insight-txt">I shipped a major product-led growth initiative at Figma that flopped because I optimized for activation instead of retention. The lesson: the metric you choose to move is a strategic bet, not a tactical one. Choose wrong and you build the wrong machine.</div>
-        </div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What I believe that most leaders don't</div>
-          <div class="m-insight-txt">"Most people think culture is about values on a wall. It's actually about what you tolerate. The things leaders let slide define the culture more than anything they say out loud."</div>
+          <div class="m-insight-lbl">Leadership belief</div>
+          <div class="m-insight-txt">"Growth is a system, not a campaign. Most teams are optimizing the wrong thing at every stage — I find the constraint and remove it."</div>
         </div>
       </div>
 
-      <!-- VALUES -->
-      <div class="m-section">
-        <div class="m-sec-label">V · Values</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:16px">
-          <div>
-            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Top values</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">Impact</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">Accountability</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">Excellence</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">4</span><span style="font-size:14px;color:var(--ink)">Curiosity</span></div>
-              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-dk);font-weight:500;min-width:16px">5</span><span style="font-size:14px;color:var(--ink)">Directness</span></div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">What I need at work</div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">1</span><div><div style="font-size:14px;color:var(--ink)">I matter</div><div style="font-size:11px;color:var(--gray2)">My work has purpose and visible impact.</div></div></div>
-              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">2</span><div><div style="font-size:14px;color:var(--ink)">I'm enabled</div><div style="font-size:11px;color:var(--gray2)">Tools, data, and support to do my best.</div></div></div>
-              <div style="display:flex;gap:9px;align-items:flex-start"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px;padding-top:2px">3</span><div><div style="font-size:14px;color:var(--ink)">I'm respected</div><div style="font-size:11px;color:var(--gray2)">Trusted, heard, treated fairly.</div></div></div>
-            </div>
-          </div>
-        </div>
-        <div style="padding:12px 16px;background:#ECFDF5;border-radius:8px;font-size:13px;color:var(--gray);font-style:italic;line-height:1.6">"A great work culture is one where the best idea wins regardless of who said it — and poor performance is addressed before it becomes everyone's problem."</div>
-      </div>
-
-      <!-- IMPACT -->
-      <div class="m-section">
-        <div class="m-sec-label">I · Impact — Career Highlights</div>
-        <div class="ic-card" style="margin-bottom:10px">
-          <div class="ic-t">3× Pipeline Growth at Lattice</div>
-          <div class="ic-n">Built the growth function from zero — hired the team, chose the stack, designed the playbook. Inbound pipeline grew from $4M to $13M ARR contribution in 18 months. Core lever: shifted budget from brand to high-intent SEO and bottom-of-funnel retargeting.</div>
-        </div>
-        <div class="ic-card" style="margin-bottom:10px">
-          <div class="ic-t">Rebuilt Figma Activation → 34% to 61% Retention</div>
-          <div class="ic-n">Identified that 60% of churned users never completed a second project. Redesigned the Day 1 experience around template completion instead of blank canvas. 30-day retention improved from 34% to 61% in 90 days. This one change compounded across every acquisition channel.</div>
-        </div>
-        <div class="ic-card">
-          <div class="ic-t">Notion Referral Program — 40% of Early Growth</div>
-          <div class="ic-n">Designed and shipped Notion's first referral program as employee 23. Drove 40% of user acquisition in the first year post-launch. The mechanic: give credit, not cash — turned sharing into a status signal for early adopters.</div>
-        </div>
-      </div>
-
-      <!-- INSIGHTS -->
-      <div class="m-section">
-        <div class="m-sec-label">I · Insights</div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What most people in my field get wrong</div>
-          <div class="m-insight-txt">Most growth teams chase channels instead of conversion. The real leverage is almost always in the middle of the funnel — not the top. I've seen companies 10× their CAC efficiency just by fixing what happens after the click.</div>
-        </div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What I changed my mind about</div>
-          <div class="m-insight-txt">I used to think data was the answer to every growth question. Now I know data tells you what happened — it almost never tells you why. The best insights I've had came from a 20-minute user interview, not a dashboard.</div>
-        </div>
-        <div class="m-insight">
-          <div class="m-insight-lbl">What I bring that doesn't show up in a JD</div>
-          <div class="m-insight-txt">I can read a dataset and tell you what question it's actually answering — then reframe the whole strategy around the right one. Most teams are solving the wrong problem with great execution.</div>
-        </div>
-        <div style="margin-top:20px">
-          <div class="m-insight-lbl" style="margin-bottom:10px">What colleagues say</div>
-          <div class="qc-card" style="margin-bottom:8px"><div class="qc-t">"Jordan has this rare ability to zoom out to strategy and zoom in to a specific funnel step in the same conversation — and be right about both."</div><div class="qc-a">Priya K. · VP Product, Lattice</div></div>
-          <div class="qc-card"><div class="qc-t">"The growth system Jordan built is still running 2 years after he left. That's the real test."</div><div class="qc-a">Marcus W. · CEO, Notion (early)</div></div>
-        </div>
-      </div>
-
-      <!-- SKILLS -->
       <div class="m-section">
         <div class="m-sec-label">S · Skills</div>
         <div class="m-skill-group">
@@ -1253,9 +1141,8 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
           <div class="m-chips">
             <span class="m-chip mc-adv">Product Marketing</span>
             <span class="m-chip mc-adv">Revenue Operations</span>
-            <span class="m-chip mc-adv">Analytics & Attribution</span>
+            <span class="m-chip mc-adv">Analytics</span>
             <span class="m-chip mc-adv">Sales Enablement</span>
-            <span class="m-chip mc-adv">PLG Strategy</span>
           </div>
         </div>
         <div class="m-skill-group">
@@ -1265,40 +1152,49 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
             <span class="m-chip mc-prof">Content Strategy</span>
             <span class="m-chip mc-prof">CRM Systems</span>
             <span class="m-chip mc-prof">Partner Marketing</span>
-            <span class="m-chip mc-prof">Email Lifecycle</span>
           </div>
         </div>
       </div>
 
-      <!-- ELVIIS+ -->
       <div class="m-section">
-        <div class="m-sec-label">+ Beyond the Resume</div>
-        <div class="plus-si">
-          <div class="plus-si-tp">📰 Newsletter</div>
-          <div class="plus-si-ti">Growth Mechanics</div>
-          <div class="plus-si-d">Weekly breakdown of growth strategy for B2B SaaS — 4,200 subscribers. Featured in Lenny's Newsletter and First Round Review.</div>
-          <div class="plus-si-u">substack.com/jordanhayes</div>
+        <div class="m-sec-label">I · Insights</div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What most people get wrong</div>
+          <div class="m-insight-txt">Most growth teams chase channels instead of understanding conversion. The real leverage is almost always in the middle of the funnel — not the top.</div>
         </div>
-        <div class="plus-si">
-          <div class="plus-si-tp">💼 Portfolio</div>
-          <div class="plus-si-ti">Lattice Growth Playbook — Full Case Study</div>
-          <div class="plus-si-d">36-page breakdown of how we built the demand gen function: strategy, team structure, channel mix, and what didn't work.</div>
-          <div class="plus-si-u">notion.so/jordan/lattice-case-study</div>
+        <div class="m-insight">
+          <div class="m-insight-lbl">What I bring that doesn't show up in a JD</div>
+          <div class="m-insight-txt">I can read a data set and tell you what question it's actually answering — then reframe the whole strategy around the right one.</div>
         </div>
-        <div class="plus-si">
-          <div class="plus-si-tp">🎤 Speaking</div>
-          <div class="plus-si-ti">SaaStr 2024 — "PLG After Product-Market Fit: What Changes"</div>
-          <div class="plus-si-d">45-min session on why PLG playbooks break at Series B and how to evolve them.</div>
-          <div class="plus-si-u">saastr.com/sessions/jordan-hayes-2024</div>
-        </div>
-        <div class="plus-si">
-          <div class="plus-si-tp">🌐 Community</div>
-          <div class="plus-si-ti">Advisor — Reforge Growth Program</div>
-          <div class="plus-si-d">Curriculum advisor and guest lecturer since 2022. Review growth case studies and guest on 2 cohort calls per year.</div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-sec-label">V · Values</div>
+        <div style="display:flex;gap:28px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Top values</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">Impact</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">Accountability</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">Excellence</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">4</span><span style="font-size:14px;color:var(--ink)">Curiosity</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--lav-mid);font-weight:500;min-width:16px">5</span><span style="font-size:14px;color:var(--ink)">Directness</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--gray2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">What I need at work</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">1</span><span style="font-size:14px;color:var(--ink)">I matter</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">2</span><span style="font-size:14px;color:var(--ink)">I'm enabled</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mint-dk);font-weight:500;min-width:16px">3</span><span style="font-size:14px;color:var(--ink)">I contribute</span></div>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
+  </div>
+</div>
 </div>
 
 <div class="screen" id="screen-upload">
@@ -1310,7 +1206,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
     </div>
     <div class="upload-or">or</div>
     <button class="btn-primary" onclick="simulateScan()" style="max-width:280px;padding:14px 24px;font-size:14px;">Browse files</button>
-    
+    <button class="btn-secondary" onclick="simulateScan()" style="max-width:280px;font-size:13px;margin-top:10px;">Use a sample resume</button>
   </div>
 
   <div class="scan-state" id="scan-state">
@@ -1330,27 +1226,13 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 
     <div class="found-section">
       <div class="found-label">Career themes — AI identified</div>
-      <div class="theme-chips">
-        <div class="theme-chip tc-v">20+ years marketing & growth</div>
-        <div class="theme-chip tc-v">Full-stack CMO</div>
-        <div class="theme-chip tc-a">Early hire at 4 startups</div>
-        <div class="theme-chip tc-m">B2B + DTC + Creator economy</div>
-        <div class="theme-chip tc-a">Founder & operator</div>
-        <div class="theme-chip tc-m">SaaS & platform marketing</div>
-        <div class="theme-chip tc-v">Scaled 0→M&A</div>
-        <div class="theme-chip tc-a">Influencer & digital strategy</div>
-      </div>
+      <div class="theme-chips" id="theme-chips-container"></div>
     </div>
 
     <div class="found-section">
       <div class="found-label">Which roles were most transformational? Pick 1–3.</div>
       <div class="scan-note">Not the most prestigious — the ones that actually shaped who you are professionally.</div>
-      <div class="roles-list">
-        <div class="role-check-item" onclick="toggleRole(this)"><div class="role-checkbox"><div class="role-checkbox-check">✓</div></div><div class="role-info"><div class="role-title-text">Co-Founder & CEO — Lemon Digital HQ</div><div class="role-co-text">Agency · 7-figure revenue</div></div><div class="role-date-text">2020–25</div></div>
-        <div class="role-check-item picked" onclick="toggleRole(this)"><div class="role-checkbox"><div class="role-checkbox-check">✓</div></div><div class="role-info"><div class="role-title-text">Interim CMO/COO — Moe Assist</div><div class="role-co-text">Creator economy · Raised $3M · M&A exit</div></div><div class="role-date-text">2019–23</div></div>
-        <div class="role-check-item picked" onclick="toggleRole(this)"><div class="role-checkbox"><div class="role-checkbox-check">✓</div></div><div class="role-info"><div class="role-title-text">VP Marketing — Hello Alice</div><div class="role-co-text">First exec hire · Seed → Series A</div></div><div class="role-date-text">2017–19</div></div>
-        <div class="role-check-item" onclick="toggleRole(this)"><div class="role-checkbox"><div class="role-checkbox-check">✓</div></div><div class="role-info"><div class="role-title-text">VP Client Services — rewardStyle (LTK)</div><div class="role-co-text">50+ person team · 25% YOY growth</div></div><div class="role-date-text">2015–17</div></div>
-        <div class="role-check-item" onclick="toggleRole(this)"><div class="role-checkbox"><div class="role-checkbox-check">✓</div></div><div class="role-info"><div class="role-title-text">Inside Sales & CSM — Salesforce</div><div class="role-co-text">Employee #300 · First 6 CSMs</div></div><div class="role-date-text">2002–06</div></div>
+      <div class="roles-list" id="roles-list-container"></div>
       </div>
     </div>
 
@@ -1378,7 +1260,7 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
     <div class="field-group">
       <label class="field-label">Your Marquee URL</label>
       <input class="field-input" id="s-username" value="" placeholder="yourname" oninput="document.getElementById('url-prev').textContent=this.value||'yourname'">
-      <div class="field-hint">marquee.bio/<span id="url-prev">sarahreillyengel</span></div>
+      <div class="field-hint">marquee.bio/<span id="url-prev">yourname</span></div>
     </div>
 
     <div class="field-group">
@@ -1434,15 +1316,28 @@ body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-
 
 <div class="toast" id="toast"></div>
 
-
-
 <script>
+
+
+function openProfile() {
+  document.getElementById('profile-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeProfile(); });
+
+
+
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const S = {
-  workType: 'fractional', workStatus: 'open',
-  name: '', location: '', username: '',
-  mbti: '', enneagram: '', lYears: 0, lTeam: 0,
-  archetypes:['The Builder','The Fixer'],
+  workType: '', workStatus: '',
+  name:'', location:'', username:'',
+  mbti:'', enneagram:'', lYears:0, lTeam:0,
+  archetypes:[],
   valuesRanked:[], needsRanked:[],
   skillRatings:{},
   depthRatings:{ 'CMO / Marketing Leader':'defining','GTM Strategist':'deep','Founder / Operator':'deep','Growth & Demand Gen':'deep','Brand & Storytelling':'defining','People Leader / Team Builder':'deep' },
@@ -1459,15 +1354,8 @@ const S = {
   bring:"The ability to walk into ambiguity and make it legible — for the team, for the board, for the customer. I turn 'we don't know what we are' into a narrative that works.",
   changedMind:"I used to think working harder was the answer. Now I know working on the right things with the right people matters infinitely more.",
   fieldTruth:"Most people think brand and performance marketing are in tension. They're not — great brand work is performance work. When positioning is right, everything downstream gets cheaper.",
-  impact:[
-    {title:'Scaled Lemon to Seven Figures',narrative:"Co-founded and built a digital marketing agency to seven-figure revenue. Executed influencer campaigns generating 600M+ impressions for Brilliant Earth, Armani, and Evolus. One Brilliant Earth campaign alone: 171M impressions, nearly $1M in EMV."},
-    {title:'Built Moe Assist 0→M&A',narrative:"Led end-to-end from launch through M&A exit. Raised $3M, built cross-functional teams across product, engineering, and marketing, and created the full-funnel operating model that made the company acquirable. Zero to exit in 4 years."},
-    {title:'First Executive Hire — Hello Alice',narrative:"Joined at Seed as first executive hire. Built the entire marketing engine from scratch through Series A. Designed and launched a global accelerator projected to generate $10M in revenue. Helped scale to 1.5M email base."}
-  ],
-  quotes:[
-    {text:"Your colleague",name: '',rel:'CEO, Hello Alice'},
-    {text:"She's the rare person who can hold the big picture and the details at the same time — and does it with clarity that makes the people around her better.",name: '',rel:'Co-founder, Moe Assist'}
-  ],
+  impact:[],
+  quotes:[],
   skills:['GTM Strategy','Brand Marketing','Influencer Marketing','Positioning & Messaging','Team Building','Demand Generation','Product Marketing','P&L Ownership','Lifecycle Marketing','Fundraising','Content Strategy','Sales Strategy','Analytics & Reporting','Startup Operations','Customer Success','Paid Media'],
   defaultRatings:{'GTM Strategy':3,'Brand Marketing':3,'Influencer Marketing':3,'Positioning & Messaging':3,'Team Building':3,'Demand Generation':2,'Product Marketing':2,'P&L Ownership':2,'Lifecycle Marketing':2,'Fundraising':2,'Content Strategy':1,'Sales Strategy':2,'Analytics & Reporting':1,'Startup Operations':2,'Customer Success':2,'Paid Media':1},
   wpLocation:['Fully remote','Remote-first with occasional onsite'],
@@ -1489,31 +1377,81 @@ S.needsRanked = [
 // ─── SCREEN NAV ───────────────────────────────────────────────────────────────
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
   window.scrollTo(0,0);
   const isQ = id === 'screen-questions';
-  document.getElementById('progress-section').style.display = isQ ? 'block' : 'none';
-  document.getElementById('skip-action').style.display = 'none';
+  const prog = document.getElementById('progress-section');
+  const skip = document.getElementById('skip-action');
+  if (prog) prog.style.display = isQ ? 'block' : 'none';
+  if (skip) skip.style.display = 'none';
 }
 
 // ─── UPLOAD ───────────────────────────────────────────────────────────────────
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('upload-zone').classList.remove('drag');
-  simulateScan();
+  if(e.dataTransfer.files[0]) readAndScan(e.dataTransfer.files[0]);
 }
-function handleFile(input) { if(input.files.length) simulateScan(); }
-function simulateScan() {
+function handleFile(input) { if(input.files&&input.files[0]) readAndScan(input.files[0]); }
+function readAndScan(file) {
+  const reader = new FileReader();
+  reader.onload = e => simulateScan(typeof e.target.result==='string' ? e.target.result : '');
+  reader.onerror = () => simulateScan('');
+  reader.readAsText(file);
+}
+async function simulateScan(resumeText) {
   document.getElementById('upload-view').style.display = 'none';
   document.getElementById('scan-state').classList.add('active');
   const msgs = ['Reading your resume...','Identifying career themes...','Extracting work history...','Almost done...'];
   let i = 0;
   const iv = setInterval(() => { document.getElementById('scan-msg').textContent = msgs[i++%msgs.length]; }, 800);
-  setTimeout(() => {
-    clearInterval(iv);
-    document.getElementById('scan-state').classList.remove('active');
-    document.getElementById('scan-results').classList.add('active');
-  }, 3200);
+
+  try {
+    // If we have real resume text, use Claude to extract it
+    if (resumeText && resumeText.length > 100) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{role: 'user', content: `Extract career info from this resume. Return ONLY valid JSON with: {"name":"","location":"","themes":["theme1","theme2"],"roles":[{"role":"","company":"","dates":"","desc":""}]}. Resume: ${resumeText.slice(0,3000)}`}]
+        })
+      });
+      const data = await res.json();
+      try {
+        const parsed = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+        if (parsed.name) S.name = parsed.name;
+        if (parsed.location) S.location = parsed.location;
+        if (parsed.roles) S.roles = parsed.roles;
+        if (parsed.themes) S.scannedThemes = parsed.themes;
+      } catch(e) {}
+    }
+  } catch(e) {}
+
+  clearInterval(iv);
+  document.getElementById('scan-state').classList.remove('active');
+  document.getElementById('scan-results').classList.add('active');
+  buildScanResults();
+}
+
+function buildScanResults() {
+  const themes = S.scannedThemes || ['Marketing & growth leader','Executive operator','Builder & founder','Cross-functional leader'];
+  const tc = document.getElementById('theme-chips-container');
+  if (tc) tc.innerHTML = themes.map(t => `<div class="theme-chip tc-v">${t}</div>`).join('');
+  const roles = S.roles || [];
+  const rc = document.getElementById('roles-list-container');
+  if (rc && roles.length > 0) {
+    rc.innerHTML = roles.map((r,i) => `
+      <div class="role-check-item ${i<2?'picked':''}" onclick="toggleRole(this)">
+        <div class="role-checkbox"><div class="role-checkbox-check">✓</div></div>
+        <div class="role-info"><div class="role-title-text">${r.role} — ${r.company}</div><div class="role-co-text">${r.desc||''}</div></div>
+        <div class="role-date-text">${r.dates||''}</div>
+      </div>`).join('');
+  } else if (rc) {
+    rc.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0">Upload your resume to see your roles here.</div>';
+  }
 }
 function toggleRole(el) {
   const picked = document.querySelectorAll('.role-check-item.picked').length;
@@ -1557,12 +1495,12 @@ const QUESTIONS = [
    why:"We identified these from your resume. Rate each one honestly — this shapes how you surface to the right people.",
    type:'depth',
    roles:[
-     {name: '', desc:'Full-stack marketing ownership — brand, demand, GTM, team'},
-     {name: '', desc:'Go-to-market planning, positioning, launch strategy'},
-     {name: '', desc:'Building and running a company from scratch'},
-     {name: '', desc:'Pipeline, paid, lifecycle, conversion'},
-     {name: '', desc:'Narrative, positioning, creative direction'},
-     {name: '', desc:'Hiring, developing, and managing teams'}
+     {name:'CMO / Marketing Leader', desc:'Full-stack marketing ownership — brand, demand, GTM, team'},
+     {name:'GTM Strategist', desc:'Go-to-market planning, positioning, launch strategy'},
+     {name:'Founder / Operator', desc:'Building and running a company from scratch'},
+     {name:'Growth & Demand Gen', desc:'Pipeline, paid, lifecycle, conversion'},
+     {name:'Brand & Storytelling', desc:'Narrative, positioning, creative direction'},
+     {name:'People Leader / Team Builder', desc:'Hiring, developing, and managing teams'}
    ]},
 
   // L
@@ -1882,12 +1820,12 @@ function setDepth(name, level, el) {
 
 function buildArchetype() {
   const arches = [
-    {id:'builder',name: '',str:'0→1, speed, creation',edge:'Underinvests in maintenance'},
-    {id:'fixer',name: '',str:'Clarity under chaos',edge:'Not built for long-term'},
-    {id:'operator',name: '',str:'Process, delivery, execution',edge:'Can plateau without vision'},
-    {id:'visionary',name: '',str:'Inspires, sees ahead',edge:'Weak on execution'},
-    {id:'people',name: '',str:'Talent, culture, development',edge:'Avoids hard calls'},
-    {id:'strategist',name: '',str:'Patterns, positioning, bets',edge:'Slow to act'}
+    {id:'builder',name:'The Builder',str:'0→1, speed, creation',edge:'Underinvests in maintenance'},
+    {id:'fixer',name:'The Fixer',str:'Clarity under chaos',edge:'Not built for long-term'},
+    {id:'operator',name:'The Operator',str:'Process, delivery, execution',edge:'Can plateau without vision'},
+    {id:'visionary',name:'The Visionary',str:'Inspires, sees ahead',edge:'Weak on execution'},
+    {id:'people',name:'The People Leader',str:'Talent, culture, development',edge:'Avoids hard calls'},
+    {id:'strategist',name:'The Strategist',str:'Patterns, positioning, bets',edge:'Slow to act'}
   ];
   return `<div class="arch-grid">` + arches.map(a=>`
     <div class="arch-card ${(S.archetypes||[]).includes(a.name)?'on':''}" onclick="toggleArch('${a.name}',this)">
@@ -2072,13 +2010,13 @@ function addQuote() {
 
 // ─── ELVIIS+ ──────────────────────────────────────────────────────────────────
 const PLUS_MODULES=[
-  {id:'newsletter',icon:'📰',name: '',desc:'Substack, Beehiiv, or any writing you publish'},
-  {id:'projects',icon:'🛠',name: '',desc:'Work that doesn\'t fit a job title'},
-  {id:'portfolio',icon:'💼',name: '',desc:'Case studies, decks, work samples'},
-  {id:'speaking',icon:'🎤',name: '',desc:'Conferences, panels, keynotes'},
-  {id:'media',icon:'🎙',name: '',desc:'Podcasts, interviews, features'},
-  {id:'community',icon:'🌐',name: '',desc:'Advisory roles, boards, communities you lead'},
-  {id:'publications',icon:'📚',name: '',desc:'Books, articles, research'}
+  {id:'newsletter',icon:'📰',name:'Newsletter / Blog',desc:'Substack, Beehiiv, or any writing you publish'},
+  {id:'projects',icon:'🛠',name:'Projects',desc:'Work that doesn\'t fit a job title'},
+  {id:'portfolio',icon:'💼',name:'Portfolio',desc:'Case studies, decks, work samples'},
+  {id:'speaking',icon:'🎤',name:'Speaking & Events',desc:'Conferences, panels, keynotes'},
+  {id:'media',icon:'🎙',name:'Media & Press',desc:'Podcasts, interviews, features'},
+  {id:'community',icon:'🌐',name:'Community & Boards',desc:'Advisory roles, boards, communities you lead'},
+  {id:'publications',icon:'📚',name:'Publications',desc:'Books, articles, research'}
 ];
 
 function buildPlus() {
@@ -2185,7 +2123,7 @@ Wish knew: ${S.wishKnew}
 Field truth: ${S.fieldTruth}
 Top values: ${(S.valuesRanked||[]).slice(0,5).join(', ')}
 
-Background: 20+ years marketing, employee #300 at Salesforce, first exec hire at Hello Alice (Seed→Series A), co-founded Lemon to 7-figure agency, led Moe Assist 0→M&A raising $3M. Domain: B2B SaaS + DTC + creator economy. Fractional CMO/COO.`}]})
+Background: Experienced professional. Domain: B2B SaaS + DTC + creator economy. Fractional CMO/COO.`}]})
     });
     const data=await res.json();
     let gen;
@@ -2198,20 +2136,13 @@ Background: 20+ years marketing, employee #300 at Salesforce, first exec hire at
   }
 }
 
-function fallback(){return{headline:"Full-stack CMO building Marquee — the professional profile platform that replaces the resume.",career_arc:"I've spent 20+ years at the intersection of brand and revenue — joining companies early, building what wasn't there, and leaving something that lasted. The through-line: I get called in when something needs to be built, fixed, or made legible, and I don't leave until it works.",pull_quote:"I've been operating at the intersection of brand and revenue my entire career — I'm not just a marketer, I'm a builder. Every company I've joined, I've left with more infrastructure than it had when I arrived.",leadership_summary:"Your colleague"};}
+function fallback(){return{headline:"Full-stack CMO building Marquee — the professional profile platform that replaces the resume.",career_arc:"I've spent 20+ years at the intersection of brand and revenue — joining companies early, building what wasn't there, and leaving something that lasted. The through-line: I get called in when something needs to be built, fixed, or made legible, and I don't leave until it works.",pull_quote:"I've been operating at the intersection of brand and revenue my entire career — I'm not just a marketer, I'm a builder. Every company I've joined, I've left with more infrastructure than it had when I arrived.",leadership_summary:"Sarah leads with high EQ and high standards — creating the conditions for people to do the best work of their careers while driving toward results with unusual clarity and urgency. As a Builder and Fixer, she is most energized by ambiguity and most effective when the problem doesn't yet have a name."};}
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
 function buildProfile(gen) {
   const el=document.getElementById('profile-content');
-  const un=S.username||'sarahreillyengel';
-  const exp=[
-    {role:'Co-Founder & CEO',co:'Lemon Digital HQ',dates:'2020–2025',tags:['<span class="ep ep-rose">Agency</span>','<span class="ep ep-amber">Founder</span>'],text:'Built a seven-figure digital marketing agency. 600M+ impressions across campaigns for Brilliant Earth, Armani, and Evolus. One Brilliant Earth campaign: 171M impressions, nearly $1M in EMV.'},
-    {role:'Interim CMO/COO',co:'Moe Assist',dates:'2019–2023',tags:['<span class="ep ep-violet">Creator Economy</span>','<span class="ep ep-sky">Raised $3M</span>'],text:'Led end-to-end from launch through M&A exit. Raised $3M, built cross-functional teams, created the full-funnel operating model that made the company acquirable.'},
-    {role:'Interim VP Marketing',co:'Hello Alice',dates:'2023–2024',tags:['<span class="ep ep-sage">B2B SaaS</span>','<span class="ep ep-sky">Series B</span>'],text:'Rebuilt the full marketing function during restructuring. Owned lifecycle, GTM, and growth — supporting a 1.5M email base and a $10M accelerator launch.'},
-    {role:'VP Marketing & Customer Experience',co:'Hello Alice',dates:'2017–2019',tags:['<span class="ep ep-sage">B2B SaaS</span>','<span class="ep ep-amber">First Exec Hire</span>'],text:'Joined at Seed as first executive hire. Built the marketing engine from scratch through Series A. Designed the global accelerator program.'},
-    {role:'VP Client Services',co:'rewardStyle (LTK)',dates:'2015–2017',tags:['<span class="ep ep-rose">Creator</span>','<span class="ep ep-sky">Enterprise</span>'],text:'Led 50+ person team supporting 5,000+ global retail brands. Launched NYC office, reduced time-to-revenue 60%, grew YOY 25%+.'},
-    {role:'Inside Sales & CSM',co:'Salesforce',dates:'2002–2006',tags:['<span class="ep ep-sky">SaaS</span>','<span class="ep ep-amber">Employee #300</span>'],text:'One of the first 300 employees. Promoted to one of the first 6 CSMs — helped architect the customer success function from the ground up.'}
-  ].map(r=>`<div class="exp-item"><div class="exp-top"><div class="exp-role">${r.role}</div><div class="exp-date">${r.dates}</div></div><div class="exp-co">${r.co} ${r.tags.join('')}</div><div class="exp-text">${r.text}</div></div>`).join('');
+  const un=S.username||'yourname';
+  const exp=(S.roles||[]).map(r=>`<div class="exp-item"><div class="exp-top"><div class="exp-role">${r.role}</div><div class="exp-date">${r.dates}</div></div><div class="exp-co">${r.co} ${r.tags.join('')}</div><div class="exp-text">${r.text}</div></div>`).join('');
 
   const impact=(S.impact||[]).filter(e=>e.title).map(e=>`<div class="ic-card"><div class="ic-title">${e.title}</div><div class="ic-text">${e.narrative}</div></div>`).join('');
   const quotes=(S.quotes||[]).filter(q=>q.text).map(q=>`<div class="qc-card"><div class="qc-text">"${q.text.replace(/^"|"$/g,'')}"</div><div class="qc-attr">${q.name} · ${q.rel}</div></div>`).join('');
@@ -2227,7 +2158,7 @@ function buildProfile(gen) {
   el.innerHTML=`
   <div class="share-bar"><div class="share-url">marquee.bio/<span>${un}</span></div><button class="share-btn" onclick="copyURL('${un}')">Copy link</button></div>
   <div class="p-header">
-    <div class="p-name">${S.name||''}</div>
+    <div class="p-name">${S.name||'Your Name'}</div>
     <div class="p-headline-text">${gen.headline}</div>
     <div class="p-badges">
       <div class="p-badge pb-v">${S.workType==='fractional'?'Fractional':'Full-time'}</div>
@@ -2286,6 +2217,7 @@ function copyURL(un) {
   navigator.clipboard.writeText('https://marquee.bio/'+un).then(()=>showToast('Link copied!'));
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
 </script>
 </body>
 </html>
