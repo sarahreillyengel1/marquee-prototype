@@ -3,25 +3,102 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --cream: #F5F0E8;
+  --white: #FFFFFF;
+  --ink: #111010;
+  --gray: #6B6560;
+  --gray2: #A09890;
+  --border: #E0D9CE;
+  --lav: #C4B5FD;
+  --lav-mid: #A78BFA;
+  --lav-lt: #F3F0FF;
+  --lav-dk: #7C3AED;
+  --mint: #6EE7B7;
+  --mint-lt: #ECFDF5;
+  --mint-dk: #059669;
+  --coral: #FB7185;
+  --coral-lt: #FFF1F2;
+  --navy: #1E3A5F;
+  --navy-lt: #E8EEF5;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--cream);
+  color: var(--ink);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.section-label {
+  font-family: var(--font-dm-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.section-label::after {
+  content: none;
+}
+
+.masthead-label {
+  font-family: var(--font-dm-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.btn-pill {
+  border-radius: 100px;
+  padding: 12px 32px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: white;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink);
+}
+
+.btn-secondary:hover {
+  border-color: var(--ink);
+}
+
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--lav-mid);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Hide scrollbar for tab strips */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
