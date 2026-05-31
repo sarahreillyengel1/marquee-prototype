@@ -1,9 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { ResumeParseResult } from "@/types";
+
+const LOADING_MESSAGES = [
+  "Reading your resume…",
+  "Extracting your work history…",
+  "Identifying your career themes…",
+  "Drafting your story…",
+  "Almost there…",
+];
 
 export default function ResumeUploadPage() {
   const [dragActive, setDragActive] = useState(false);
@@ -11,7 +19,17 @@ export default function ResumeUploadPage() {
   const [pastedText, setPastedText] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
+  const [statusIdx, setStatusIdx] = useState(0);
   const [error, setError] = useState("");
+
+  // Rotate loading messages every 2.2s so it doesn't feel stuck
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setStatusIdx((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [loading]);
   const router = useRouter();
   const supabase = createBrowserSupabase();
 
@@ -19,7 +37,8 @@ export default function ResumeUploadPage() {
     async (formData: FormData) => {
       setLoading(true);
       setError("");
-      setStatus("Reading your resume...");
+      setStatusIdx(0);
+      setStatus("");
 
       const {
         data: { user },
@@ -56,7 +75,7 @@ export default function ResumeUploadPage() {
         // Store parsed data in localStorage for onboarding flow
         localStorage.setItem("marquee_resume", JSON.stringify(parsed));
 
-        setStatus("Resume parsed! Redirecting...");
+        setStatus("Resume parsed. Redirecting…");
         router.push("/onboard/basics");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
@@ -137,7 +156,9 @@ export default function ResumeUploadPage() {
           {loading ? (
             <div className="card p-12 text-center">
               <div className="inline-block w-8 h-8 border-2 border-lav-mid border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-gray text-lg">{status}</p>
+              <p className="text-ink text-lg transition-opacity">
+                {status || LOADING_MESSAGES[statusIdx]}
+              </p>
             </div>
           ) : mode === "upload" ? (
             <div

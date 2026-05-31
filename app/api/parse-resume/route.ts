@@ -78,7 +78,8 @@ Resume text:
 ${resumeText}`;
 
   try {
-    const raw = await callClaude(prompt);
+    // Use Haiku for resume parsing — structured extraction, doesn't need Sonnet
+    const raw = await callClaude(prompt, "haiku");
     const parsed = await parseJSON<ResumeParseResult>(raw);
 
     // Store in Supabase

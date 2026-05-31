@@ -9,10 +9,22 @@ function getClient() {
   return _client;
 }
 
-export async function callClaude(prompt: string): Promise<string> {
+type ClaudeModel = "sonnet" | "haiku";
+
+const MODEL_IDS: Record<ClaudeModel, string> = {
+  // Sonnet — for the high-quality creative work (profile generation)
+  sonnet: "claude-sonnet-4-20250514",
+  // Haiku — ~3× faster, cheaper. Good enough for structured extraction (resume parse).
+  haiku: "claude-haiku-4-5-20251001",
+};
+
+export async function callClaude(
+  prompt: string,
+  model: ClaudeModel = "sonnet"
+): Promise<string> {
   const anthropic = getClient();
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: MODEL_IDS[model],
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
   });
