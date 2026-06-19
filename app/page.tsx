@@ -1,157 +1,381 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import DemoModalButton from "@/components/DemoModalButton";
+import Image from "next/image";
+import WaitlistModal from "@/components/WaitlistModal";
+import {
+  IconBeSeen,
+  IconTellYourStory,
+  IconConnections,
+  IconControl,
+  IconAssessment,
+  IconDiscovery,
+  IconBlueprint,
+  IconLinkedIn,
+  IconX,
+  IconInstagram,
+  GeometricM,
+} from "@/components/icons";
 
 export default function LandingPage() {
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+
   return (
-    <div className="min-h-screen">
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-6 md:px-12 py-6">
-        <h1 className="font-sans font-bold text-2xl text-ink">marquee</h1>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm text-gray hover:text-ink transition-colors">
-            Log in
+    <div className="brand-body min-h-screen font-inter">
+      {/* ── NAV ── */}
+      <nav className="px-8 md:px-16 py-6 flex items-center justify-between max-w-[1400px] mx-auto">
+        <Link href="/" className="wordmark text-lg text-brand-ink">
+          MARQUEE
+        </Link>
+        <div className="hidden md:flex items-center gap-10">
+          <Link href="/product" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
+            Product
           </Link>
-          <Link
-            href="/signup"
-            className="btn-pill btn-primary text-sm px-6 py-2.5 inline-block"
-          >
-            Claim Your Marquee
+          <Link href="/pricing" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
+            Pricing
+          </Link>
+          <Link href="/resources" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
+            Resources
+          </Link>
+          <Link href="/about" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
+            About
           </Link>
         </div>
+        <button
+          onClick={() => setWaitlistOpen(true)}
+          className="px-6 py-3 rounded-full bg-brand-ink text-white text-sm font-medium hover:bg-brand-ink/90 transition-colors"
+        >
+          Join the Waitlist
+        </button>
       </nav>
 
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 pt-16 md:pt-24 pb-20">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="font-sans font-bold text-5xl md:text-7xl lg:text-[80px] leading-[1.05] text-ink mb-6">
-              Your Work
-              <br />
-              Deserves the Spotlight.
-            </h2>
-            <p className="text-gray text-lg md:text-xl leading-relaxed mb-10 max-w-lg">
-              The resume is dead. Marquee is what replaces it — a rich,
-              shareable professional profile built around who you actually are
-              when you work.
+      {/* ── HERO ── */}
+      <section className="px-8 md:px-16 pt-8 pb-20 max-w-[1400px] mx-auto">
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left: copy */}
+          <div className="order-2 md:order-1">
+            <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.01em]">
+              Your work<br />
+              deserves the<br />
+              spotlight.
+            </h1>
+            <p className="text-base md:text-lg text-brand-ink/70 leading-relaxed mt-8 max-w-md">
+              Marquee is the first personal brand platform for your professional story.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/signup"
-                className="btn-pill btn-primary text-center text-lg px-10 py-4"
-              >
-                Claim Your Marquee
-              </Link>
-              <DemoModalButton />
-            </div>
+            <button
+              onClick={() => setWaitlistOpen(true)}
+              className="mt-10 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
+            >
+              Join the Waitlist
+            </button>
           </div>
 
-          {/* Profile card preview */}
-          <div className="card p-8 max-w-sm mx-auto md:mx-0 md:ml-auto shadow-sm">
-            <div className="flex items-center justify-between mb-5 pb-4 border-b border-border">
-              <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-gray-2">
-                Marquee · No. 0001
-              </span>
-              <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-gray-2">
-                Brooklyn, NY
-              </span>
+          {/* Right: photo + M backdrop + script */}
+          <div className="order-1 md:order-2 relative aspect-[4/5] max-w-lg mx-auto md:mx-0 md:ml-auto w-full">
+            {/* Geometric M backdrop */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <GeometricM className="w-[88%] h-[88%]" color="#C7B5FF" />
             </div>
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-16 h-16 rounded-full bg-lav-lt flex items-center justify-center shrink-0">
-                <span className="text-lav-dk text-xl font-sans font-bold">MO</span>
-              </div>
-              <div>
-                <h3 className="font-sans font-bold text-2xl leading-tight">Maya Okonkwo</h3>
-                <p className="text-gray text-xs mt-0.5">
-                  Head of Product Marketing · Meridian Health
-                </p>
-              </div>
+            {/* Photo (placeholder until /public/images/marquee-hero.jpg is added) */}
+            <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
+              <Image
+                src="/images/marquee-hero.jpg"
+                alt="Marquee — professional"
+                width={600}
+                height={750}
+                className="object-contain object-bottom h-[95%] w-auto"
+                priority
+                onError={(e) => {
+                  // Fallback when the file isn't there yet — hide the broken image
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
             </div>
-            <div className="border-l-2 border-lav-mid pl-4 mb-5">
-              <p className="font-sans text-ink text-sm leading-relaxed">
-                &ldquo;The best product marketers aren&apos;t good writers — they&apos;re good listeners who happen to write things down.&rdquo;
+            {/* Script overlay */}
+            <div className="absolute left-2 top-[55%] -translate-y-1/2 rotate-[-6deg]">
+              <p className="font-caveat text-3xl md:text-4xl text-brand-ink leading-tight">
+                <span className="block">Be known.</span>
+                <span className="block">Not filtered.</span>
+              </p>
+              <svg
+                width="200"
+                height="14"
+                viewBox="0 0 200 14"
+                fill="none"
+                className="ml-2 mt-1"
+              >
+                <path
+                  d="M5 8 Q 50 2, 100 7 T 195 6"
+                  stroke="#111111"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── BUILT FOR HUMANS ── */}
+      <section className="px-8 md:px-16 py-20 md:py-28 max-w-[1400px] mx-auto">
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
+          <div>
+            <h2 className="font-canela text-5xl md:text-6xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
+              Built for<br />
+              humans.
+            </h2>
+            <div className="mt-8 space-y-5 max-w-md text-base text-brand-ink/80 leading-relaxed">
+              <p>
+                Let&apos;s be honest: traditional resumes are quickly becoming a relic of the past, and existing professional networks often feel more like performance than substance.
+              </p>
+              <p>
+                Neither captures who you are, how you lead, or the story behind your work.
+              </p>
+              <p>
+                Marquee helps you create a dynamic, shareable profile that showcases your experience, leadership, values, impact, skills, and story—all in one place.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 mb-5">
-              {["Early-stage PMM", "Category narrative", "B2B SaaS"].map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 text-xs font-sans bg-lav-lt text-lav-dk rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              {["E", "L", "V", "I", "I", "S"].map((letter, i) => (
-                <span
-                  key={i}
-                  className="w-8 h-8 flex items-center justify-center font-sans font-bold text-sm bg-cream rounded-full text-gray"
-                >
-                  {letter}
-                </span>
-              ))}
-            </div>
+          </div>
+
+          {/* 2x2 feature grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12 self-start">
+            <FeatureCard
+              icon={<IconBeSeen className="w-7 h-7" />}
+              title="Be Seen For Your Work"
+              body="Showcase what you do and the impact you make."
+            />
+            <FeatureCard
+              icon={<IconTellYourStory className="w-7 h-7" />}
+              title="Tell Your Story"
+              body="Go beyond job titles and create a richer professional narrative."
+            />
+            <FeatureCard
+              icon={<IconConnections className="w-7 h-7" />}
+              title="Build Meaningful Connections"
+              body="Connect through shared interests, values, and expertise."
+            />
+            <FeatureCard
+              icon={<IconControl className="w-7 h-7" />}
+              title="You're In Control"
+              body="Choose what you share and who can see it."
+            />
           </div>
         </div>
       </section>
 
-      {/* Three-step strip */}
-      <section className="bg-white border-y border-border py-16">
-        <div className="max-w-5xl mx-auto px-6 md:px-12">
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                step: "01",
-                title: "Upload your resume",
-                desc: "AI reads it in seconds. Your work history, skills, and career arc — extracted automatically.",
-              },
-              {
-                step: "02",
-                title: "Answer what matters",
-                desc: "~15 minutes of questions that go deeper than any resume ever could. Values, impact, leadership, insights.",
-              },
-              {
-                step: "03",
-                title: "Share your Marquee",
-                desc: "A rich, public profile at marquee.bio/you. Replace the resume forever.",
-              },
-            ].map(({ step, title, desc }) => (
-              <div key={step}>
-                <span className="font-sans text-xs text-lav-mid">{step}</span>
-                <h3 className="font-sans font-bold text-xl mt-2 mb-3">{title}</h3>
-                <p className="text-gray text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
+      {/* ── PASSION CAREER ASSESSMENT ── */}
+      <section className="bg-brand-lavender/30 px-8 md:px-16 py-20 md:py-28">
+        <div className="max-w-[1400px] mx-auto grid md:grid-cols-2 gap-12 lg:gap-20">
+          <div>
+            <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
+              Take the Passion<br />
+              Career Assessment
+            </h2>
+            <p className="font-caveat text-2xl md:text-3xl text-brand-ink/90 mt-3 leading-snug">
+              and receive your 30-Day Blueprint
+              <svg
+                width="280"
+                height="12"
+                viewBox="0 0 280 12"
+                fill="none"
+                className="mt-0.5"
+              >
+                <path
+                  d="M5 7 Q 70 2, 140 6 T 275 5"
+                  stroke="#111111"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </p>
+            <div className="mt-8 space-y-4 max-w-md text-base text-brand-ink/80 leading-relaxed">
+              <p>Most career advice starts with the job. This starts with you.</p>
+              <p>
+                Uncover your purpose, skills, goals, and values, and we&apos;ll translate what you love into a clear direction and a plan.
+              </p>
+            </div>
+            <Link
+              href="/assessment"
+              className="inline-block mt-10 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
+            >
+              Take the Free Assessment
+            </Link>
+          </div>
+
+          {/* 3-step cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StepCard
+              icon={<IconAssessment className="w-6 h-6" />}
+              title="Start the Assessment"
+              body="35 insightful questions designed to map your unique passions, values, and strengths."
+              progress={1}
+            />
+            <StepCard
+              icon={<IconDiscovery className="w-6 h-6" />}
+              title="The Discovery"
+              body="Uncover your true purpose, drivers, and goals."
+              progress={2}
+            />
+            <StepCard
+              icon={<IconBlueprint className="w-6 h-6" />}
+              title="Your 30-Day Blueprint"
+              body="A personalized roadmap highlighting your unique opportunities, complete with a practical 30-day action plan."
+              progress={3}
+            />
           </div>
         </div>
       </section>
 
-      {/* Bottom CTA */}
-      <section className="py-20 text-center">
-        <p className="font-sans text-sm font-bold uppercase tracking-[0.15em] mb-4">
-          <span className="text-lav-dk">Be Known.</span>
-          <span className="text-ink"> Not Filtered.</span>
-        </p>
-        <h2 className="font-sans font-bold text-4xl md:text-5xl mb-8">
-          Ready to build yours?
-        </h2>
-        <Link
-          href="/signup"
-          className="btn-pill btn-primary text-lg px-12 py-4 inline-block"
-        >
-          Claim Your Marquee →
-        </Link>
-      </section>
+      {/* ── FOOTER ── */}
+      <footer className="bg-brand-ink text-white px-8 md:px-16 py-12">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="col-span-2">
+            <div className="wordmark text-lg">MARQUEE</div>
+            <p className="text-sm text-white/70 mt-3 max-w-xs">
+              Personal brand platform for professionals.
+            </p>
+            <div className="flex items-center gap-3 mt-6">
+              <a
+                href="https://www.linkedin.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
+              >
+                <IconLinkedIn className="w-4 h-4" />
+              </a>
+              <a
+                href="https://x.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
+              >
+                <IconX className="w-4 h-4" />
+              </a>
+              <a
+                href="https://www.instagram.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
+              >
+                <IconInstagram className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span className="font-sans font-bold text-lg text-ink">marquee</span>
-          <span className="text-gray text-xs font-sans">
-            © 2026 Marquee · marquee.bio
-          </span>
+          <FooterCol title="Product" links={[
+            { label: "How It Works", href: "/product" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "Career Assessment", href: "/assessment" },
+          ]} />
+          <FooterCol title="Company" links={[
+            { label: "About Us", href: "/about" },
+            { label: "Contact", href: "/contact" },
+          ]} />
+          <FooterCol title="Resources" links={[
+            { label: "FAQ", href: "/resources" },
+            { label: "Help Center", href: "/resources" },
+          ]} />
+        </div>
+        <div className="max-w-[1400px] mx-auto mt-12 pt-8 border-t border-white/10 flex items-center justify-between text-xs text-white/50">
+          <span>© 2026 Marquee</span>
+          <Link href="/signup" className="hover:text-white transition-colors">
+            Have a beta code? Sign in →
+          </Link>
         </div>
       </footer>
+
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} source="landing" />
+    </div>
+  );
+}
+
+/* ── Sub-components ── */
+
+function FeatureCard({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="flex gap-5">
+      <div className="shrink-0 w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-brand-ink">
+        {icon}
+      </div>
+      <div>
+        <h3 className="font-canela text-xl text-brand-ink leading-tight mb-1">
+          {title}
+        </h3>
+        <p className="text-sm text-brand-ink/70 leading-relaxed">{body}</p>
+      </div>
+    </div>
+  );
+}
+
+function StepCard({
+  icon,
+  title,
+  body,
+  progress,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  progress: 1 | 2 | 3;
+}) {
+  return (
+    <div className="bg-white rounded-2xl p-6 flex flex-col">
+      <div className="w-11 h-11 rounded-full bg-brand-lavender/40 flex items-center justify-center text-brand-ink mb-5">
+        {icon}
+      </div>
+      <h3 className="font-canela text-xl text-brand-ink leading-tight mb-3">
+        {title}
+      </h3>
+      <p className="text-sm text-brand-ink/70 leading-relaxed flex-1">{body}</p>
+      <div className="mt-6">
+        <div className="h-1 w-full bg-brand-stone rounded-full overflow-hidden">
+          <div
+            className="h-full bg-brand-green rounded-full transition-all"
+            style={{ width: `${(progress / 3) * 100}%` }}
+          />
+        </div>
+        <span className="block mt-2 text-xs text-brand-ink/60">
+          Step {progress} of 3
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <h4 className="font-semibold text-sm mb-4">{title}</h4>
+      <ul className="space-y-3">
+        {links.map((l) => (
+          <li key={l.label}>
+            <Link
+              href={l.href}
+              className="text-sm text-white/70 hover:text-white transition-colors"
+            >
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

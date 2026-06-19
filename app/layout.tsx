@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, DM_Mono } from "next/font/google";
+import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat } from "next/font/google";
 import "./globals.css";
 
+// Legacy fonts — used by all existing screens until the phase-2 reskin
 const dmSerif = DM_Serif_Display({
   weight: "400",
   style: "italic",
@@ -20,10 +21,23 @@ const dmMono = DM_Mono({
   variable: "--font-dm-mono",
 });
 
+// Brand fonts — used by the new landing page + phase-2 reskin
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-caveat",
+});
+
 export const metadata: Metadata = {
-  title: "Marquee — Your Work Deserves the Spotlight",
+  title: "Marquee — Your work deserves the spotlight.",
   description:
-    "The resume is dead. Marquee is what replaces it — a rich, shareable professional profile built around who you actually are when you work.",
+    "Marquee is the first personal brand platform for your professional story.",
 };
 
 export default function RootLayout({
@@ -34,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} font-sans antialiased`}
+        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${caveat.variable} font-sans antialiased`}
       >
         {children}
       </body>

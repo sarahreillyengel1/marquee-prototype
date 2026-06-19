@@ -2,7 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────────────────
+   CANELA TEXT — Display / Editorial / Names
+   Loaded from local trial files. Replace with licensed
+   production files when license arrives.
+   ────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Thin-Trial.otf") format("opentype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Light-Trial.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Regular-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-RegularItalic-Trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Medium-Trial.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Bold-Trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("/fonts/canela/CanelaText-Black-Trial.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  /* ── LEGACY palette (still used by existing screens — pre-reskin) ── */
   --cream: #F5F0E8;
   --white: #FFFFFF;
   --ink: #111010;
@@ -20,6 +77,16 @@
   --coral-lt: #FFF1F2;
   --navy: #1E3A5F;
   --navy-lt: #E8EEF5;
+
+  /* ── BRAND palette (new — used by landing page + phase-2 reskin) ── */
+  --brand-ink: #111111;
+  --brand-paper: #F7F6F2;
+  --brand-lavender: #C7B5FF;
+  --brand-vermillion: #FF5A36;
+  --brand-sky: #A8CFFF;
+  --brand-soft-green: #B9E3A5;
+  --brand-citron: #E6F06A;
+  --brand-stone: #E9E6DF;
 }
 
 body {
@@ -101,4 +168,28 @@ body {
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   BRAND classes — used by landing page + reskin
+   ────────────────────────────────────────────────────────── */
+
+.brand-body {
+  background: var(--brand-paper);
+  color: var(--brand-ink);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+.font-display {
+  font-family: "Canela", Georgia, serif;
+}
+
+.font-script {
+  font-family: var(--font-caveat), cursive;
+}
+
+.wordmark {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.25em;
 }
