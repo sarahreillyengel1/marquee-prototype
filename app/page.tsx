@@ -28,7 +28,7 @@ export default function LandingPage() {
         <Link href="/" className="wordmark text-lg text-brand-ink">
           MARQUEE
         </Link>
-        <div className="hidden md:flex items-center gap-10">
+        <div className="hidden md:flex items-center gap-16">
           <Link href="/product" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
             Product
           </Link>
@@ -52,7 +52,7 @@ export default function LandingPage() {
 
       {/* ── HERO (white bg) ── */}
       <section className="bg-white">
-        <div className="px-8 md:px-16 pt-4 pb-12 md:pb-16 max-w-[1400px] mx-auto">
+        <div className="px-8 md:px-16 pt-4 pb-4 max-w-[1400px] mx-auto">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: copy */}
             <div className="order-2 md:order-1">
@@ -72,43 +72,42 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right: photo + M backdrop + script */}
-            <div className="order-1 md:order-2 relative aspect-[4/5] max-w-xl mx-auto md:mx-0 md:ml-auto w-full">
-              {/* Geometric M backdrop — bigger, more present */}
-              <div className="absolute inset-0 flex items-center justify-center">
+            {/* Right: photo + M backdrop + script — square, hard-cropped at M bottom */}
+            <div className="order-1 md:order-2 relative aspect-square max-w-xl mx-auto md:mx-0 md:ml-auto w-full overflow-hidden">
+              {/* Geometric M backdrop — fills container, defines the bottom edge */}
+              <div className="absolute inset-0">
                 <GeometricM className="w-full h-full" color="#C7B5FF" />
               </div>
-              {/* Photo */}
-              <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
-                <Image
-                  src="/images/marquee-hero.png"
-                  alt="Marquee — professional"
-                  width={700}
-                  height={875}
-                  className="object-contain object-bottom h-[98%] w-auto"
-                  priority
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              </div>
-              {/* Script overlay — lavender dark */}
-              <div className="absolute left-0 md:-left-6 top-[52%] -translate-y-1/2 rotate-[-6deg]">
-                <p className="font-caveat text-3xl md:text-4xl leading-tight" style={{ color: "#7C3AED" }}>
+              {/* Photo — fills container, anchored bottom. Mix-blend-mode multiplies white pixels
+                  into the page so the photo's white background blends invisibly. */}
+              <Image
+                src="/images/marquee-hero.png"
+                alt="Marquee — professional"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-bottom mix-blend-multiply"
+                priority
+              />
+              {/* Script overlay — lavender dark, bigger */}
+              <div className="absolute left-0 md:-left-2 top-[48%] -translate-y-1/2 rotate-[-6deg] z-10">
+                <p
+                  className="font-caveat text-4xl md:text-5xl lg:text-6xl leading-tight"
+                  style={{ color: "#7C3AED" }}
+                >
                   <span className="block">Be known.</span>
                   <span className="block">Not filtered.</span>
                 </p>
                 <svg
-                  width="200"
-                  height="14"
-                  viewBox="0 0 200 14"
+                  width="240"
+                  height="16"
+                  viewBox="0 0 240 16"
                   fill="none"
-                  className="ml-2 mt-1"
+                  className="ml-3 mt-1"
                 >
                   <path
-                    d="M5 8 Q 50 2, 100 7 T 195 6"
+                    d="M5 9 Q 60 3, 120 8 T 235 7"
                     stroke="#7C3AED"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                   />
                 </svg>
@@ -122,7 +121,7 @@ export default function LandingPage() {
       <section className="px-8 md:px-16 py-16 md:py-20 max-w-[1400px] mx-auto">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <div>
-            <h2 className="font-canela text-5xl md:text-6xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
+            <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
               Built for<br />
               humans.
             </h2>
