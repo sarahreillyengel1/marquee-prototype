@@ -81,7 +81,7 @@ export default function LandingPage() {
               {/* Photo */}
               <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
                 <Image
-                  src="/images/marquee-hero.jpg"
+                  src="/images/marquee-hero.png"
                   alt="Marquee — professional"
                   width={700}
                   height={875}
