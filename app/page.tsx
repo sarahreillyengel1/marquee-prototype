@@ -50,75 +50,76 @@ export default function LandingPage() {
         </button>
       </nav>
 
-      {/* ── HERO ── */}
-      <section className="px-8 md:px-16 pt-8 pb-20 max-w-[1400px] mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left: copy */}
-          <div className="order-2 md:order-1">
-            <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.01em]">
-              Your work<br />
-              deserves the<br />
-              spotlight.
-            </h1>
-            <p className="text-base md:text-lg text-brand-ink/70 leading-relaxed mt-8 max-w-md">
-              Marquee is the first personal brand platform for your professional story.
-            </p>
-            <button
-              onClick={() => setWaitlistOpen(true)}
-              className="mt-10 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
-            >
-              Join the Waitlist
-            </button>
-          </div>
-
-          {/* Right: photo + M backdrop + script */}
-          <div className="order-1 md:order-2 relative aspect-[4/5] max-w-lg mx-auto md:mx-0 md:ml-auto w-full">
-            {/* Geometric M backdrop */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <GeometricM className="w-[88%] h-[88%]" color="#C7B5FF" />
-            </div>
-            {/* Photo (placeholder until /public/images/marquee-hero.jpg is added) */}
-            <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
-              <Image
-                src="/images/marquee-hero.jpg"
-                alt="Marquee — professional"
-                width={600}
-                height={750}
-                className="object-contain object-bottom h-[95%] w-auto"
-                priority
-                onError={(e) => {
-                  // Fallback when the file isn't there yet — hide the broken image
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-            {/* Script overlay */}
-            <div className="absolute left-2 top-[55%] -translate-y-1/2 rotate-[-6deg]">
-              <p className="font-caveat text-3xl md:text-4xl text-brand-ink leading-tight">
-                <span className="block">Be known.</span>
-                <span className="block">Not filtered.</span>
+      {/* ── HERO (white bg) ── */}
+      <section className="bg-white">
+        <div className="px-8 md:px-16 pt-4 pb-12 md:pb-16 max-w-[1400px] mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left: copy */}
+            <div className="order-2 md:order-1">
+              <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.01em]">
+                Your work<br />
+                deserves the<br />
+                spotlight.
+              </h1>
+              <p className="text-base md:text-lg text-brand-ink/70 leading-relaxed mt-8 max-w-md">
+                Marquee is the first personal brand platform for your professional story.
               </p>
-              <svg
-                width="200"
-                height="14"
-                viewBox="0 0 200 14"
-                fill="none"
-                className="ml-2 mt-1"
+              <button
+                onClick={() => setWaitlistOpen(true)}
+                className="mt-10 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
               >
-                <path
-                  d="M5 8 Q 50 2, 100 7 T 195 6"
-                  stroke="#111111"
-                  strokeWidth="2"
-                  strokeLinecap="round"
+                Join the Waitlist
+              </button>
+            </div>
+
+            {/* Right: photo + M backdrop + script */}
+            <div className="order-1 md:order-2 relative aspect-[4/5] max-w-xl mx-auto md:mx-0 md:ml-auto w-full">
+              {/* Geometric M backdrop — bigger, more present */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <GeometricM className="w-full h-full" color="#C7B5FF" />
+              </div>
+              {/* Photo */}
+              <div className="absolute inset-0 flex items-end justify-center overflow-hidden">
+                <Image
+                  src="/images/marquee-hero.jpg"
+                  alt="Marquee — professional"
+                  width={700}
+                  height={875}
+                  className="object-contain object-bottom h-[98%] w-auto"
+                  priority
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
                 />
-              </svg>
+              </div>
+              {/* Script overlay — lavender dark */}
+              <div className="absolute left-0 md:-left-6 top-[52%] -translate-y-1/2 rotate-[-6deg]">
+                <p className="font-caveat text-3xl md:text-4xl leading-tight" style={{ color: "#7C3AED" }}>
+                  <span className="block">Be known.</span>
+                  <span className="block">Not filtered.</span>
+                </p>
+                <svg
+                  width="200"
+                  height="14"
+                  viewBox="0 0 200 14"
+                  fill="none"
+                  className="ml-2 mt-1"
+                >
+                  <path
+                    d="M5 8 Q 50 2, 100 7 T 195 6"
+                    stroke="#7C3AED"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── BUILT FOR HUMANS ── */}
-      <section className="px-8 md:px-16 py-20 md:py-28 max-w-[1400px] mx-auto">
+      <section className="px-8 md:px-16 py-16 md:py-20 max-w-[1400px] mx-auto">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <div>
             <h2 className="font-canela text-5xl md:text-6xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
@@ -138,8 +139,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 2x2 feature grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12 self-start">
+          {/* 2x2 feature grid — pushed down to align with body text level */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-10 md:pt-40 self-start">
             <FeatureCard
               icon={<IconBeSeen className="w-7 h-7" />}
               title="Be Seen For Your Work"
@@ -165,14 +166,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── PASSION CAREER ASSESSMENT ── */}
-      <section className="bg-brand-lavender/30 px-8 md:px-16 py-20 md:py-28">
-        <div className="max-w-[1400px] mx-auto grid md:grid-cols-2 gap-12 lg:gap-20">
+      <section className="bg-brand-lavender/30 px-8 md:px-16 py-16 md:py-20">
+        <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-16 items-start">
           <div>
             <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
               Take the Passion<br />
               Career Assessment
             </h2>
-            <p className="font-caveat text-2xl md:text-3xl text-brand-ink/90 mt-3 leading-snug">
+            <p className="font-caveat text-2xl md:text-3xl mt-3 leading-snug" style={{ color: "#7C3AED" }}>
               and receive your 30-Day Blueprint
               <svg
                 width="280"
@@ -183,7 +184,7 @@ export default function LandingPage() {
               >
                 <path
                   d="M5 7 Q 70 2, 140 6 T 275 5"
-                  stroke="#111111"
+                  stroke="#7C3AED"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -203,8 +204,8 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* 3-step cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* 3-step cards — wider grid, evenly spaced */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <StepCard
               icon={<IconAssessment className="w-6 h-6" />}
               title="Start the Assessment"
@@ -331,11 +332,11 @@ function StepCard({
   progress: 1 | 2 | 3;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 flex flex-col">
-      <div className="w-11 h-11 rounded-full bg-brand-lavender/40 flex items-center justify-center text-brand-ink mb-5">
+    <div className="bg-white rounded-2xl p-7 flex flex-col min-h-[320px]">
+      <div className="w-11 h-11 rounded-full bg-brand-lavender/40 flex items-center justify-center text-brand-ink mb-6">
         {icon}
       </div>
-      <h3 className="font-canela text-xl text-brand-ink leading-tight mb-3">
+      <h3 className="font-canela text-2xl text-brand-ink leading-tight mb-3">
         {title}
       </h3>
       <p className="text-sm text-brand-ink/70 leading-relaxed flex-1">{body}</p>
