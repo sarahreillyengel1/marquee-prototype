@@ -121,15 +121,11 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           <div>
             <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
-              Built for<br />
-              humans.
+              Built for Humans
             </h2>
             <div className="mt-8 space-y-5 max-w-md text-base text-brand-ink/80 leading-relaxed">
               <p>
-                Let&apos;s be honest: traditional resumes are quickly becoming a relic of the past, and existing professional networks often feel more like performance than substance.
-              </p>
-              <p>
-                Neither captures who you are, how you lead, or the story behind your work.
+                Let&apos;s be honest: traditional resumes are quickly becoming a relic of the past, and existing professional networks often feel more like performance than substance. Neither captures who you are, how you lead, or the story behind your work.
               </p>
               <p>
                 Marquee helps you create a dynamic, shareable profile that showcases your experience, leadership, values, impact, skills, and story—all in one place.
