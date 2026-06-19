@@ -72,23 +72,22 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right: photo + M backdrop + script — square, hard-cropped at M bottom */}
+            {/* Right: photo + M backdrop + script. Square container so photo + M end at same bottom edge. */}
             <div className="order-1 md:order-2 relative aspect-square max-w-xl mx-auto md:mx-0 md:ml-auto w-full overflow-hidden">
-              {/* Geometric M backdrop — fills container, defines the bottom edge */}
+              {/* Geometric M backdrop */}
               <div className="absolute inset-0">
                 <GeometricM className="w-full h-full" color="#C7B5FF" />
               </div>
-              {/* Photo — fills container, anchored bottom. Mix-blend-mode multiplies white pixels
-                  into the page so the photo's white background blends invisibly. */}
+              {/* Photo — contained (no zoom-crop), anchored to bottom */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover object-bottom mix-blend-multiply"
+                className="object-contain object-bottom"
                 priority
               />
-              {/* Script overlay — lavender dark, bigger */}
+              {/* Script overlay */}
               <div className="absolute left-0 md:-left-2 top-[48%] -translate-y-1/2 rotate-[-6deg] z-10">
                 <p
                   className="font-caveat text-4xl md:text-5xl lg:text-6xl leading-tight"
