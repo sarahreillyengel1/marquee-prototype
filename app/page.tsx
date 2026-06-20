@@ -127,7 +127,7 @@ export default function LandingPage() {
 
       {/* ── BUILT FOR HUMANS ── */}
       <section className="px-8 md:px-16 py-16 md:py-20 max-w-[1400px] mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
             <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
               Built for Humans
@@ -142,8 +142,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 2x2 feature grid — pushed down to align with body text level */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-10 md:pt-40 self-start">
+          {/* 2x2 feature grid — vertically centered with the left column */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-10">
             <FeatureCard
               icon={<IconBeSeen className="w-7 h-7" />}
               title="Be Seen For Your Work"
@@ -309,12 +309,12 @@ function FeatureCard({
   body: string;
 }) {
   return (
-    <div className="flex gap-5">
-      <div className="shrink-0 w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-brand-ink">
+    <div className="flex gap-5 items-start">
+      <div className="shrink-0 w-14 h-14 rounded-full bg-brand-green flex items-center justify-center text-brand-ink mt-1">
         {icon}
       </div>
-      <div>
-        <h3 className="font-canela text-xl text-brand-ink leading-tight mb-1">
+      <div className="flex-1 min-w-0">
+        <h3 className="font-canela text-xl text-brand-ink leading-tight mb-2 min-h-[3rem]">
           {title}
         </h3>
         <p className="text-sm text-brand-ink/70 leading-relaxed">{body}</p>
