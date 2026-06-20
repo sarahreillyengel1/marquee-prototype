@@ -53,9 +53,9 @@ export default function LandingPage() {
       {/* ── HERO (white bg) ── */}
       <section className="bg-white">
         <div className="px-8 md:px-16 pt-4 max-w-[1400px] mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-end relative">
+          <div className="grid md:grid-cols-2 gap-0 items-end relative">
             {/* Left: copy. */}
-            <div className="order-2 md:order-1 pb-12 md:pb-20">
+            <div className="order-2 md:order-1 pb-12 md:pb-20 pr-0 md:pr-8">
               <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.02em]">
                 Your work<br />
                 deserves the<br />
@@ -72,21 +72,24 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right column — square aspect so M renders without distortion.
-                Photo uses object-top so her FACE is preserved (body cropped at waist). */}
-            <div className="order-1 md:order-2 relative aspect-square mx-auto md:mx-0 md:ml-auto w-full max-w-xl overflow-hidden">
-              {/* M backdrop — natural square, no distortion */}
+            {/* Right column — square aspect, no border, photo bumped up slightly.
+                The M and photo share an exact bottom edge (flush). */}
+            <div
+              className="order-1 md:order-2 relative aspect-square mx-auto md:mx-0 md:ml-auto w-full max-w-xl"
+              style={{ overflow: "hidden", border: "none", outline: "none" }}
+            >
+              {/* M backdrop — fills container, no distortion */}
               <div className="absolute inset-0">
-                <GeometricM className="w-full h-full" color="#C7B5FF" />
+                <GeometricM className="w-full h-full block" color="#C7B5FF" />
               </div>
-              {/* Photo: object-top keeps her face visible (crops body at waist
-                  instead of her head). Object-cover fills container width. */}
+              {/* Photo — bumped up via objectPosition to show face higher in the frame */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover object-top"
+                className="object-cover block"
+                style={{ objectPosition: "center -8%", border: "none" }}
                 priority
               />
             </div>
