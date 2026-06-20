@@ -73,9 +73,11 @@ export default function LandingPage() {
             </div>
 
             {/* Right column — square aspect, no border, photo bumped up slightly.
-                The M and photo share an exact bottom edge (flush). */}
+                The M and photo share an exact bottom edge (flush).
+                Container fills the full grid column (no max-w-xl) so there's no
+                white gap between the headline column and the lavender M. */}
             <div
-              className="order-1 md:order-2 relative aspect-square mx-auto md:mx-0 md:ml-auto w-full max-w-xl"
+              className="order-1 md:order-2 relative aspect-square w-full"
               style={{ overflow: "hidden", border: "none", outline: "none" }}
             >
               {/* M backdrop — fills container, no distortion */}
