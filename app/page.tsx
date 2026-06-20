@@ -53,68 +53,65 @@ export default function LandingPage() {
       {/* ── HERO (white bg) ── */}
       <section className="bg-white">
         <div className="px-8 md:px-16 pt-4 max-w-[1400px] mx-auto">
-          {/* items-end so left and right columns both end at the same bottom edge —
-              no awkward white space below the photo */}
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-end relative">
-            {/* Left: copy. Bottom-padded so headline isn't crammed against the section base. */}
-            <div className="order-2 md:order-1 pb-16 md:pb-24">
-              <h1 className="font-canela text-6xl md:text-7xl lg:text-8xl leading-[1.00] text-brand-ink tracking-[-0.02em]">
+            {/* Left: copy. */}
+            <div className="order-2 md:order-1 pb-12 md:pb-20">
+              <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.02em]">
                 Your work<br />
                 deserves the<br />
                 spotlight.
               </h1>
-              <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-8 max-w-md">
+              <p className="text-base md:text-lg text-brand-ink/70 leading-relaxed mt-7 max-w-md">
                 Marquee is the first personal brand platform for your professional story.
               </p>
               <button
                 onClick={() => setWaitlistOpen(true)}
-                className="mt-10 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
+                className="mt-9 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
               >
                 Join the Waitlist
               </button>
             </div>
 
-            {/* Right column — photo + M, ends at the section bottom. */}
-            <div className="order-1 md:order-2 relative aspect-[4/5] mx-auto md:mx-0 md:ml-auto w-full max-w-xl overflow-hidden">
+            {/* Right column — square aspect so M renders without distortion.
+                Photo uses object-top so her FACE is preserved (body cropped at waist). */}
+            <div className="order-1 md:order-2 relative aspect-square mx-auto md:mx-0 md:ml-auto w-full max-w-xl overflow-hidden">
+              {/* M backdrop — natural square, no distortion */}
               <div className="absolute inset-0">
-                <GeometricM
-                  className="w-full h-full"
-                  color="#C7B5FF"
-                  preserveAspectRatio="none"
-                />
+                <GeometricM className="w-full h-full" color="#C7B5FF" />
               </div>
+              {/* Photo: object-top keeps her face visible (crops body at waist
+                  instead of her head). Object-cover fills container width. */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover object-bottom"
+                className="object-cover object-top"
                 priority
               />
             </div>
 
-            {/* Script — pinned to the bottom-center of the grid, overlapping into
-                the M area on the left side of her body. Not clipped by photo container. */}
+            {/* Script — positioned at grid level, over the M's left side */}
             <div
               className="absolute z-20 pointer-events-none hidden md:block"
-              style={{ left: "42%", bottom: "32%", transform: "rotate(-6deg)" }}
+              style={{ left: "44%", bottom: "30%", transform: "rotate(-6deg)" }}
             >
               <p
-                className="font-caveat text-5xl lg:text-6xl xl:text-7xl leading-[0.95] whitespace-nowrap"
+                className="font-caveat text-5xl lg:text-6xl leading-[0.95] whitespace-nowrap"
                 style={{ color: "#7C3AED" }}
               >
                 <span className="block">Be known.</span>
                 <span className="block ml-3">Not filtered.</span>
               </p>
               <svg
-                width="300"
-                height="20"
-                viewBox="0 0 300 20"
+                width="280"
+                height="18"
+                viewBox="0 0 280 18"
                 fill="none"
                 className="ml-4 mt-1"
               >
                 <path
-                  d="M5 12 Q 80 4, 150 10 T 295 8"
+                  d="M5 11 Q 75 3, 140 9 T 275 7"
                   stroke="#7C3AED"
                   strokeWidth="3"
                   strokeLinecap="round"

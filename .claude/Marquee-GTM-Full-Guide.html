@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marquee GTM Operator — Full Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#191427;--muted:#6b6580;--lav:#7058e6;--lav-dk:#4b37b8;
+    --lav-soft:#f1edff;--lav-line:#e3dcff;--paper:#fff;--code-bg:#1c1733;
+    --ok:#0f9d6b;--warn:#d98324;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);background:#ece8f7;line-height:1.62;padding:32px 16px;-webkit-font-smoothing:antialiased}
+  .page{max-width:820px;margin:0 auto;background:var(--paper);border-radius:20px;overflow:hidden;box-shadow:0 18px 50px rgba(40,25,90,.14)}
+  header{padding:38px 48px 30px;background:linear-gradient(120deg,#fff,#f6f3ff);border-bottom:1px solid var(--lav-line)}
+  .kicker{display:inline-block;margin-bottom:10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--lav-dk);background:var(--lav-soft);padding:5px 11px;border-radius:999px}
+  .wordmark{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .wordmark .m{color:var(--lav)}
+  header h1{font-size:21px;font-weight:600;margin-top:7px}
+  header p{color:var(--muted);font-size:14px;margin-top:6px;max-width:64ch}
+  .body{padding:14px 48px 40px}
+  section{padding:24px 0;border-bottom:1px solid #f0ecfb}
+  section:last-child{border-bottom:0}
+  h2{font-size:18px;font-weight:700;letter-spacing:-.01em;margin-bottom:12px;display:flex;align-items:center;gap:11px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:8px;background:var(--lav);color:#fff;font-size:14px;font-weight:700;flex:0 0 auto}
+  h3{font-size:14px;font-weight:700;margin:16px 0 6px;color:var(--lav-dk)}
+  p{font-size:14.5px;margin-bottom:10px}
+  p.lead{color:var(--muted)}
+  b,strong{font-weight:700}
+  code{font-family:'DM Sans',monospace;background:var(--lav-soft);color:var(--lav-dk);padding:1px 6px;border-radius:5px;font-size:13px;font-weight:600}
+  .cmd{display:block;background:var(--code-bg);color:#fff;padding:11px 15px;border-radius:9px;font-size:14px;font-weight:500;margin:8px 0;font-family:'DM Sans',monospace}
+  .cmd .c{color:#a78bfa}
+  ul,ol{margin:8px 0 12px 4px;padding-left:22px}
+  li{font-size:14.5px;margin-bottom:7px}
+  /* file tree */
+  .tree{background:#faf8ff;border:1px solid var(--lav-line);border-radius:11px;padding:16px 18px;font-family:'DM Sans',monospace;font-size:13px;line-height:1.75;color:#3a3357;overflow-x:auto}
+  .tree .hl{color:var(--lav-dk);font-weight:700}
+  .tree .cm{color:#9b93b5}
+  /* prompt cards */
+  .prompt{border:1px solid var(--lav-line);border-left:3px solid var(--lav);border-radius:9px;padding:11px 14px;margin-bottom:10px;background:#fcfbff}
+  .prompt .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--lav-dk);margin-bottom:4px}
+  .prompt .txt{font-size:13.5px;color:#2c2640;margin:0}
+  /* callouts */
+  .callout{border-radius:11px;padding:15px 18px;margin:12px 0}
+  .callout p{margin:0;font-size:14px}
+  .callout.rule{background:linear-gradient(120deg,#fff7ef,#fdecdc);border:1px solid #f3d4ab;color:#5a4326}
+  .callout.rule b{color:#8a4f12}
+  .callout.tip{background:#ecfdf4;border:1px solid #b6e9cf;color:#1d6b48}
+  .callout.tip b{color:#0f5c39}
+  /* two-motion table */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0}
+  .two .box{border:1px solid var(--lav-line);border-radius:11px;padding:14px 16px}
+  .two .box.green{border-color:#b6e9cf;background:#f4fdf8}
+  .two .box.amber{border-color:#f3d4ab;background:#fffaf3}
+  .two .box h4{font-size:13px;font-weight:700;margin-bottom:6px}
+  .two .box.green h4{color:#0f7a4f}
+  .two .box.amber h4{color:#b06a16}
+  .two .box p{font-size:13px;margin:0;color:#4a4360}
+  footer{padding:20px 48px;background:var(--ink);color:#c9c2e0;font-size:13px}
+  footer b{color:#fff}
+  @media (max-width:680px){.body,header,footer{padding-left:24px;padding-right:24px}.two{grid-template-columns:1fr}}
+  @media print{body{background:#fff;padding:0}.page{box-shadow:none;border-radius:0;max-width:100%}.cmd{background:#f0ecff;color:#2a2150}.cmd .c{color:var(--lav-dk)}footer{background:#f6f3ff;color:#4a4360}footer b{color:var(--ink)}section{break-inside:avoid}@page{margin:14mm}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <span class="kicker">Full Guide</span>
+    <div class="wordmark"><span class="m">Marquee</span> GTM Operator</div>
+    <h1>How to run the go-to-market agent — the complete walkthrough</h1>
+    <p>No coding required. If you can open a terminal and type a sentence, you can run this. The one-page version is the cheat sheet; this is the full reference.</p>
+  </header>
+
+  <div class="body">
+
+    <section>
+      <h2><span class="num">1</span> What this is</h2>
+      <p>You have an <b>AI operator</b> that runs Marquee's go-to-market like a one-person marketing team. It knows Marquee's whole launch strategy, follows it every time, and remembers what it learns. You talk to it in plain English. It drafts posts, surveys, outreach, research, and plans — but it <b>never sends, posts, or publishes anything without showing you first.</b></p>
+      <ul>
+        <li><b>The skill</b> = the playbook. The strategy, rules, voice, and step-by-step launch sequence.</li>
+        <li><b>The agent (operator)</b> = the worker that reads the playbook and does the work, in Sarah's voice.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="num">2</span> What's included</h2>
+      <p class="lead">Everything lives in one folder inside the app: <code>~/Desktop/ROO/marquee/.claude/</code> &nbsp;(it's hidden in Finder because it starts with a dot — that's normal).</p>
+      <div class="tree">
+.claude/<br>
+├── agents/<br>
+│&nbsp;&nbsp;&nbsp;└── <span class="hl">marquee-gtm-operator.md</span> &nbsp;<span class="cm">← THE AGENT you talk to</span><br>
+└── skills/marquee-gtm/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="hl">SKILL.md</span> &nbsp;<span class="cm">← THE PLAYBOOK (strategy + rules + voice)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── references/ &nbsp;<span class="cm">← deeper strategy detail</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── knowledge/ &nbsp;<span class="cm">← THE MEMORY (edit these freely)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── competitors.md<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── market.md<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── feedback.md<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── playbook-library.md<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── decisions.md<br>
+      </div>
+      <p style="margin-top:12px">You'll mostly only ever touch the <b>knowledge/</b> files. Everything else you can leave alone.</p>
+    </section>
+
+    <section>
+      <h2><span class="num">3</span> How to run it (every time)</h2>
+      <ol>
+        <li>Open the <b>Terminal</b> app.</li>
+        <li>Type this and press Enter: <span class="cmd"><span class="c">cd</span> ~/Desktop/ROO/marquee</span></li>
+        <li>Type this and press Enter: <span class="cmd">claude</span></li>
+        <li>You're now talking to Claude. Start your message with <b>"Use the marquee-gtm-operator"</b> and say what you want.</li>
+      </ol>
+      <div class="callout tip"><p><b>First time only:</b> running <code>claude</code> may open a browser asking you to log in with the Anthropic account. Do it once and you're set. To leave: type <code>/exit</code> or close the terminal.</p></div>
+    </section>
+
+    <section>
+      <h2><span class="num">4</span> The prompts you'll actually use</h2>
+      <div class="prompt"><div class="lbl">Where do we stand?</div><p class="txt"><b>Use the marquee-gtm-operator.</b> Read the skill, figure out which stage the launch is on, and tell me the single most important next move. Ask me anything you need to know.</p></div>
+      <div class="prompt"><div class="lbl">Test the Blueprint</div><p class="txt"><b>Use the marquee-gtm-operator.</b> Draft short outreach to 10–15 real people who are job-hunting or pivoting, asking them to try the Alignment Blueprint. Keep it in Sarah's voice. Don't send it — show me first.</p></div>
+      <div class="prompt"><div class="lbl">First survey (own the data)</div><p class="txt"><b>Use the marquee-gtm-operator.</b> Draft our first survey so we start owning data. Pick the topic with the best PR and content potential, write the questions, and save the plan to the knowledge base.</p></div>
+      <div class="prompt"><div class="lbl">Log feedback</div><p class="txt"><b>Use the marquee-gtm-operator.</b> Here's what a beta user said: "[paste]". Save it to the feedback file word-for-word, note the theme, and tell me if it changes anything.</p></div>
+      <div class="prompt"><div class="lbl">Scout competitors</div><p class="txt"><b>Use the marquee-gtm-operator.</b> Research who else is competing with Marquee, rank them, note their weak spots, and save it to the competitors file.</p></div>
+      <p class="lead">You don't have to memorize these. Just describe what you want in normal English — the operator figures out the rest.</p>
+    </section>
+
+    <section>
+      <h2><span class="num">5</span> The one rule that keeps you safe</h2>
+      <div class="callout rule"><p>The operator will <b>draft, research, build lists, and update its own memory files freely</b>. But it will <b>never post, email, DM, send, or publish anything in Marquee's name without showing you first and getting a yes.</b> Anything going out to the public is always your call. So you can let it work without worrying it'll do something live behind your back.</p></div>
+    </section>
+
+    <section>
+      <h2><span class="num">6</span> How to add knowledge and feedback</h2>
+      <h3>Way A — just tell the agent (easiest)</h3>
+      <p>In a <code>claude</code> session, say: <i>"Use the marquee-gtm-operator. Add this to the competitors file: …"</i> or <i>"… A user said '[paste]' — log it in feedback."</i> The agent writes it to the right file for you.</p>
+      <h3>Way B — edit the file yourself</h3>
+      <p>Open the file in any text editor and type at the bottom. The rule: <b>add to the bottom, don't delete what's there, and put the date.</b></p>
+      <ul>
+        <li>New thing a user said → <code>feedback.md</code></li>
+        <li>A competitor launched something → <code>competitors.md</code></li>
+        <li>A new stat to cite → <code>market.md</code> <b>with a link to where it came from</b> (no source = the agent won't use it)</li>
+        <li>A GTM idea you saw → <code>playbook-library.md</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="num">7</span> Two kinds of changes — keep them separate</h2>
+      <div class="two">
+        <div class="box green"><h4>✓ Growing the knowledge</h4><p>New feedback, a competitor move, a stat. Add it to the right <code>knowledge/</code> file. Do this anytime, freely.</p></div>
+        <div class="box amber"><h4>✕ Changing the strategy</h4><p>The launch sequence, a core tactic, pricing. Edit <code>SKILL.md</code> on purpose and note why in <code>decisions.md</code>. Slow down for these.</p></div>
+      </div>
+      <p><b>Rule of thumb:</b> adding facts = anytime. Changing the plan = slow down and write down why.</p>
+    </section>
+
+    <section>
+      <h2><span class="num">8</span> Saving your work (optional)</h2>
+      <p>The agent and skill live in the app's code repository, so changes can be saved to a dated history with git. After meaningful changes:</p>
+      <span class="cmd"><span class="c">cd</span> ~/Desktop/ROO/marquee</span>
+      <span class="cmd"><span class="c">git</span> add .claude</span>
+      <span class="cmd"><span class="c">git</span> commit -m "GTM: short note on what changed"</span>
+      <p class="lead">If git isn't your thing, that's fine — the files are saved on the computer either way. This just keeps a history.</p>
+    </section>
+
+    <section>
+      <h2><span class="num">9</span> If something's not working</h2>
+      <ul>
+        <li><b>It doesn't act like the operator:</b> make sure you started with "Use the marquee-gtm-operator," and ran <code>claude</code> from inside <code>~/Desktop/ROO/marquee</code>.</li>
+        <li><b>You see "marquee-gtm" listed twice:</b> harmless. The version inside this repo is the one to edit.</li>
+        <li><b>General check-up:</b> run <code>claude doctor</code> in a terminal.</li>
+        <li><b>It cited a number with no source, or repeated a killed idea:</b> tell it. The guardrails are <code>market.md</code> (sources) and <code>decisions.md</code> (settled calls).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="num">★</span> The short version (tape this to the wall)</h2>
+      <ol>
+        <li><code>cd ~/Desktop/ROO/marquee</code> then <code>claude</code></li>
+        <li>Start with <b>"Use the marquee-gtm-operator"</b> and ask in plain English.</li>
+        <li>It drafts; <b>you approve</b> anything that goes out.</li>
+        <li>New feedback / competitor / stat → add it to the matching file in <code>knowledge/</code>.</li>
+        <li>Changing the actual plan → edit <code>SKILL.md</code> and note why in <code>decisions.md</code>.</li>
+      </ol>
+    </section>
+
+  </div>
+
+  <footer>
+    <b>Marquee GTM Operator</b> — full guide. The cheat-sheet version is <b>Marquee-GTM-Intern-Quickstart.html</b>. &nbsp;Be known, not filtered.
+  </footer>
+
+</div>
+</body>
+</html>
