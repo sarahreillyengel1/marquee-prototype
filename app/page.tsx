@@ -53,15 +53,15 @@ export default function LandingPage() {
       {/* ── HERO (white bg) ── */}
       <section className="bg-white">
         <div className="px-8 md:px-16 pt-4 pb-4 max-w-[1400px] mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center relative">
             {/* Left: copy */}
             <div className="order-2 md:order-1">
-              <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.01em]">
+              <h1 className="font-canela text-6xl md:text-7xl lg:text-8xl leading-[1.00] text-brand-ink tracking-[-0.02em]">
                 Your work<br />
                 deserves the<br />
                 spotlight.
               </h1>
-              <p className="text-base md:text-lg text-brand-ink/70 leading-relaxed mt-8 max-w-md">
+              <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-8 max-w-md">
                 Marquee is the first personal brand platform for your professional story.
               </p>
               <button
@@ -72,49 +72,55 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right: square container so the M is visible WIDER than the photo.
-                Photo (2:3 portrait) is contained within the square = narrower than container,
-                so the M's left + right legs frame the photo on both sides. The M's V valley
-                is visible at the top. Photo bottom = M bottom = container bottom. */}
-            <div className="order-1 md:order-2 relative aspect-square max-w-xl mx-auto md:mx-0 md:ml-auto w-full overflow-hidden">
-              {/* M backdrop — fills container fully */}
+            {/* Right column — slightly tall (4:5) so the photo fills the width and crops just
+                a small amount from the top. The photo and M end at the SAME bottom line. */}
+            <div className="order-1 md:order-2 relative aspect-[4/5] mx-auto md:mx-0 md:ml-auto w-full max-w-xl overflow-hidden">
+              {/* M backdrop — fills the full column */}
               <div className="absolute inset-0">
-                <GeometricM className="w-full h-full" color="#C7B5FF" />
+                <GeometricM
+                  className="w-full h-full"
+                  color="#C7B5FF"
+                  preserveAspectRatio="none"
+                />
               </div>
-              {/* Photo — contained (no zoom/crop), narrower than container, bottom-aligned.
-                  Photo's transparent edges let the M show through on left + right. */}
+              {/* Photo — fills column width, anchored to bottom */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
-                sizes="(min-width: 768px) 40vw, 100vw"
-                className="object-contain object-bottom"
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-bottom"
                 priority
               />
-              {/* Script overlay */}
-              <div className="absolute left-0 md:-left-4 top-[50%] -translate-y-1/2 rotate-[-6deg] z-10">
-                <p
-                  className="font-caveat text-4xl md:text-5xl lg:text-6xl leading-tight"
-                  style={{ color: "#7C3AED" }}
-                >
-                  <span className="block">Be known.</span>
-                  <span className="block">Not filtered.</span>
-                </p>
-                <svg
-                  width="240"
-                  height="16"
-                  viewBox="0 0 240 16"
-                  fill="none"
-                  className="ml-3 mt-1"
-                >
-                  <path
-                    d="M5 9 Q 60 3, 120 8 T 235 7"
-                    stroke="#7C3AED"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
+            </div>
+
+            {/* Script "Be known. Not filtered." — positioned relative to the parent grid so
+                it can sit between the columns without being clipped by the photo container */}
+            <div
+              className="absolute z-20 pointer-events-none hidden md:block"
+              style={{ left: "44%", bottom: "20%", transform: "rotate(-6deg)" }}
+            >
+              <p
+                className="font-caveat text-5xl lg:text-6xl xl:text-7xl leading-[0.95] whitespace-nowrap"
+                style={{ color: "#7C3AED" }}
+              >
+                <span className="block">Be known.</span>
+                <span className="block ml-3">Not filtered.</span>
+              </p>
+              <svg
+                width="300"
+                height="20"
+                viewBox="0 0 300 20"
+                fill="none"
+                className="ml-4 mt-1"
+              >
+                <path
+                  d="M5 12 Q 80 4, 150 10 T 295 8"
+                  stroke="#7C3AED"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
             </div>
           </div>
         </div>

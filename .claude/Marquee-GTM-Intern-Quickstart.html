@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marquee GTM Operator — Quick Start</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#191427;
+    --muted:#6b6580;
+    --lav:#7058e6;
+    --lav-dk:#4b37b8;
+    --lav-soft:#f1edff;
+    --lav-line:#e3dcff;
+    --paper:#ffffff;
+    --code-bg:#1c1733;
+    --code-ink:#e9bff;
+    --ok:#0f9d6b;
+    --warn:#d98324;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'DM Sans',system-ui,sans-serif;
+    color:var(--ink);
+    background:#ece8f7;
+    line-height:1.5;
+    padding:32px 16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:1000px;margin:0 auto;background:var(--paper);
+    border-radius:20px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(40,25,90,.14);
+  }
+  /* Header */
+  header{
+    padding:34px 40px 28px;
+    background:linear-gradient(120deg,#ffffff 0%,#f6f3ff 100%);
+    border-bottom:1px solid var(--lav-line);
+  }
+  .wordmark{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .wordmark .m{color:var(--lav)}
+  .kicker{
+    display:inline-block;margin-bottom:10px;font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.16em;color:var(--lav-dk);
+    background:var(--lav-soft);padding:5px 11px;border-radius:999px;
+  }
+  header h1{font-size:23px;font-weight:600;margin-top:6px;letter-spacing:-.01em}
+  header p{color:var(--muted);font-size:14px;margin-top:5px;max-width:62ch}
+  /* Body grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .col{padding:28px 40px}
+  .col+.col{border-left:1px solid var(--lav-line)}
+  section{margin-bottom:26px}
+  section:last-child{margin-bottom:0}
+  .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:23px;height:23px;border-radius:7px;background:var(--lav);color:#fff;
+    font-size:13px;font-weight:700;margin-right:9px;flex:0 0 auto;
+  }
+  h2{display:flex;align-items:center;font-size:16px;font-weight:700;margin-bottom:11px}
+  code,.cmd{font-family:'DM Sans',monospace}
+  .cmd{
+    display:block;background:var(--code-bg);color:#fff;
+    padding:11px 14px;border-radius:9px;font-size:13.5px;font-weight:500;
+    margin:7px 0;letter-spacing:.01em;
+  }
+  .cmd .c{color:var(--code-ink)}
+  .step-note{font-size:12.5px;color:var(--muted);margin-top:6px}
+  /* Prompt cards */
+  .prompt{
+    border:1px solid var(--lav-line);border-left:3px solid var(--lav);
+    border-radius:9px;padding:11px 13px;margin-bottom:9px;background:#fcfbff;
+  }
+  .prompt .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--lav-dk);margin-bottom:4px}
+  .prompt .txt{font-size:13px;color:#2c2640}
+  .prompt .txt b{color:var(--lav-dk)}
+  /* Callout */
+  .rule{
+    background:linear-gradient(120deg,#fff7ef,#fdecdc);
+    border:1px solid #f3d4ab;border-radius:11px;padding:15px 17px;
+  }
+  .rule h2{margin-bottom:7px}
+  .rule .pin{width:23px;height:23px;border-radius:7px;background:var(--warn)}
+  .rule p{font-size:13px;color:#5a4326}
+  .rule b{color:#8a4f12}
+  /* memory list */
+  ul.mem{list-style:none;font-size:13px}
+  ul.mem li{padding:7px 0;border-bottom:1px dashed var(--lav-line);display:flex;gap:9px}
+  ul.mem li:last-child{border-bottom:0}
+  ul.mem .f{font-weight:600;color:var(--lav-dk);white-space:nowrap}
+  .tag{font-size:12px;color:var(--muted)}
+  /* footer */
+  footer{
+    padding:18px 40px;background:var(--ink);color:#c9c2e0;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    font-size:12.5px;
+  }
+  footer .do{color:#9be8c8}
+  footer .dont{color:#ffb3a8}
+  footer b{color:#fff}
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr}
+    .col+.col{border-left:0;border-top:1px solid var(--lav-line)}
+  }
+  @media print{
+    body{background:#fff;padding:0}
+    .page{box-shadow:none;border-radius:0;max-width:100%}
+    .cmd{background:#f0ecff;color:#2a2150;border:1px solid var(--lav-line)}
+    .cmd .c{color:var(--lav-dk)}
+    footer{background:#f6f3ff;color:#4a4360}
+    footer b{color:var(--ink)}
+    @page{margin:12mm}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <span class="kicker">Intern Quick Start</span>
+    <div class="wordmark"><span class="m">Marquee</span> GTM Operator</div>
+    <h1>Your AI go-to-market teammate for the Marquee launch</h1>
+    <p>It drafts content, outreach, surveys, and research in Sarah's voice — and never sends anything to the public without a yes. Here's everything you need on one page.</p>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT COLUMN -->
+    <div class="col">
+
+      <section>
+        <h2><span class="num">1</span> Start it up</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Open the <b>Terminal</b> app, then type these two lines:</p>
+        <span class="cmd"><span class="c">cd</span> ~/Desktop/ROO/marquee</span>
+        <span class="cmd">claude</span>
+        <p class="step-note">First time only: a browser may ask you to log in with the Anthropic account. To quit: type <code>/exit</code>.</p>
+      </section>
+
+      <section>
+        <h2><span class="num">2</span> Talk to the operator</h2>
+        <p style="font-size:13px;color:var(--muted)">Begin every message with the words below, then ask for what you want in plain English:</p>
+        <span class="cmd" style="background:var(--lav);"><span style="color:#fff">Use the marquee-gtm-operator …</span></span>
+      </section>
+
+      <section class="rule">
+        <h2><span class="num pin">!</span> The golden rule</h2>
+        <p>The operator will <b>draft, research, and organize freely</b>. It will <b>never post, email, DM, or publish</b> anything in Marquee's name without showing you first. Anything going public is <b>always your call</b>. Work with it freely — nothing goes live behind your back.</p>
+      </section>
+
+      <section>
+        <h2><span class="num">3</span> Feed its memory</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Just tell it — e.g. <i>"Use the marquee-gtm-operator. A user said '…' — log it in feedback."</i> Or type into the files yourself (always add to the bottom, keep the date):</p>
+        <ul class="mem">
+          <li><span class="f">feedback</span><span class="tag">what real users say — paste word-for-word</span></li>
+          <li><span class="f">competitors</span><span class="tag">who else is out there + their gaps</span></li>
+          <li><span class="f">market</span><span class="tag">stats &amp; survey data — every number needs a source</span></li>
+          <li><span class="f">decisions</span><span class="tag">what we decided &amp; why</span></li>
+        </ul>
+        <p class="step-note">Files live in <code>.claude/skills/marquee-gtm/knowledge/</code></p>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col">
+      <section>
+        <h2><span class="num">★</span> Prompts you'll actually use</h2>
+
+        <div class="prompt">
+          <div class="lbl">Where do we stand?</div>
+          <div class="txt"><b>Use the marquee-gtm-operator.</b> Figure out which stage the launch is on and tell me the single most important next move.</div>
+        </div>
+
+        <div class="prompt">
+          <div class="lbl">Test the Blueprint</div>
+          <div class="txt"><b>Use the marquee-gtm-operator.</b> Draft short outreach to 10–15 people who are job-hunting or pivoting, asking them to try the Alignment Blueprint. Sarah's voice. Don't send — show me first.</div>
+        </div>
+
+        <div class="prompt">
+          <div class="lbl">First survey (own the data)</div>
+          <div class="txt"><b>Use the marquee-gtm-operator.</b> Draft our first survey. Pick the topic with the best PR potential, write the questions, and save the plan to the knowledge base.</div>
+        </div>
+
+        <div class="prompt">
+          <div class="lbl">Log feedback</div>
+          <div class="txt"><b>Use the marquee-gtm-operator.</b> A beta user said: "[paste]". Save it to the feedback file word-for-word, note the theme, and tell me if it changes anything.</div>
+        </div>
+
+        <div class="prompt">
+          <div class="lbl">Scout competitors</div>
+          <div class="txt"><b>Use the marquee-gtm-operator.</b> Research who competes with Marquee, rank them, note their weak spots, and save it to the competitors file.</div>
+        </div>
+
+        <p class="step-note">You don't have to memorize these. Describe what you want in normal English — the operator handles the rest.</p>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <span><span class="do">✓ Adding facts &amp; feedback</span> &nbsp;—&nbsp; do it anytime, freely.</span>
+    <span><span class="dont">✕ Changing the actual plan</span> &nbsp;—&nbsp; ask Sarah first. Full guide: <b>.claude/GTM-AGENT-GUIDE.md</b></span>
+  </footer>
+
+</div>
+</body>
+</html>
