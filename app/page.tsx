@@ -52,10 +52,12 @@ export default function LandingPage() {
 
       {/* ── HERO (white bg) ── */}
       <section className="bg-white">
-        <div className="px-8 md:px-16 pt-4 pb-4 max-w-[1400px] mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center relative">
-            {/* Left: copy */}
-            <div className="order-2 md:order-1">
+        <div className="px-8 md:px-16 pt-4 max-w-[1400px] mx-auto">
+          {/* items-end so left and right columns both end at the same bottom edge —
+              no awkward white space below the photo */}
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-end relative">
+            {/* Left: copy. Bottom-padded so headline isn't crammed against the section base. */}
+            <div className="order-2 md:order-1 pb-16 md:pb-24">
               <h1 className="font-canela text-6xl md:text-7xl lg:text-8xl leading-[1.00] text-brand-ink tracking-[-0.02em]">
                 Your work<br />
                 deserves the<br />
@@ -72,10 +74,8 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right column — slightly tall (4:5) so the photo fills the width and crops just
-                a small amount from the top. The photo and M end at the SAME bottom line. */}
+            {/* Right column — photo + M, ends at the section bottom. */}
             <div className="order-1 md:order-2 relative aspect-[4/5] mx-auto md:mx-0 md:ml-auto w-full max-w-xl overflow-hidden">
-              {/* M backdrop — fills the full column */}
               <div className="absolute inset-0">
                 <GeometricM
                   className="w-full h-full"
@@ -83,7 +83,6 @@ export default function LandingPage() {
                   preserveAspectRatio="none"
                 />
               </div>
-              {/* Photo — fills column width, anchored to bottom */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
@@ -94,11 +93,11 @@ export default function LandingPage() {
               />
             </div>
 
-            {/* Script "Be known. Not filtered." — positioned relative to the parent grid so
-                it can sit between the columns without being clipped by the photo container */}
+            {/* Script — pinned to the bottom-center of the grid, overlapping into
+                the M area on the left side of her body. Not clipped by photo container. */}
             <div
               className="absolute z-20 pointer-events-none hidden md:block"
-              style={{ left: "44%", bottom: "20%", transform: "rotate(-6deg)" }}
+              style={{ left: "42%", bottom: "32%", transform: "rotate(-6deg)" }}
             >
               <p
                 className="font-caveat text-5xl lg:text-6xl xl:text-7xl leading-[0.95] whitespace-nowrap"
