@@ -72,28 +72,27 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right: photo + M backdrop + script.
-                Container matches the photo's natural 2:3 aspect, so the photo fills it
-                edge-to-edge with no crop and no white-space. M is a square anchored
-                to the bottom — so it occupies the bottom 2/3 of the container.
-                Result: her head shows above the M, her body sits over the M, and the
-                photo's transparent edges let the M show around her silhouette. */}
-            <div className="order-1 md:order-2 relative aspect-[2/3] max-w-md mx-auto md:mx-0 md:ml-auto w-full overflow-hidden">
-              {/* M backdrop — square, anchored bottom, full width */}
-              <div className="absolute bottom-0 left-0 w-full aspect-square">
+            {/* Right: square container so the M is visible WIDER than the photo.
+                Photo (2:3 portrait) is contained within the square = narrower than container,
+                so the M's left + right legs frame the photo on both sides. The M's V valley
+                is visible at the top. Photo bottom = M bottom = container bottom. */}
+            <div className="order-1 md:order-2 relative aspect-square max-w-xl mx-auto md:mx-0 md:ml-auto w-full overflow-hidden">
+              {/* M backdrop — fills container fully */}
+              <div className="absolute inset-0">
                 <GeometricM className="w-full h-full" color="#C7B5FF" />
               </div>
-              {/* Photo — fills container exactly (2:3 == 2:3, no crop, no padding) */}
+              {/* Photo — contained (no zoom/crop), narrower than container, bottom-aligned.
+                  Photo's transparent edges let the M show through on left + right. */}
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
                 sizes="(min-width: 768px) 40vw, 100vw"
-                className="object-cover"
+                className="object-contain object-bottom"
                 priority
               />
               {/* Script overlay */}
-              <div className="absolute left-2 md:-left-4 top-[58%] -translate-y-1/2 rotate-[-6deg] z-10">
+              <div className="absolute left-0 md:-left-4 top-[50%] -translate-y-1/2 rotate-[-6deg] z-10">
                 <p
                   className="font-caveat text-4xl md:text-5xl lg:text-6xl leading-tight"
                   style={{ color: "#7C3AED" }}

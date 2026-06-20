@@ -91,16 +91,24 @@ export function GeometricM(
   props: SVGProps<SVGSVGElement> & { color?: string }
 ) {
   const { color = "#C7B5FF", ...rest } = props;
+  // Wider legs + deeper V valley so the M letterform reads clearly
+  // even when a portrait photo sits over the middle.
   return (
-    <svg viewBox="0 0 200 200" fill={color} xmlns="http://www.w3.org/2000/svg" {...rest}>
-      {/* Left vertical leg */}
-      <path d="M10 20 L60 20 L60 180 L10 180 Z" />
-      {/* Right vertical leg */}
-      <path d="M140 20 L190 20 L190 180 L140 180 Z" />
-      {/* Left diagonal forming the V valley */}
-      <path d="M60 20 L100 110 L60 110 Z" />
-      {/* Right diagonal */}
-      <path d="M140 20 L100 110 L140 110 Z" />
+    <svg
+      viewBox="0 0 200 200"
+      fill={color}
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+      {...rest}
+    >
+      {/* Left leg (wider — 30%) */}
+      <path d="M5 10 L65 10 L65 190 L5 190 Z" />
+      {/* Right leg (wider — 30%) */}
+      <path d="M135 10 L195 10 L195 190 L135 190 Z" />
+      {/* Left diagonal — deeper V (extends to 75% down) */}
+      <path d="M65 10 L100 150 L65 150 Z" />
+      {/* Right diagonal — deeper V */}
+      <path d="M135 10 L100 150 L135 150 Z" />
     </svg>
   );
 }
