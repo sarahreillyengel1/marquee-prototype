@@ -72,26 +72,24 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Right column — square aspect, no border, photo bumped up slightly.
-                The M and photo share an exact bottom edge (flush).
-                Container fills the full grid column (no max-w-xl) so there's no
-                white gap between the headline column and the lavender M. */}
+            {/* Right column — square aspect. M + photo treated as one graphic:
+                same overflow-hidden container, same absolute fill, share the exact
+                same bottom edge. Container fills full grid column width. */}
             <div
-              className="order-1 md:order-2 relative aspect-square w-full"
-              style={{ overflow: "hidden", border: "none", outline: "none" }}
+              className="order-1 md:order-2 relative aspect-square w-full block"
+              style={{ overflow: "hidden", border: 0, outline: 0, lineHeight: 0 }}
             >
-              {/* M backdrop — fills container, no distortion */}
-              <div className="absolute inset-0">
-                <GeometricM className="w-full h-full block" color="#C7B5FF" />
-              </div>
-              {/* Photo — bumped up via objectPosition to show face higher in the frame */}
+              <GeometricM
+                className="absolute inset-0 w-full h-full"
+                color="#C7B5FF"
+              />
               <Image
                 src="/images/marquee-hero.png"
                 alt="Marquee — professional"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover block"
-                style={{ objectPosition: "center -8%", border: "none" }}
+                className="object-cover"
+                style={{ objectPosition: "center -8%", border: 0, display: "block" }}
                 priority
               />
             </div>

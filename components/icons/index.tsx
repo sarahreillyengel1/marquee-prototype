@@ -91,24 +91,26 @@ export function GeometricM(
   props: SVGProps<SVGSVGElement> & { color?: string }
 ) {
   const { color = "#C7B5FF", ...rest } = props;
-  // Wider legs + deeper V valley so the M letterform reads clearly
-  // even when a portrait photo sits over the middle.
+  // Wider legs + deeper V valley so the M letterform reads clearly.
+  // Paths fill the FULL viewBox (no internal padding) so the M shares
+  // an exact bottom edge with whatever's layered with it (the photo).
   return (
     <svg
       viewBox="0 0 200 200"
       fill={color}
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
+      style={{ display: "block" }}
       {...rest}
     >
-      {/* Left leg (wider — 30%) */}
-      <path d="M5 10 L65 10 L65 190 L5 190 Z" />
-      {/* Right leg (wider — 30%) */}
-      <path d="M135 10 L195 10 L195 190 L135 190 Z" />
-      {/* Left diagonal — deeper V (extends to 75% down) */}
-      <path d="M65 10 L100 150 L65 150 Z" />
-      {/* Right diagonal — deeper V */}
-      <path d="M135 10 L100 150 L135 150 Z" />
+      {/* Left leg (30% wide, full height) */}
+      <path d="M0 0 L60 0 L60 200 L0 200 Z" />
+      {/* Right leg (30% wide, full height) */}
+      <path d="M140 0 L200 0 L200 200 L140 200 Z" />
+      {/* Left diagonal — V extends to 80% down */}
+      <path d="M60 0 L100 160 L60 160 Z" />
+      {/* Right diagonal */}
+      <path d="M140 0 L100 160 L140 160 Z" />
     </svg>
   );
 }
