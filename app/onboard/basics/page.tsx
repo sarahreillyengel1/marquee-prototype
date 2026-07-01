@@ -3,13 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import OnboardShell from "@/components/OnboardShell";
 
-const WORK_TYPES = ["Full-time", "Fractional", "Both", "Exploring"];
-const WORK_STATUSES = [
-  "Open now",
-  "Open to the right thing",
-  "Not actively looking",
+const WORK_TYPES = [
+  { value: "Full-time", color: "bg-brand-citron", border: "border-brand-citron" },
+  { value: "Fractional", color: "bg-brand-sky", border: "border-brand-sky" },
+  { value: "Both", color: "bg-brand-green", border: "border-brand-green" },
+  { value: "Exploring", color: "bg-brand-stone", border: "border-brand-stone" },
 ];
+const WORK_STATUSES = ["Open now", "Open to the right thing", "Not actively looking"];
 const WORK_ENVS = ["Remote", "Hybrid", "In-person", "Flexible"];
 
 export default function OnboardBasicsPage() {
@@ -35,7 +37,6 @@ export default function OnboardBasicsPage() {
   const supabase = createBrowserSupabase();
 
   useEffect(() => {
-    // Load resume data to pre-fill
     const resumeData = localStorage.getItem("marquee_resume");
     if (resumeData) {
       try {
@@ -47,11 +48,9 @@ export default function OnboardBasicsPage() {
       }
     }
 
-    // Get user + use auth metadata as a fallback when resume didn't surface a name
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       setUserId(user.id);
-      // Only use metadata name if the resume parse didn't already fill it
       setName((current) => {
         if (current) return current;
         const meta = user.user_metadata as { full_name?: string } | undefined;
@@ -73,29 +72,24 @@ export default function OnboardBasicsPage() {
     const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      const url = URL.createObjectURL(file);
-      setAvatarPreview(url);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async () => {
     setLoading(true);
 
-    // Upload avatar if selected
     let avatarUrl = null;
     if (avatarFile && userId) {
       const ext = avatarFile.name.split(".").pop();
       const path = `${userId}/avatar.${ext}`;
-      await supabase.storage.from("avatars").upload(path, avatarFile, {
-        upsert: true,
-      });
+      await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
       const {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(path);
       avatarUrl = publicUrl;
     }
 
-    // Save all basics
     await fetch("/api/save-answers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -110,9 +104,7 @@ export default function OnboardBasicsPage() {
           work_status: workStatus,
           work_env: workEnv,
           hours_per_week:
-            workType === "Fractional" || workType === "Both"
-              ? hoursPerWeek
-              : null,
+            workType === "Fractional" || workType === "Both" ? hoursPerWeek : null,
           salary_min: showComp ? salaryMin * 1000 : null,
           salary_max: showComp ? salaryMax * 1000 : null,
           rate_min: showComp ? rateMin : null,
@@ -121,18 +113,9 @@ export default function OnboardBasicsPage() {
       }),
     });
 
-    // Create username from name
-    const username = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "")
-      .slice(0, 20);
-
-    // Save username to profiles_meta
+    const username = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
     const supabaseServer = createBrowserSupabase();
-    await supabaseServer
-      .from("profiles_meta")
-      .update({ username })
-      .eq("id", userId);
+    await supabaseServer.from("profiles_meta").update({ username }).eq("id", userId);
 
     router.push("/onboard/elviis");
   };
@@ -140,54 +123,44 @@ export default function OnboardBasicsPage() {
   const showHours = workType === "Fractional" || workType === "Both";
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="max-w-xl mx-auto">
-        <h1 className="font-sans font-bold text-lg text-ink mb-8">marquee</h1>
-
-        <h2 className="font-sans font-bold text-3xl mb-2">
-          Hi{name ? ` ${name.split(" ")[0]}` : ""}, let&apos;s get a few basics
-          before we build your Marquee.
-        </h2>
-        <p className="text-gray mb-10">
-          Everything here can be changed later.
+    <OnboardShell step="basics">
+      <div className="w-full max-w-2xl mt-8 md:mt-12">
+        <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
+          Step 2
+        </span>
+        <h1 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
+          Hi{name ? ` ${name.split(" ")[0]}` : ""}, a few basics.
+        </h1>
+        <p className="text-brand-ink/70 mt-4 leading-relaxed">
+          Everything here can be changed later. Auto-saves as you go.
         </p>
 
         {/* Identity */}
-        <div className="mb-10">
-          <h3 className="section-label mb-4">Identity</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-1.5">
-                Full name
-              </label>
+        <section className="mt-12">
+          <h2 className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-5">
+            Identity
+          </h2>
+          <div className="space-y-5">
+            <Field label="Full name">
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => saveField("name", name)}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:border-lav-mid transition-colors"
+                className={inputClass}
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-1.5">
-                Location
-              </label>
+            </Field>
+            <Field label="Location">
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 onBlur={() => saveField("location", location)}
                 placeholder="City, State"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:border-lav-mid transition-colors"
+                className={inputClass}
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-1.5">
-                Date of birth
-              </label>
+            </Field>
+            <Field label="Date of birth" hint="Internal only — never displayed publicly.">
               <input
                 type="date"
                 value={dob}
@@ -195,22 +168,14 @@ export default function OnboardBasicsPage() {
                   setDob(e.target.value);
                   saveField("dob", e.target.value);
                 }}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:border-lav-mid transition-colors"
+                className={inputClass}
               />
-              <p className="text-xs text-gray-2 mt-1">
-                Internal only — never displayed publicly.
-              </p>
-            </div>
-
-            {/* Avatar */}
-            <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-1.5">
-                Profile photo
-              </label>
-              <div className="flex items-center gap-4">
+            </Field>
+            <Field label="Profile photo">
+              <div className="flex items-center gap-5">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-lav-mid transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-white"
+                  className="w-20 h-20 rounded-full border-2 border-dashed border-brand-stone hover:border-brand-ink transition-colors cursor-pointer overflow-hidden flex items-center justify-center bg-white shrink-0"
                 >
                   {avatarPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -220,7 +185,7 @@ export default function OnboardBasicsPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-gray-2 text-2xl">+</span>
+                    <span className="text-brand-ink/40 text-2xl">+</span>
                   )}
                 </div>
                 <input
@@ -230,49 +195,44 @@ export default function OnboardBasicsPage() {
                   onChange={handleAvatarChange}
                   className="hidden"
                 />
-                <p className="text-xs text-gray">
-                  Optional but encouraged. Square works best.
+                <p className="text-xs text-brand-ink/60 leading-relaxed">
+                  Optional but encouraged.<br />Square photos work best.
                 </p>
               </div>
-            </div>
+            </Field>
           </div>
-        </div>
+        </section>
 
         {/* Work Setup */}
-        <div className="mb-10">
-          <h3 className="section-label mb-4">Work setup</h3>
-
-          <div className="space-y-6">
-            {/* Work type - card select */}
+        <section className="mt-14">
+          <h2 className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-5">
+            Work setup
+          </h2>
+          <div className="space-y-8">
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                Work type
-              </label>
+              <label className={labelClass}>Work type</label>
               <div className="grid grid-cols-2 gap-3">
-                {WORK_TYPES.map((type) => (
+                {WORK_TYPES.map((t) => (
                   <button
-                    key={type}
+                    key={t.value}
                     onClick={() => {
-                      setWorkType(type);
-                      saveField("work_type", type);
+                      setWorkType(t.value);
+                      saveField("work_type", t.value);
                     }}
-                    className={`card p-4 text-left text-sm font-medium transition-all ${
-                      workType === type
-                        ? "border-lav-mid bg-lav-lt text-ink"
-                        : "hover:border-lav text-gray"
+                    className={`p-4 rounded-2xl text-left text-sm font-medium border-2 transition-all ${
+                      workType === t.value
+                        ? `${t.color} ${t.border} text-brand-ink`
+                        : "bg-white border-brand-stone text-brand-ink/70 hover:border-brand-ink"
                     }`}
                   >
-                    {type}
+                    {t.value}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Work status - pills */}
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                Work status
-              </label>
+              <label className={labelClass}>Work status</label>
               <div className="flex flex-wrap gap-2">
                 {WORK_STATUSES.map((status) => (
                   <button
@@ -281,10 +241,10 @@ export default function OnboardBasicsPage() {
                       setWorkStatus(status);
                       saveField("work_status", status);
                     }}
-                    className={`px-4 py-2 rounded-full text-sm transition-all ${
+                    className={`px-4 py-2 rounded-full text-sm transition-all border ${
                       workStatus === status
-                        ? "bg-ink text-white"
-                        : "bg-white border border-border text-gray hover:border-ink"
+                        ? "bg-brand-ink text-white border-brand-ink"
+                        : "bg-white border-brand-stone text-brand-ink/70 hover:border-brand-ink"
                     }`}
                   >
                     {status}
@@ -293,11 +253,8 @@ export default function OnboardBasicsPage() {
               </div>
             </div>
 
-            {/* Work environment - multi-select pills */}
             <div>
-              <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                Work environment
-              </label>
+              <label className={labelClass}>Work environment</label>
               <div className="flex flex-wrap gap-2">
                 {WORK_ENVS.map((env) => (
                   <button
@@ -309,10 +266,10 @@ export default function OnboardBasicsPage() {
                       setWorkEnv(next);
                       saveField("work_env", next);
                     }}
-                    className={`px-4 py-2 rounded-full text-sm transition-all ${
+                    className={`px-4 py-2 rounded-full text-sm transition-all border ${
                       workEnv.includes(env)
-                        ? "bg-ink text-white"
-                        : "bg-white border border-border text-gray hover:border-ink"
+                        ? "bg-brand-lavender border-brand-lavender text-brand-ink"
+                        : "bg-white border-brand-stone text-brand-ink/70 hover:border-brand-ink"
                     }`}
                   >
                     {env}
@@ -321,11 +278,13 @@ export default function OnboardBasicsPage() {
               </div>
             </div>
 
-            {/* Hours per week (conditional) */}
             {showHours && (
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                  Hours available per week: {hoursPerWeek}
+                <label className={labelClass}>
+                  Hours available per week
+                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                    {hoursPerWeek}
+                  </span>
                 </label>
                 <input
                   type="range"
@@ -337,39 +296,43 @@ export default function OnboardBasicsPage() {
                     setHoursPerWeek(Number(e.target.value));
                     saveField("hours_per_week", Number(e.target.value));
                   }}
-                  className="w-full accent-lav-mid"
+                  className="w-full accent-brand-ink"
                 />
-                <div className="flex justify-between text-xs text-gray-2 mt-1">
+                <div className="flex justify-between text-xs text-brand-ink/50 mt-1">
                   <span>5 hrs</span>
                   <span>40 hrs</span>
                 </div>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Compensation */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="section-label">Compensation</h3>
+        <section className="mt-14">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
+              Compensation
+            </h2>
             <button
               onClick={() => setShowComp(!showComp)}
-              className="text-xs text-gray hover:text-ink transition-colors"
+              className="text-xs text-brand-ink/60 hover:text-brand-ink transition-colors underline"
             >
               {showComp ? "Prefer not to say" : "Show compensation"}
             </button>
           </div>
 
           {showComp && (
-            <div className="space-y-6">
-              <p className="text-xs text-gray">
-                Visible to verified recruiters only in v2. Stored but not
-                displayed publicly.
+            <div className="space-y-8">
+              <p className="text-xs text-brand-ink/60 leading-relaxed">
+                Stored but not displayed publicly. Visible to verified recruiters only.
               </p>
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                  Salary range: ${salaryMin}K – ${salaryMax}K
-                  {salaryMax >= 500 ? "+" : ""}
+                <label className={labelClass}>
+                  Salary range
+                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                    ${salaryMin}K – ${salaryMax}K
+                    {salaryMax >= 500 ? "+" : ""}
+                  </span>
                 </label>
                 <div className="flex gap-4">
                   <input
@@ -379,11 +342,9 @@ export default function OnboardBasicsPage() {
                     step={10}
                     value={salaryMin}
                     onChange={(e) =>
-                      setSalaryMin(
-                        Math.min(Number(e.target.value), salaryMax - 10)
-                      )
+                      setSalaryMin(Math.min(Number(e.target.value), salaryMax - 10))
                     }
-                    className="flex-1 accent-lav-mid"
+                    className="flex-1 accent-brand-ink"
                   />
                   <input
                     type="range"
@@ -392,18 +353,19 @@ export default function OnboardBasicsPage() {
                     step={10}
                     value={salaryMax}
                     onChange={(e) =>
-                      setSalaryMax(
-                        Math.max(Number(e.target.value), salaryMin + 10)
-                      )
+                      setSalaryMax(Math.max(Number(e.target.value), salaryMin + 10))
                     }
-                    className="flex-1 accent-lav-mid"
+                    className="flex-1 accent-brand-ink"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
-                  Hourly rate: ${rateMin}/hr – ${rateMax}
-                  {rateMax >= 500 ? "+" : ""}/hr
+                <label className={labelClass}>
+                  Hourly rate
+                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                    ${rateMin}/hr – ${rateMax}
+                    {rateMax >= 500 ? "+" : ""}/hr
+                  </span>
                 </label>
                 <div className="flex gap-4">
                   <input
@@ -413,11 +375,9 @@ export default function OnboardBasicsPage() {
                     step={25}
                     value={rateMin}
                     onChange={(e) =>
-                      setRateMin(
-                        Math.min(Number(e.target.value), rateMax - 25)
-                      )
+                      setRateMin(Math.min(Number(e.target.value), rateMax - 25))
                     }
-                    className="flex-1 accent-lav-mid"
+                    className="flex-1 accent-brand-ink"
                   />
                   <input
                     type="range"
@@ -426,26 +386,51 @@ export default function OnboardBasicsPage() {
                     step={25}
                     value={rateMax}
                     onChange={(e) =>
-                      setRateMax(
-                        Math.max(Number(e.target.value), rateMin + 25)
-                      )
+                      setRateMax(Math.max(Number(e.target.value), rateMin + 25))
                     }
-                    className="flex-1 accent-lav-mid"
+                    className="flex-1 accent-brand-ink"
                   />
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </section>
 
+        {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={loading || !name}
-          className="w-full btn-pill btn-primary text-center text-lg py-4 disabled:opacity-50"
+          className="w-full mt-14 px-8 py-4 rounded-full bg-brand-ink text-white text-lg font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
         >
-          {loading ? "Saving..." : "Start my Marquee →"}
+          {loading ? "Saving…" : "Start my Marquee →"}
         </button>
       </div>
+    </OnboardShell>
+  );
+}
+
+const inputClass =
+  "w-full px-4 py-2.5 rounded-xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors";
+
+const labelClass =
+  "block text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-3";
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-1.5">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="text-xs text-brand-ink/50 mt-1.5">{hint}</p>}
     </div>
   );
 }

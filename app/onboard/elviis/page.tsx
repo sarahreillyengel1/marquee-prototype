@@ -339,16 +339,16 @@ export default function ElviisPage() {
   if (showSectionIntro && needsIntro && SECTION_INTROS[question.section]) {
     const intro = SECTION_INTROS[question.section];
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="brand-body min-h-screen font-inter flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-2xl bg-lav-lt flex items-center justify-center mx-auto mb-6">
-            <span className="font-sans font-bold text-3xl text-lav-dk">{intro.letter}</span>
+          <div className="w-20 h-20 rounded-2xl bg-brand-lavender/40 flex items-center justify-center mx-auto mb-6">
+            <span className="font-semibold text-3xl text-brand-ink">{intro.letter}</span>
           </div>
-          <h2 className="font-sans font-bold text-4xl mb-3">{intro.name}</h2>
-          <p className="text-gray text-lg mb-8">{intro.desc}</p>
+          <h2 className="font-semibold text-4xl mb-3">{intro.name}</h2>
+          <p className="text-brand-ink/70 text-lg mb-8">{intro.desc}</p>
           <button
             onClick={() => setShowSectionIntro(false)}
-            className="btn-pill btn-primary px-8 py-3"
+            className="px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors px-8 py-3"
           >
             Continue →
           </button>
@@ -366,15 +366,15 @@ export default function ElviisPage() {
   const questionInSection = sectionQuestions.indexOf(question) + 1;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="brand-body min-h-screen font-inter flex flex-col">
       {/* Progress */}
       <div className="px-6 pt-6">
-        <div className="flex items-center justify-between text-xs font-sans text-gray-2 mb-2">
+        <div className="flex items-center justify-between text-xs font-sans text-brand-ink/60 mb-2">
           <span>
             Section {sectionIdx} of {sections.length} · Question{" "}
             {questionInSection} of {sectionQuestions.length}
           </span>
-          <span className="px-2 py-1 rounded bg-lav-lt text-lav-dk text-xs font-sans">
+          <span className="px-2 py-1 rounded bg-brand-lavender/40 text-brand-ink text-xs font-sans">
             {question.section}
           </span>
         </div>
@@ -389,11 +389,11 @@ export default function ElviisPage() {
       {/* Question */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-xl">
-          <h2 className="font-sans font-bold text-3xl md:text-4xl mb-3">
+          <h2 className="font-canela text-3xl md:text-4xl mb-3">
             {question.headline}
           </h2>
           {question.why && (
-            <p className="text-gray text-sm mb-8">{question.why}</p>
+            <p className="text-brand-ink/70 text-sm mb-8">{question.why}</p>
           )}
 
           {/* Render input based on type */}
@@ -408,21 +408,21 @@ export default function ElviisPage() {
       </div>
 
       {/* Navigation */}
-      <div className="px-6 py-6 flex items-center justify-between border-t border-border">
+      <div className="px-6 py-6 flex items-center justify-between border-t border-brand-stone">
         <button
           onClick={goBack}
           disabled={currentQ === 0}
-          className="text-sm text-gray hover:text-ink disabled:opacity-30 transition-colors"
+          className="text-sm text-brand-ink/70 hover:text-brand-ink disabled:opacity-30 transition-colors"
         >
           ← Back
         </button>
         <div className="flex gap-3">
           {question.optional && (
-            <button onClick={goNext} className="text-sm text-gray hover:text-ink">
+            <button onClick={goNext} className="text-sm text-brand-ink/70 hover:text-brand-ink">
               Skip
             </button>
           )}
-          <button onClick={goNext} className="btn-pill btn-primary text-sm px-6 py-2.5">
+          <button onClick={goNext} className="px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors text-sm px-6 py-2.5">
             {currentQ === totalQuestions - 1 ? "Generate my Marquee →" : "Next →"}
           </button>
         </div>
@@ -568,10 +568,10 @@ function TextInput({
         placeholder={placeholder}
         maxLength={maxLength}
         rows={4}
-        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-ink focus:outline-none focus:border-lav-mid transition-colors resize-none text-lg"
+        className="w-full px-4 py-3 rounded-xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors resize-none text-lg"
       />
       {maxLength && (
-        <p className="text-xs text-gray-2 text-right mt-1">
+        <p className="text-xs text-brand-ink/60 text-right mt-1">
           {value.length}/{maxLength}
         </p>
       )}
@@ -594,7 +594,7 @@ function RangeInput({
 }) {
   return (
     <div>
-      <div className="text-4xl font-sans font-bold text-center mb-6">
+      <div className="text-4xl font-semibold text-center mb-6">
         {value}
         {value >= max ? "+" : ""}
       </div>
@@ -607,7 +607,7 @@ function RangeInput({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-lav-mid"
       />
-      <div className="flex justify-between text-xs text-gray-2 mt-2">
+      <div className="flex justify-between text-xs text-brand-ink/60 mt-2">
         <span>{min}</span>
         <span>{max}+</span>
       </div>
@@ -628,7 +628,7 @@ function DropdownInput({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-3 rounded-xl border border-border bg-white text-ink focus:outline-none focus:border-lav-mid transition-colors"
+      className="w-full px-4 py-3 rounded-xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors"
     >
       <option value="">Select...</option>
       {options.map((o) => (
@@ -667,18 +667,18 @@ function MultiSelectCards({
           onClick={() => toggle(o.value)}
           className={`card p-4 text-left transition-all ${
             value.includes(o.value)
-              ? "border-lav-mid bg-lav-lt"
+              ? "border-brand-ink bg-brand-lavender/40"
               : "hover:border-lav"
           }`}
         >
           <span className="font-medium text-sm">{o.label}</span>
           {o.desc && (
-            <span className="block text-xs text-gray mt-1">{o.desc}</span>
+            <span className="block text-xs text-brand-ink/70 mt-1">{o.desc}</span>
           )}
         </button>
       ))}
       {maxSelect && (
-        <p className="col-span-full text-xs text-gray-2">
+        <p className="col-span-full text-xs text-brand-ink/60">
           Pick up to {maxSelect}
         </p>
       )}
@@ -721,29 +721,29 @@ function RankValues({
       {/* Selected values — ranked */}
       {selected.length > 0 && (
         <div className="mb-6">
-          <p className="text-xs font-sans text-gray-2 uppercase tracking-wider mb-2">
+          <p className="text-xs font-sans text-brand-ink/60 uppercase tracking-wider mb-2">
             Your ranking
           </p>
           <div className="space-y-2">
             {selected.map((v, i) => (
               <div
                 key={v}
-                className="card px-4 py-3 flex items-center gap-3 border-lav-mid bg-lav-lt"
+                className="card px-4 py-3 flex items-center gap-3 border-brand-ink bg-brand-lavender/40"
               >
-                <span className="font-sans text-xs text-lav-dk w-6">
+                <span className="font-sans text-xs text-brand-ink w-6">
                   {i + 1}.
                 </span>
                 <span className="flex-1 text-sm font-medium">{v}</span>
                 <button
                   onClick={() => moveUp(i)}
-                  className="text-gray hover:text-ink text-xs"
+                  className="text-brand-ink/70 hover:text-brand-ink text-xs"
                   disabled={i === 0}
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => toggle(v)}
-                  className="text-gray hover:text-coral text-xs"
+                  className="text-brand-ink/70 hover:text-brand-vermillion text-xs"
                 >
                   ×
                 </button>
@@ -754,7 +754,7 @@ function RankValues({
       )}
 
       {/* Available values */}
-      <p className="text-xs font-sans text-gray-2 uppercase tracking-wider mb-2">
+      <p className="text-xs font-sans text-brand-ink/60 uppercase tracking-wider mb-2">
         {selected.length < 5
           ? `Pick ${5 - selected.length} more`
           : "Drag to reorder"}
@@ -765,7 +765,7 @@ function RankValues({
             key={v}
             onClick={() => toggle(v)}
             disabled={selected.length >= 5}
-            className="px-3 py-1.5 rounded-full text-sm bg-white border border-border text-gray hover:border-lav-mid hover:text-ink transition-all disabled:opacity-40"
+            className="px-3 py-1.5 rounded-full text-sm bg-white border border-brand-stone text-brand-ink/70 hover:border-brand-ink hover:text-brand-ink transition-all disabled:opacity-40"
           >
             {v}
           </button>
@@ -798,7 +798,7 @@ function ArchetypeSelect({
 
   return (
     <div>
-      <p className="text-xs text-gray-2 mb-4">
+      <p className="text-xs text-brand-ink/60 mb-4">
         Select 1 primary{value.primary ? " ✓" : ""}, 1 secondary optional
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -811,9 +811,9 @@ function ArchetypeSelect({
               onClick={() => selectArchetype(a.value)}
               className={`card p-4 text-left transition-all ${
                 isPrimary
-                  ? "border-lav-dk bg-lav-lt ring-2 ring-lav-dk"
+                  ? "border-lav-dk bg-brand-lavender/40 ring-2 ring-lav-dk"
                   : isSecondary
-                    ? "border-lav-mid bg-lav-lt"
+                    ? "border-brand-ink bg-brand-lavender/40"
                     : "hover:border-lav"
               }`}
             >
@@ -825,12 +825,12 @@ function ArchetypeSelect({
                   </span>
                 )}
                 {isSecondary && (
-                  <span className="text-xs bg-lav-mid text-white px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-brand-lavender text-white px-2 py-0.5 rounded-full">
                     Secondary
                   </span>
                 )}
               </div>
-              <span className="block text-xs text-gray mt-1">{a.desc}</span>
+              <span className="block text-xs text-brand-ink/70 mt-1">{a.desc}</span>
             </button>
           );
         })}
@@ -865,7 +865,7 @@ function WorkHistorySelect({
 
   if (!workHistory.length) {
     return (
-      <p className="text-gray">
+      <p className="text-brand-ink/70">
         No work history found. You can skip this question.
       </p>
     );
@@ -873,7 +873,7 @@ function WorkHistorySelect({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-2">Select 1–3 roles</p>
+      <p className="text-xs text-brand-ink/60">Select 1–3 roles</p>
       {workHistory.map((w, i) => {
         const roleId = `${w.company}-${i}`;
         const selected = value.find((v) => v.role_id === roleId);
@@ -882,11 +882,11 @@ function WorkHistorySelect({
             <button
               onClick={() => toggleRole(roleId)}
               className={`w-full card p-4 text-left transition-all ${
-                selected ? "border-lav-mid bg-lav-lt" : "hover:border-lav"
+                selected ? "border-brand-ink bg-brand-lavender/40" : "hover:border-lav"
               }`}
             >
               <span className="font-medium text-sm">{w.role_title}</span>
-              <span className="block text-xs text-gray">
+              <span className="block text-xs text-brand-ink/70">
                 {w.company} · {w.start_date} – {w.end_date}
               </span>
             </button>
@@ -897,7 +897,7 @@ function WorkHistorySelect({
                 maxLength={150}
                 value={selected.defining_text}
                 onChange={(e) => updateDefining(roleId, e.target.value)}
-                className="w-full mt-2 px-4 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+                className="w-full mt-2 px-4 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
               />
             )}
           </div>
@@ -935,10 +935,10 @@ function ImpactCards({
       {value.map((item, i) => (
         <div key={i} className="card p-4 space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-sans text-gray-2">
+            <span className="text-xs font-sans text-brand-ink/60">
               Highlight {i + 1}
             </span>
-            <button onClick={() => remove(i)} className="text-xs text-gray hover:text-coral">
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
               Remove
             </button>
           </div>
@@ -948,7 +948,7 @@ function ImpactCards({
             maxLength={80}
             value={item.headline}
             onChange={(e) => update(i, "headline", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
           />
           <input
             type="text"
@@ -956,7 +956,7 @@ function ImpactCards({
             maxLength={60}
             value={item.context}
             onChange={(e) => update(i, "context", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
           />
           <textarea
             placeholder="What you did, what changed, why it mattered."
@@ -964,14 +964,14 @@ function ImpactCards({
             value={item.story}
             onChange={(e) => update(i, "story", e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink resize-none"
           />
         </div>
       ))}
       {value.length < 4 && (
         <button
           onClick={addCard}
-          className="w-full card p-4 text-center text-sm text-gray hover:text-ink hover:border-lav-mid transition-all border-dashed border-2"
+          className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
         >
           + Add highlight
         </button>
@@ -1008,8 +1008,8 @@ function QuoteCards({
       {value.map((item, i) => (
         <div key={i} className="card p-4 space-y-3">
           <div className="flex justify-between">
-            <span className="text-xs font-sans text-gray-2">Quote {i + 1}</span>
-            <button onClick={() => remove(i)} className="text-xs text-gray hover:text-coral">
+            <span className="text-xs font-sans text-brand-ink/60">Quote {i + 1}</span>
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
               Remove
             </button>
           </div>
@@ -1019,7 +1019,7 @@ function QuoteCards({
             value={item.text}
             onChange={(e) => update(i, "text", e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink resize-none"
           />
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -1027,14 +1027,14 @@ function QuoteCards({
               placeholder="Name"
               value={item.name}
               onChange={(e) => update(i, "name", e.target.value)}
-              className="px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+              className="px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
             />
             <input
               type="text"
               placeholder="Relationship"
               value={item.relationship}
               onChange={(e) => update(i, "relationship", e.target.value)}
-              className="px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+              className="px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
             />
           </div>
         </div>
@@ -1042,7 +1042,7 @@ function QuoteCards({
       {value.length < 3 && (
         <button
           onClick={addQuote}
-          className="w-full card p-4 text-center text-sm text-gray hover:text-ink hover:border-lav-mid transition-all border-dashed border-2"
+          className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
         >
           + Add quote
         </button>
@@ -1118,9 +1118,9 @@ function SkillEditor({
               addSkill(searchTerm.trim());
             }
           }}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:border-lav-mid"
+          className="w-full px-4 py-3 rounded-xl border border-brand-stone bg-white focus:outline-none focus:border-brand-ink"
         />
-        <p className="text-xs text-gray-2 mt-1">
+        <p className="text-xs text-brand-ink/60 mt-1">
           {value.length}/50 skills · Press Enter to add · Max 5 Expert ratings
         </p>
       </div>
@@ -1142,8 +1142,8 @@ function SkillEditor({
                     skill.proficiency >= level
                       ? level === 5
                         ? "bg-lav-dk text-white"
-                        : "bg-lav-mid text-white"
-                      : "bg-cream text-gray-2"
+                        : "bg-brand-lavender text-white"
+                      : "bg-brand-paper text-brand-ink/60"
                   }`}
                 >
                   {level}
@@ -1152,7 +1152,7 @@ function SkillEditor({
             </div>
             <button
               onClick={() => removeSkill(i)}
-              className="text-gray hover:text-coral text-xs ml-2"
+              className="text-brand-ink/70 hover:text-brand-vermillion text-xs ml-2"
             >
               ×
             </button>
@@ -1199,7 +1199,7 @@ function ElviisPlus({
 
   return (
     <div>
-      <p className="text-gray text-sm mb-6">
+      <p className="text-brand-ink/70 text-sm mb-6">
         Add anything else that tells your story. Each takes ~30 seconds.
       </p>
 
@@ -1207,10 +1207,10 @@ function ElviisPlus({
       {value.map((item, i) => (
         <div key={i} className="card p-4 mb-3 space-y-3">
           <div className="flex justify-between">
-            <span className="text-xs font-sans text-gray-2 capitalize">
+            <span className="text-xs font-sans text-brand-ink/60 capitalize">
               {item.module_type}
             </span>
-            <button onClick={() => remove(i)} className="text-xs text-gray hover:text-coral">
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
               Remove
             </button>
           </div>
@@ -1219,21 +1219,21 @@ function ElviisPlus({
             placeholder="Title"
             value={item.title}
             onChange={(e) => update(i, "title", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
           />
           <input
             type="text"
             placeholder="Description"
             value={item.description || ""}
             onChange={(e) => update(i, "description", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
           />
           <input
             type="url"
             placeholder="URL (optional)"
             value={item.url || ""}
             onChange={(e) => update(i, "url", e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-lav-mid"
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
           />
         </div>
       ))}
@@ -1244,7 +1244,7 @@ function ElviisPlus({
           <button
             key={m.type}
             onClick={() => addItem(m.type)}
-            className="card p-4 text-left hover:border-lav-mid transition-all"
+            className="card p-4 text-left hover:border-brand-ink transition-all"
           >
             <span className="text-xl mb-1 block">{m.icon}</span>
             <span className="text-sm font-medium">{m.label}</span>
@@ -1285,7 +1285,7 @@ function WorkPrefs({
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
+        <label className="block text-xs font-sans uppercase tracking-wider text-brand-ink/60 mb-3">
           Where can you work?
         </label>
         <div className="flex flex-wrap gap-2">
@@ -1301,7 +1301,7 @@ function WorkPrefs({
               className={`px-4 py-2 rounded-full text-sm transition-all ${
                 locations.includes(opt)
                   ? "bg-ink text-white"
-                  : "bg-white border border-border text-gray hover:border-ink"
+                  : "bg-white border border-brand-stone text-brand-ink/70 hover:border-ink"
               }`}
             >
               {opt}
@@ -1311,7 +1311,7 @@ function WorkPrefs({
       </div>
 
       <div>
-        <label className="block text-xs font-sans uppercase tracking-wider text-gray-2 mb-3">
+        <label className="block text-xs font-sans uppercase tracking-wider text-brand-ink/60 mb-3">
           When are you available?
         </label>
         <div className="flex flex-wrap gap-2">
@@ -1322,7 +1322,7 @@ function WorkPrefs({
               className={`px-4 py-2 rounded-full text-sm transition-all ${
                 state.wp_availability === opt
                   ? "bg-ink text-white"
-                  : "bg-white border border-border text-gray hover:border-ink"
+                  : "bg-white border border-brand-stone text-brand-ink/70 hover:border-ink"
               }`}
             >
               {opt}

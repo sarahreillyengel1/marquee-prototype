@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { ResumeParseResult } from "@/types";
+import OnboardShell from "@/components/OnboardShell";
 
 const LOADING_MESSAGES = [
   "Reading your resume…",
@@ -22,7 +23,6 @@ export default function ResumeUploadPage() {
   const [statusIdx, setStatusIdx] = useState(0);
   const [error, setError] = useState("");
 
-  // Rotate loading messages every 2.2s so it doesn't feel stuck
   useEffect(() => {
     if (!loading) return;
     const interval = setInterval(() => {
@@ -30,6 +30,7 @@ export default function ResumeUploadPage() {
     }, 2200);
     return () => clearInterval(interval);
   }, [loading]);
+
   const router = useRouter();
   const supabase = createBrowserSupabase();
 
@@ -58,7 +59,6 @@ export default function ResumeUploadPage() {
         });
 
         if (!res.ok) {
-          // Read body once as text — could be JSON or an HTML error page
           const text = await res.text().catch(() => "");
           let message = `Parse failed (HTTP ${res.status})`;
           try {
@@ -71,10 +71,7 @@ export default function ResumeUploadPage() {
         }
 
         const { parsed } = (await res.json()) as { parsed: ResumeParseResult };
-
-        // Store parsed data in localStorage for onboarding flow
         localStorage.setItem("marquee_resume", JSON.stringify(parsed));
-
         setStatus("Resume parsed. Redirecting…");
         router.push("/onboard/basics");
       } catch (err) {
@@ -116,47 +113,47 @@ export default function ResumeUploadPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-xl">
-        <h1 className="font-sans font-bold text-3xl text-ink">marquee</h1>
+    <OnboardShell step="resume">
+      <div className="w-full max-w-2xl mt-8 md:mt-16">
+        <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
+          Step 1
+        </span>
+        <h1 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
+          Let&apos;s start with your resume.
+        </h1>
+        <p className="text-brand-ink/70 text-lg mt-4 max-w-lg leading-relaxed">
+          We&apos;ll read it so you don&apos;t have to re-enter your work history.
+        </p>
 
-        <div className="mt-8">
-          <h2 className="font-sans font-bold text-4xl mb-3">
-            Let&apos;s start with your resume.
-          </h2>
-          <p className="text-gray text-lg mb-8">
-            We&apos;ll read it so you don&apos;t have to re-enter your work
-            history.
-          </p>
+        {/* Mode toggle */}
+        <div className="inline-flex p-1 mt-8 bg-brand-stone/60 rounded-full">
+          <button
+            onClick={() => setMode("upload")}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              mode === "upload"
+                ? "bg-brand-ink text-white"
+                : "text-brand-ink/70 hover:text-brand-ink"
+            }`}
+          >
+            Upload a file
+          </button>
+          <button
+            onClick={() => setMode("paste")}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              mode === "paste"
+                ? "bg-brand-ink text-white"
+                : "text-brand-ink/70 hover:text-brand-ink"
+            }`}
+          >
+            Paste text instead
+          </button>
+        </div>
 
-          {/* Mode toggle — segmented control */}
-          <div className="inline-flex p-1 mb-6 bg-white border border-border rounded-full">
-            <button
-              onClick={() => setMode("upload")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                mode === "upload"
-                  ? "bg-ink text-white"
-                  : "text-gray hover:text-ink"
-              }`}
-            >
-              Upload a file
-            </button>
-            <button
-              onClick={() => setMode("paste")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                mode === "paste"
-                  ? "bg-ink text-white"
-                  : "text-gray hover:text-ink"
-              }`}
-            >
-              Paste text instead
-            </button>
-          </div>
-
+        <div className="mt-6">
           {loading ? (
-            <div className="card p-12 text-center">
-              <div className="inline-block w-8 h-8 border-2 border-lav-mid border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-ink text-lg transition-opacity">
+            <div className="bg-white rounded-2xl p-14 text-center border border-brand-stone">
+              <div className="inline-block w-8 h-8 border-2 border-brand-ink border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-brand-ink text-lg">
                 {status || LOADING_MESSAGES[statusIdx]}
               </p>
             </div>
@@ -168,10 +165,10 @@ export default function ResumeUploadPage() {
               }}
               onDragLeave={() => setDragActive(false)}
               onDrop={handleDrop}
-              className={`card p-12 text-center cursor-pointer transition-all ${
+              className={`rounded-2xl p-14 text-center cursor-pointer transition-all border-2 border-dashed ${
                 dragActive
-                  ? "border-lav-mid bg-lav-lt"
-                  : "border-dashed border-2 border-border hover:border-lav-mid"
+                  ? "border-brand-ink bg-brand-lavender/30"
+                  : "border-brand-stone bg-white hover:border-brand-ink"
               }`}
               onClick={() => document.getElementById("file-input")?.click()}
             >
@@ -182,24 +179,29 @@ export default function ResumeUploadPage() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <div className="text-4xl mb-4">📄</div>
-              <p className="text-ink font-medium mb-2">
+              <div className="w-14 h-14 rounded-full bg-brand-green flex items-center justify-center mx-auto mb-4">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <p className="text-brand-ink font-medium mb-1">
                 Drop your resume here, or click to browse
               </p>
-              <p className="text-gray text-sm">PDF, Word, or text file</p>
+              <p className="text-brand-ink/60 text-sm">PDF, Word, or text file</p>
             </div>
           ) : (
             <div>
               <textarea
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
-                placeholder="Paste your resume text here..."
-                className="w-full h-64 px-4 py-3 rounded-xl border border-border bg-white text-ink focus:outline-none focus:border-lav-mid transition-colors resize-none font-sans text-sm"
+                placeholder="Paste your resume text here…"
+                className="w-full h-64 px-4 py-3 rounded-2xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors resize-none text-sm leading-relaxed"
               />
               <button
                 onClick={handlePasteSubmit}
                 disabled={!pastedText.trim()}
-                className="mt-4 btn-pill btn-primary disabled:opacity-50"
+                className="mt-4 px-8 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
               >
                 Parse my resume →
               </button>
@@ -207,20 +209,19 @@ export default function ResumeUploadPage() {
           )}
 
           {error && (
-            <div className="mt-4 text-coral text-sm bg-coral-lt rounded-lg px-4 py-3">
+            <div className="mt-4 text-sm bg-brand-vermillion/10 text-brand-vermillion rounded-lg px-4 py-3">
               {error}
             </div>
           )}
 
-          {/* Skip option */}
           <button
             onClick={() => router.push("/onboard/basics")}
-            className="mt-6 text-gray text-sm hover:text-ink transition-colors"
+            className="mt-6 text-brand-ink/60 text-sm hover:text-brand-ink transition-colors underline decoration-transparent hover:decoration-brand-ink"
           >
             Skip — I&apos;ll enter everything manually
           </button>
         </div>
       </div>
-    </div>
+    </OnboardShell>
   );
 }
