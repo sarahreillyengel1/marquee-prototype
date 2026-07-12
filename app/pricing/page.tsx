@@ -21,7 +21,7 @@ export default function PricingPage() {
       <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
         Pricing
       </span>
-      <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
+      <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
         One price. Everything in.
       </h1>
       <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-6 max-w-2xl">
@@ -37,7 +37,7 @@ export default function PricingPage() {
             Marquee
           </div>
           <div className="flex items-baseline gap-2 mt-3">
-            <span className="font-canela text-7xl md:text-8xl text-brand-ink leading-none">
+            <span className="font-inter font-bold tracking-tight text-7xl md:text-8xl text-brand-ink leading-none">
               $46
             </span>
             <span className="text-brand-ink/60 text-lg">/ year</span>
@@ -64,7 +64,7 @@ export default function PricingPage() {
 
         {/* Right: what's included */}
         <div className="bg-white rounded-3xl p-10 md:p-12 border border-brand-stone">
-          <h2 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight">
+          <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight">
             What&apos;s included
           </h2>
           <ul className="mt-8 space-y-4">
@@ -93,7 +93,7 @@ export default function PricingPage() {
         <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           For context
         </span>
-        <h2 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight mt-3 max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight mt-3 max-w-3xl">
           $46 a year is less than most professionals spend on…
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
@@ -103,7 +103,7 @@ export default function PricingPage() {
             { thing: "One month of a career coach", price: "$300+" },
           ].map((c) => (
             <div key={c.thing} className="bg-white rounded-2xl p-6 border border-brand-stone">
-              <div className="font-canela text-2xl text-brand-ink">{c.price}</div>
+              <div className="font-inter font-bold tracking-tight text-2xl text-brand-ink">{c.price}</div>
               <div className="text-sm text-brand-ink/60 mt-2">{c.thing}</div>
             </div>
           ))}
@@ -115,7 +115,7 @@ export default function PricingPage() {
 
       {/* FAQ */}
       <div className="mt-24 pt-16 border-t border-brand-stone">
-        <h2 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight max-w-3xl">
           Pricing questions.
         </h2>
         <div className="mt-10 space-y-6 max-w-3xl">
@@ -134,7 +134,7 @@ export default function PricingPage() {
             },
           ].map((f) => (
             <div key={f.q}>
-              <h3 className="font-canela text-xl text-brand-ink">{f.q}</h3>
+              <h3 className="font-inter font-bold tracking-tight text-xl text-brand-ink">{f.q}</h3>
               <p className="text-brand-ink/70 mt-2 leading-relaxed">{f.a}</p>
             </div>
           ))}

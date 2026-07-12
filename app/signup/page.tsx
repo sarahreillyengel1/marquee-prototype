@@ -173,8 +173,8 @@ export default function SignupPage() {
         {mode === "paid" && (
           <div className="mb-4 p-6 rounded-2xl bg-brand-lavender/40">
             <div className="flex items-baseline justify-between mb-4">
-              <span className="font-canela text-2xl text-brand-ink">Marquee</span>
-              <span className="font-canela text-3xl text-brand-ink">
+              <span className="font-inter font-bold tracking-tight text-2xl text-brand-ink">Marquee</span>
+              <span className="font-inter font-bold tracking-tight text-3xl text-brand-ink">
                 $46<span className="text-sm text-brand-ink/60 font-normal font-inter">/year</span>
               </span>
             </div>
@@ -198,7 +198,7 @@ export default function SignupPage() {
 
         {/* Form card */}
         <div className="bg-white rounded-2xl p-8 border border-brand-stone">
-          <h2 className="font-canela text-3xl text-brand-ink mb-2">
+          <h2 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">
             Claim your Marquee
           </h2>
           <p className="text-brand-ink/60 text-sm mb-6">

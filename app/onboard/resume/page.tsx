@@ -118,7 +118,7 @@ export default function ResumeUploadPage() {
         <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           Step 1
         </span>
-        <h1 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
+        <h1 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
           Let&apos;s start with your resume.
         </h1>
         <p className="text-brand-ink/70 text-lg mt-4 max-w-lg leading-relaxed">

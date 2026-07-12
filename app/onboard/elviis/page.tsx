@@ -396,7 +396,7 @@ export default function ElviisPage() {
       {/* Question */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-xl">
-          <h2 className="font-canela text-3xl md:text-4xl mb-3">
+          <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl mb-3">
             {question.headline}
           </h2>
           {question.why && (

@@ -64,7 +64,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h3 className="font-canela text-3xl mb-2 text-brand-ink">You&apos;re on the list.</h3>
+            <h3 className="font-inter font-bold tracking-tight text-3xl mb-2 text-brand-ink">You&apos;re on the list.</h3>
             <p className="text-brand-ink/70 mb-6">
               We&apos;ll be in touch as soon as your spot opens.
             </p>
@@ -78,7 +78,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
         ) : (
           <>
             <div className="mb-6">
-              <h3 className="font-canela text-3xl text-brand-ink mb-2">Join the Waitlist</h3>
+              <h3 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Join the Waitlist</h3>
               <p className="text-sm text-brand-ink/70">
                 We&apos;ll email you the moment a spot opens.
               </p>

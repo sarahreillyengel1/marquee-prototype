@@ -150,7 +150,7 @@ export default function DashboardPage() {
           <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
             Dashboard
           </span>
-          <h1 className="font-canela text-4xl md:text-5xl text-brand-ink leading-tight mt-2 tracking-[-0.01em]">
+          <h1 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-tight mt-2 tracking-[-0.01em]">
             Your Marquee
           </h1>
           <p className="text-brand-ink/70 mt-3">
@@ -164,7 +164,7 @@ export default function DashboardPage() {
             Your profile link
           </h3>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-canela text-xl md:text-2xl text-brand-ink flex-1 min-w-0">
+            <span className="font-inter font-bold tracking-tight text-xl md:text-2xl text-brand-ink flex-1 min-w-0">
               marquee.bio/{username}
             </span>
             <button

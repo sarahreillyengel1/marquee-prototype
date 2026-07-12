@@ -2,62 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ──────────────────────────────────────────────────────────
-   CANELA TEXT — Display / Editorial / Names
-   Loaded from local trial files. Replace with licensed
-   production files when license arrives.
-   ────────────────────────────────────────────────────────── */
-
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Thin-Trial.otf") format("opentype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Light-Trial.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Regular-Trial.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-RegularItalic-Trial.otf") format("opentype");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Medium-Trial.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Bold-Trial.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Canela";
-  src: url("/fonts/canela/CanelaText-Black-Trial.otf") format("opentype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   /* ── LEGACY palette (still used by existing screens — pre-reskin) ── */
   --cream: #F5F0E8;
@@ -181,7 +125,9 @@ body {
 }
 
 .font-display {
-  font-family: "Canela", Georgia, serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .font-script {

@@ -36,7 +36,6 @@ const config: Config = {
         sans: ["var(--font-dm-sans)", "sans-serif"],
         mono: ["var(--font-dm-mono)", "monospace"],
         // Brand fonts
-        canela: ['"Canela"', "Georgia", "serif"],
         inter: ["var(--font-inter)", "system-ui", "sans-serif"],
         caveat: ["var(--font-caveat)", "cursive"],
       },

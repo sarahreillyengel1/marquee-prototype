@@ -66,7 +66,7 @@ export default function ResourcesPage() {
       <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
         Resources
       </span>
-      <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
+      <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
         Help, guides, and how-tos.
       </h1>
       <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-6 max-w-2xl">
@@ -85,7 +85,7 @@ export default function ResourcesPage() {
               <div className="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-brand-ink shrink-0">
                 {c.icon}
               </div>
-              <h3 className="font-canela text-2xl text-brand-ink leading-tight">
+              <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-tight">
                 {c.title}
               </h3>
             </div>
@@ -102,13 +102,13 @@ export default function ResourcesPage() {
         <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           FAQ
         </span>
-        <h2 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
           Frequently asked.
         </h2>
         <div className="mt-12 space-y-8 max-w-3xl">
           {FAQS.map((f) => (
             <div key={f.q} className="pb-8 border-b border-brand-stone last:border-b-0">
-              <h3 className="font-canela text-2xl text-brand-ink leading-snug">{f.q}</h3>
+              <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-snug">{f.q}</h3>
               <p className="text-brand-ink/75 mt-3 leading-relaxed">{f.a}</p>
             </div>
           ))}
@@ -117,7 +117,7 @@ export default function ResourcesPage() {
 
       {/* Contact */}
       <div className="mt-24 bg-brand-lavender/30 rounded-3xl p-12 md:p-16">
-        <h2 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight max-w-2xl">
+        <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight max-w-2xl">
           Still have a question?
         </h2>
         <p className="text-brand-ink/70 mt-4 max-w-xl">

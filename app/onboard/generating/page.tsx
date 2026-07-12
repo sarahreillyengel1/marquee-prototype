@@ -99,7 +99,7 @@ export default function GeneratingPage() {
               <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 block">
                 Step 4 · Building
               </span>
-              <h1 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight mt-3 mb-10">
+              <h1 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight mt-3 mb-10">
                 {MESSAGES[messageIdx]}
               </h1>
 

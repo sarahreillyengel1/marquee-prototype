@@ -39,7 +39,7 @@ export default function AssessmentPage() {
           <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
             Free Assessment
           </span>
-          <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-3xl tracking-[-0.01em]">
+          <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-3xl tracking-[-0.01em]">
             The Passion<br />Career Assessment.
           </h1>
           <p
@@ -66,7 +66,7 @@ export default function AssessmentPage() {
             <div className="w-11 h-11 rounded-full bg-brand-lavender/40 flex items-center justify-center text-brand-ink mb-6">
               {s.icon}
             </div>
-            <h3 className="font-canela text-2xl text-brand-ink leading-tight mb-3">
+            <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-tight mb-3">
               {s.title}
             </h3>
             <p className="text-sm text-brand-ink/70 leading-relaxed flex-1">{s.body}</p>
@@ -90,7 +90,7 @@ export default function AssessmentPage() {
         <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           Coming soon
         </span>
-        <h2 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
           We&apos;re putting the finishing touches on the Assessment.
         </h2>
         <p className="text-brand-ink/70 mt-6 max-w-2xl leading-relaxed">

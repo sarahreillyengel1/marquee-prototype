@@ -47,7 +47,7 @@ export default function ProductPage() {
       <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
         Product
       </span>
-      <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
+      <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
         How Marquee works.
       </h1>
       <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-6 max-w-2xl">
@@ -63,9 +63,9 @@ export default function ProductPage() {
               <div className="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-brand-ink shrink-0">
                 {s.icon}
               </div>
-              <span className="font-canela text-3xl text-brand-lavender">{s.num}</span>
+              <span className="font-inter font-bold tracking-tight text-3xl text-brand-lavender">{s.num}</span>
             </div>
-            <h3 className="font-canela text-2xl text-brand-ink leading-tight">{s.title}</h3>
+            <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-tight">{s.title}</h3>
             <p className="text-brand-ink/70 mt-3 leading-relaxed">{s.body}</p>
           </div>
         ))}
@@ -76,7 +76,7 @@ export default function ProductPage() {
         <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           What&apos;s inside
         </span>
-        <h2 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
           Every profile, built for humans.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mt-14 max-w-4xl">
@@ -86,7 +86,7 @@ export default function ProductPage() {
                 {f.icon}
               </div>
               <div>
-                <h3 className="font-canela text-xl text-brand-ink leading-tight mb-2">
+                <h3 className="font-inter font-bold tracking-tight text-xl text-brand-ink leading-tight mb-2">
                   {f.title}
                 </h3>
                 <p className="text-sm text-brand-ink/70 leading-relaxed">{f.body}</p>
@@ -98,7 +98,7 @@ export default function ProductPage() {
 
       {/* CTA */}
       <div className="mt-24 bg-brand-lavender/30 rounded-3xl p-12 md:p-16">
-        <h2 className="font-canela text-3xl md:text-4xl text-brand-ink leading-tight max-w-2xl">
+        <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight max-w-2xl">
           Ready to be known — not filtered?
         </h2>
         <p className="text-brand-ink/70 mt-4 max-w-xl">

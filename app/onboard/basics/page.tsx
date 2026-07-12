@@ -128,7 +128,7 @@ export default function OnboardBasicsPage() {
         <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           Step 2
         </span>
-        <h1 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
+        <h1 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-2 tracking-[-0.01em]">
           Hi{name ? ` ${name.split(" ")[0]}` : ""}, a few basics.
         </h1>
         <p className="text-brand-ink/70 mt-4 leading-relaxed">
@@ -282,7 +282,7 @@ export default function OnboardBasicsPage() {
               <div>
                 <label className={labelClass}>
                   Hours available per week
-                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                  <span className="ml-2 font-inter font-bold tracking-tight text-brand-ink text-lg">
                     {hoursPerWeek}
                   </span>
                 </label>
@@ -329,7 +329,7 @@ export default function OnboardBasicsPage() {
               <div>
                 <label className={labelClass}>
                   Salary range
-                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                  <span className="ml-2 font-inter font-bold tracking-tight text-brand-ink text-lg">
                     ${salaryMin}K – ${salaryMax}K
                     {salaryMax >= 500 ? "+" : ""}
                   </span>
@@ -362,7 +362,7 @@ export default function OnboardBasicsPage() {
               <div>
                 <label className={labelClass}>
                   Hourly rate
-                  <span className="ml-2 font-canela text-brand-ink text-lg">
+                  <span className="ml-2 font-inter font-bold tracking-tight text-brand-ink text-lg">
                     ${rateMin}/hr – ${rateMax}
                     {rateMax >= 500 ? "+" : ""}/hr
                   </span>

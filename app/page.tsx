@@ -56,7 +56,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-0 items-end relative">
             {/* Left: copy. */}
             <div className="order-2 md:order-1 pb-12 md:pb-20 pr-0 md:pr-8">
-              <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.02em]">
+              <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-brand-ink tracking-[-0.02em]">
                 Your work<br />
                 deserves the<br />
                 spotlight.
@@ -129,7 +129,7 @@ export default function LandingPage() {
       <section className="px-8 md:px-16 py-16 md:py-20 max-w-[1400px] mx-auto">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
-            <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
+            <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
               Built for Humans
             </h2>
             <div className="mt-8 space-y-5 max-w-md text-base text-brand-ink/80 leading-relaxed">
@@ -172,7 +172,7 @@ export default function LandingPage() {
       <section className="bg-brand-lavender/30 px-8 md:px-16 py-16 md:py-20">
         <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[2fr_3fr] gap-12 lg:gap-16 items-start">
           <div>
-            <h2 className="font-canela text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
+            <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl leading-[1.05] text-brand-ink tracking-[-0.01em]">
               Take the Passion<br />
               Career Assessment
             </h2>
@@ -314,7 +314,7 @@ function FeatureCard({
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-canela text-xl text-brand-ink leading-tight mb-2 min-h-[3rem]">
+        <h3 className="font-inter font-bold tracking-tight text-xl text-brand-ink leading-tight mb-2 min-h-[3rem]">
           {title}
         </h3>
         <p className="text-sm text-brand-ink/70 leading-relaxed">{body}</p>
@@ -339,7 +339,7 @@ function StepCard({
       <div className="w-11 h-11 rounded-full bg-brand-lavender/40 flex items-center justify-center text-brand-ink mb-6">
         {icon}
       </div>
-      <h3 className="font-canela text-2xl text-brand-ink leading-tight mb-3">
+      <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-tight mb-3">
         {title}
       </h3>
       <p className="text-sm text-brand-ink/70 leading-relaxed flex-1">{body}</p>

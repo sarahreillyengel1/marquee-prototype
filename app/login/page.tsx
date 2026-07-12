@@ -54,7 +54,7 @@ export default function LoginPage() {
         </Link>
 
         <div className="bg-white rounded-2xl p-8 border border-brand-stone">
-          <h2 className="font-canela text-3xl text-brand-ink mb-2">Welcome back</h2>
+          <h2 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Welcome back</h2>
           <p className="text-brand-ink/60 text-sm mb-6">Log in to your Marquee.</p>
 
           <form onSubmit={handleLogin} className="space-y-4">

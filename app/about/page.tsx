@@ -30,7 +30,7 @@ export default function AboutPage() {
       <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
         About
       </span>
-      <h1 className="font-canela text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
+      <h1 className="font-inter font-bold tracking-tight text-5xl md:text-6xl lg:text-7xl text-brand-ink leading-[1.02] mt-3 max-w-4xl tracking-[-0.01em]">
         We&apos;re building the platform we wished existed.
       </h1>
       <p className="text-lg md:text-xl text-brand-ink/70 leading-relaxed mt-6 max-w-2xl">
@@ -45,7 +45,7 @@ export default function AboutPage() {
           <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
             Our thesis
           </span>
-          <h2 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3">
+          <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3">
             The resume is dead.
           </h2>
           <div className="mt-6 space-y-4 text-brand-ink/80 leading-relaxed">
@@ -81,16 +81,16 @@ export default function AboutPage() {
         <span className="text-xs uppercase tracking-[0.2em] font-semibold text-brand-ink/60">
           What we believe
         </span>
-        <h2 className="font-canela text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
+        <h2 className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink leading-[1.05] mt-3 max-w-3xl">
           Four principles we build by.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12 mt-14">
           {PRINCIPLES.map((p, i) => (
             <div key={p.title}>
-              <span className="font-canela text-3xl text-brand-lavender">
+              <span className="font-inter font-bold tracking-tight text-3xl text-brand-lavender">
                 0{i + 1}
               </span>
-              <h3 className="font-canela text-2xl text-brand-ink leading-tight mt-2">
+              <h3 className="font-inter font-bold tracking-tight text-2xl text-brand-ink leading-tight mt-2">
                 {p.title}
               </h3>
               <p className="text-brand-ink/70 mt-3 leading-relaxed">{p.body}</p>
@@ -101,7 +101,7 @@ export default function AboutPage() {
 
       {/* Contact CTA */}
       <div className="mt-24 bg-brand-ink text-white rounded-3xl p-12 md:p-16">
-        <h2 className="font-canela text-3xl md:text-4xl leading-tight max-w-2xl">
+        <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl leading-tight max-w-2xl">
           Have thoughts, questions, or a story to share?
         </h2>
         <p className="text-white/70 mt-4 max-w-xl">
