@@ -73,7 +73,7 @@ Return ONLY valid JSON. No preamble. No markdown fences. No explanation.
       "narrative": "2-3 sentences that rewrite the bullets into a story. What was the situation, what did they do, what changed. Numbers if available."
     }
   ],
-  "insights_summary": "2-3 sentences synthesizing their POV from the Insights section. Should sound like something only this person could say.",
+  "insights_summary": "2-3 sentences synthesizing their POV from the Story section (what they bring, what they've changed their mind about, what their field gets wrong). Should sound like something only this person could say.",
   "skills_featured": ["top 5 skills to feature prominently — derived from their Expert ratings OR inferred from their answers if no explicit ratings"]
 }
 

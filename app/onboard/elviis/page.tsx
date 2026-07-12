@@ -88,42 +88,22 @@ const ENNEAGRAM_TYPES = [
 ];
 
 const QUESTIONS: Question[] = [
-  // ── Section E: Experience ──
-  {
-    key: "e_now", section: "E", sectionName: "Experience",
-    sectionDesc: "Career arc, trajectory, transformational roles, and the through-line that follows someone across companies and titles.",
-    headline: "What are you doing right now?",
-    why: "Sets the context for the entire profile. The AI uses this to anchor your headline and career arc.",
-    type: "text", placeholder: "Right now I'm...", maxLength: 280,
-  },
-  {
-    key: "e_next", section: "E", sectionName: "Experience",
-    sectionDesc: "",
-    headline: "What is your ideal next role?",
-    why: "Trajectory matters as much as history. Tells companies where you're going, not just where you've been.",
-    type: "text", placeholder: "Ideally, I'm looking for...", maxLength: 280,
-  },
+  // ── E · EXPERIENCE ──
   {
     key: "e_transformational", section: "E", sectionName: "Experience",
-    sectionDesc: "",
-    headline: "What roles have been most transformational?",
+    sectionDesc: "The roles that actually shaped you.",
+    headline: "Which of your roles have been most transformational?",
     why: "Not the most prestigious — the most formative. Surfaces the experiences that actually shaped who you are.",
     type: "work-history-select",
   },
-  {
-    key: "e_through_line", section: "E", sectionName: "Experience",
-    sectionDesc: "",
-    headline: "What problem do you keep getting called to solve?",
-    why: "The through-line question. The answer reveals more about someone's professional identity than any title.",
-    type: "text", placeholder: "People keep calling me when...", maxLength: 280,
-  },
-  // ── Section L: Leadership ──
+
+  // ── L · LEADERSHIP ──
   {
     key: "l_style", section: "L", sectionName: "Leadership",
-    sectionDesc: "How you lead, how you're wired, and what kind of environment brings out your best.",
+    sectionDesc: "How you lead, how you're wired, and what environment brings out your best.",
     headline: "How would you describe your leadership style?",
     why: "Not a buzzword — a real description. The AI uses this to write your leadership narrative.",
-    type: "text", placeholder: "My leadership style is...", maxLength: 280,
+    type: "text", placeholder: "My leadership style is…", maxLength: 280,
   },
   {
     key: "l_archetypes", section: "L", sectionName: "Leadership",
@@ -151,7 +131,7 @@ const QUESTIONS: Question[] = [
     sectionDesc: "",
     headline: "What's one thing you believe about leadership that most people get wrong?",
     why: "Intellectual honesty about leadership is rare and memorable.",
-    type: "text", placeholder: "Most people think leadership is about... but I think...", maxLength: 240,
+    type: "text", placeholder: "Most people think leadership is about… but I think…", maxLength: 240,
   },
   {
     key: "l_mbti", section: "L", sectionName: "Leadership",
@@ -167,7 +147,8 @@ const QUESTIONS: Question[] = [
     why: "",
     type: "dropdown", options: ENNEAGRAM_TYPES.map((t) => ({ value: t, label: t })), optional: true,
   },
-  // ── Section V: Values ──
+
+  // ── V · VALUES ──
   {
     key: "v_values", section: "V", sectionName: "Values",
     sectionDesc: "What you stand for and what you need to feel at work.",
@@ -187,88 +168,114 @@ const QUESTIONS: Question[] = [
     sectionDesc: "",
     headline: "Describe your ideal work culture in one sentence",
     why: "",
-    type: "text", placeholder: "I do my best work when...", maxLength: 200, optional: true,
+    type: "text", placeholder: "I do my best work when…", maxLength: 200, optional: true,
   },
-  // ── Section I (Impact) ──
+
+  // ── I · IMPACT (includes testimonials) ──
   {
-    key: "impact_highlights", section: "I₁", sectionName: "Impact",
-    sectionDesc: "Career highlights — not job responsibilities. What changed because you were there.",
+    key: "impact_highlights", section: "I", sectionName: "Impact",
+    sectionDesc: "Career highlights — not job responsibilities. And what people say about working with you.",
     headline: "Add up to 4 career highlights",
     why: "Not job descriptions — moments where something measurably changed because you were in the room.",
     type: "impact-cards",
   },
-  // ── Section I (Insights) ──
   {
-    key: "ii_wish", section: "I₂", sectionName: "Insights",
-    sectionDesc: "Your professional point of view. What you know, what you believe, and what others say about working with you.",
-    headline: "What do you wish more people knew about you professionally?",
-    why: "This becomes the pull quote at the top of your profile. The most human question.",
-    type: "text", placeholder: "I wish more people knew that I...", maxLength: 240,
-  },
-  {
-    key: "ii_bring", section: "I₂", sectionName: "Insights",
+    key: "ii_quotes", section: "I", sectionName: "Impact",
     sectionDesc: "",
-    headline: "What do you bring to your work that never shows up in a job description?",
-    why: "The invisible value. The thing that follows someone everywhere but gets no credit.",
-    type: "text", placeholder: "The thing I bring that doesn't fit in a JD...", maxLength: 240,
-  },
-  {
-    key: "ii_changed", section: "I₂", sectionName: "Insights",
-    sectionDesc: "",
-    headline: "What have you completely changed your mind about?",
-    why: "Intellectual honesty is rare. Impossible to fake. Impossible to get from a resume.",
-    type: "text", placeholder: "I used to believe... Now I know...", maxLength: 280,
-  },
-  {
-    key: "ii_field", section: "I₂", sectionName: "Insights",
-    sectionDesc: "",
-    headline: "What do most people in your field get wrong?",
-    why: "The expertise signal. Requires genuine depth to answer well.",
-    type: "text", placeholder: "Most people in my field think... but actually...", maxLength: 300,
-  },
-  {
-    key: "ii_quotes", section: "I₂", sectionName: "Insights",
-    sectionDesc: "",
-    headline: "Add 2–3 quotes from people you've worked with",
-    why: "Not a formal reference — something someone said that stuck.",
+    headline: "Add 2–3 testimonials from people you've worked with",
+    why: "Not a formal reference — something someone said that stuck. Peers, direct reports, collaborators.",
     type: "quote-cards", optional: true,
   },
-  // ── Section S: Skills ──
+
+  // ── S · SKILLS ──
   {
     key: "skills", section: "S", sectionName: "Skills",
-    sectionDesc: "Tiered capability map. Up to 50 skills. Depth over keywords.",
+    sectionDesc: "Tiered capability map. Depth over keywords.",
     headline: "Your skills",
     why: "Pre-populated from your resume. Add, remove, rate.",
     type: "skill-editor",
   },
-  // ── Section +: ELVIIS+ ──
+
+  // ── S · STORY (narrative + point of view) ──
   {
-    key: "elviis_plus", section: "+", sectionName: "ELVIIS+",
-    sectionDesc: "Your work extends beyond job titles. Optional. Add anything that tells your story.",
+    key: "ii_wish", section: "ST", sectionName: "Story",
+    sectionDesc: "The narrative behind the resume — through-line, point of view, and where you're going.",
+    headline: "What do you wish more people knew about you professionally?",
+    why: "This becomes the pull quote at the top of your profile. The most human question.",
+    type: "text", placeholder: "I wish more people knew that I…", maxLength: 240,
+  },
+  {
+    key: "e_through_line", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What problem do you keep getting called to solve?",
+    why: "The through-line. Reveals more about someone's professional identity than any title.",
+    type: "text", placeholder: "People keep calling me when…", maxLength: 280,
+  },
+  {
+    key: "ii_bring", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What do you bring to your work that never shows up in a job description?",
+    why: "The invisible value. The thing that follows someone everywhere but gets no credit.",
+    type: "text", placeholder: "The thing I bring that doesn't fit in a JD…", maxLength: 240,
+  },
+  {
+    key: "ii_changed", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What have you completely changed your mind about?",
+    why: "Intellectual honesty is rare. Impossible to fake. Impossible to get from a resume.",
+    type: "text", placeholder: "I used to believe… Now I know…", maxLength: 280,
+  },
+  {
+    key: "ii_field", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What do most people in your field get wrong?",
+    why: "The expertise signal. Requires genuine depth to answer well.",
+    type: "text", placeholder: "Most people in my field think… but actually…", maxLength: 300,
+  },
+  {
+    key: "e_now", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What are you doing right now?",
+    why: "Where you are today. Sets the context for the profile.",
+    type: "text", placeholder: "Right now I'm…", maxLength: 280,
+  },
+  {
+    key: "e_next", section: "ST", sectionName: "Story",
+    sectionDesc: "",
+    headline: "What is your ideal next role?",
+    why: "Trajectory matters as much as history. Tells people where you're going.",
+    type: "text", placeholder: "Ideally, I'm looking for…", maxLength: 280,
+  },
+
+  // ── ELVISS+ (was ELVIIS+) ──
+  {
+    key: "elviis_plus", section: "+", sectionName: "ELVISS+",
+    sectionDesc: "Your work extends beyond job titles. Add anything that tells your story.",
     headline: "Want to go further?",
-    why: "Add anything else that belongs on your Marquee.",
+    why: "Newsletters, podcasts, speaking, projects, portfolio, advisory, service.",
     type: "elviis-plus", optional: true,
   },
+
   // ── Work Preferences ──
   {
     key: "work_prefs", section: "WP", sectionName: "Work Preferences",
-    sectionDesc: "Final details before we generate your profile.",
+    sectionDesc: "Final details before we generate your Marquee.",
     headline: "A few final details",
     why: "",
     type: "work-prefs",
   },
 ];
 
-// ── Section intro data ──
+// ── Section intro data (ELVISS order) ──
 const SECTION_INTROS: Record<string, { letter: string; name: string; desc: string }> = {
-  E: { letter: "E", name: "Experience", desc: "Career arc, trajectory, and the through-line" },
-  L: { letter: "L", name: "Leadership", desc: "How you lead and what environment brings out your best" },
-  V: { letter: "V", name: "Values", desc: "What you stand for and what you need" },
-  "I₁": { letter: "I", name: "Impact", desc: "What changed because you were there" },
-  "I₂": { letter: "I", name: "Insights", desc: "Your professional point of view" },
-  S: { letter: "S", name: "Skills", desc: "Tiered capability map" },
-  "+": { letter: "+", name: "ELVIIS+", desc: "Beyond job titles" },
-  WP: { letter: "→", name: "Work Preferences", desc: "Final details" },
+  E:  { letter: "E",  name: "Experience",       desc: "The roles that shaped you." },
+  L:  { letter: "L",  name: "Leadership",       desc: "How you lead and what brings out your best." },
+  V:  { letter: "V",  name: "Values",           desc: "What you stand for and what you need." },
+  I:  { letter: "I",  name: "Impact",           desc: "What changed because you were there — and what people say." },
+  S:  { letter: "S",  name: "Skills",           desc: "Your capability map." },
+  ST: { letter: "S",  name: "Story",            desc: "The narrative behind the resume." },
+  "+": { letter: "+", name: "ELVISS+",          desc: "Beyond job titles." },
+  WP: { letter: "→", name: "Work Preferences", desc: "Final details before we build your Marquee." },
 };
 
 // ── Main Component ──────────────────────────────────────────────

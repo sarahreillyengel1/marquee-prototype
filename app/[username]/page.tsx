@@ -300,7 +300,7 @@ export default function ProfilePage() {
     { key: "I", label: "Impact" },
     { key: "S", label: "Skills" },
     { key: "ST", label: "Story" },
-    // ELVIIS+ is rendered as a sidebar (always visible) rather than a tab.
+    // ELVISS+ is rendered as a sidebar (always visible) rather than a tab.
   ];
 
   return (
@@ -571,7 +571,7 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        {/* ELVIIS Tabs — magazine section marks */}
+        {/* ELVISS Tabs — magazine section marks */}
         <div className="sticky top-0 z-10 bg-cream/90 backdrop-blur-sm border-b border-border mb-10 -mx-6 md:-mx-12 px-6 md:px-12">
           <div className="flex justify-between gap-1 overflow-x-auto scrollbar-none">
             {TABS.map((tab) => {
