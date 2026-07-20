@@ -131,6 +131,9 @@ Skills: ${skillsText || "Not provided"}`;
         theme: "light",
         elviis_plus: answers.elviis_plus || [],
         // ── beta merge: new profile data ──
+        superpowers: answers.sp_superpowers || [],
+        industries: answers.in_industries || [],
+        top_highlights: answers.t3_highlights || [],
         ways_to_work: answers.w_ways || [],
         social_links: answers.w_socials || {},
         work_locations: answers.work_prefs?.wp_locations || [],

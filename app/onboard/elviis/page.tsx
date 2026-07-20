@@ -36,7 +36,10 @@ interface Question {
     | "archetype-select"
     | "work-prefs"
     | "ways-to-work"
-    | "socials";
+    | "socials"
+    | "superpowers"
+    | "top-highlights"
+    | "education";
   placeholder?: string;
   maxLength?: number;
   options?: { value: string; label: string; desc?: string }[];
@@ -121,8 +124,55 @@ const SOCIAL_FIELDS: { key: keyof SocialsVal; label: string; placeholder: string
   { key: "website", label: "Website", placeholder: "yoursite.com" },
 ];
 
+// ── Superpowers ──
+type SuperpowerItem = { title: string; blurb: string };
+
+// ── Top 3 Highlights ──
+type TopHighlightItem = { label: string; url: string };
+
+// ── Education ──
+type EducationEntry = { school: string; credential: string; year: string };
+
+// ── Industries (reuse multi-select-pills) ──
+const INDUSTRIES: { value: string; label: string }[] = [
+  { value: "technology", label: "Technology/SaaS" },
+  { value: "fintech", label: "Fintech" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "ecommerce", label: "E-commerce/Retail" },
+  { value: "media", label: "Media/Entertainment" },
+  { value: "marketing", label: "Marketing/Advertising" },
+  { value: "education", label: "Education" },
+  { value: "cpg", label: "Consumer/CPG" },
+  { value: "realestate", label: "Real Estate" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "energy", label: "Energy" },
+  { value: "nonprofit", label: "Nonprofit" },
+  { value: "government", label: "Government/Public" },
+  { value: "proservices", label: "Professional Services" },
+  { value: "hospitality", label: "Hospitality/Travel" },
+  { value: "gaming", label: "Gaming" },
+  { value: "crypto", label: "Crypto/Web3" },
+  { value: "biotech", label: "Biotech/Pharma" },
+  { value: "logistics", label: "Logistics/Supply Chain" },
+  { value: "marketplaces", label: "Marketplaces" },
+];
+
 const QUESTIONS: Question[] = [
   // ── E · EXPERIENCE ──
+  {
+    key: "e_years", section: "E", sectionName: "Experience",
+    sectionDesc: "The roles that actually shaped you.",
+    headline: "How many years have you been working?",
+    why: "",
+    type: "range", min: 0, max: 40, step: 1,
+  },
+  {
+    key: "e_role", section: "E", sectionName: "Experience",
+    sectionDesc: "",
+    headline: "In one line, how do you describe what you do?",
+    why: "",
+    type: "text", placeholder: "e.g. I help early-stage teams find their market.", maxLength: 80,
+  },
   {
     key: "e_transformational", section: "E", sectionName: "Experience",
     sectionDesc: "The roles that actually shaped you.",
@@ -281,6 +331,33 @@ const QUESTIONS: Question[] = [
     type: "text", placeholder: "Ideally, I'm looking for…", maxLength: 280,
   },
 
+  // ── SP · SUPERPOWERS ──
+  {
+    key: "sp_superpowers", section: "SP", sectionName: "Superpowers",
+    sectionDesc: "The few things you're genuinely known for.",
+    headline: "What are your superpowers?",
+    why: "The few things you're genuinely known for — the work people seek you out for.",
+    type: "superpowers",
+  },
+
+  // ── IN · INDUSTRIES ──
+  {
+    key: "in_industries", section: "IN", sectionName: "Industries",
+    sectionDesc: "The fields you work in. Powers how you're found.",
+    headline: "Which industries do you work in?",
+    why: "Powers how you're found. Pick the fields that fit best.",
+    type: "multi-select-pills", options: INDUSTRIES, maxSelect: 5,
+  },
+
+  // ── T3 · TOP HIGHLIGHTS ──
+  {
+    key: "t3_highlights", section: "T3", sectionName: "Top Highlights",
+    sectionDesc: "The three wins you most want seen. Each can link out.",
+    headline: "Your top 3 highlights",
+    why: "The three wins you most want seen. Each can link out.",
+    type: "top-highlights",
+  },
+
   // ── W · WAYS TO WORK (engagement storefront) ──
   {
     key: "w_ways", section: "W", sectionName: "Ways to Work",
@@ -306,6 +383,15 @@ const QUESTIONS: Question[] = [
     type: "elviis-plus", optional: true,
   },
 
+  // ── ED · EDUCATION ──
+  {
+    key: "ed_education", section: "ED", sectionName: "Education",
+    sectionDesc: "Degrees and certifications.",
+    headline: "Education & certifications",
+    why: "Degrees and certifications.",
+    type: "education", optional: true,
+  },
+
   // ── Work Preferences ──
   {
     key: "work_prefs", section: "WP", sectionName: "Work Preferences",
@@ -324,8 +410,12 @@ const SECTION_INTROS: Record<string, { letter: string; name: string; desc: strin
   I:  { letter: "I",  name: "Impact",           desc: "What changed because you were there — and what people say." },
   S:  { letter: "S",  name: "Skills",           desc: "Your capability map." },
   ST: { letter: "S",  name: "Story",            desc: "The narrative behind the resume." },
+  SP: { letter: "S",  name: "Superpowers",      desc: "The few things you're genuinely known for." },
+  IN: { letter: "◆",  name: "Industries",       desc: "The fields you work in. Powers how you're found." },
+  T3: { letter: "★",  name: "Top Highlights",   desc: "The three wins you most want seen. Each can link out." },
   W:  { letter: "W", name: "Ways to Work",     desc: "How people can work with you." },
   "+": { letter: "+", name: "ELVISS+",          desc: "Beyond job titles." },
+  ED: { letter: "⌂",  name: "Education",         desc: "Degrees and certifications." },
   WP: { letter: "→", name: "Work Preferences", desc: "Final details before we build your Marquee." },
 };
 
@@ -604,6 +694,12 @@ function QuestionInput({
       return <WaysToWork value={(value as WayToWork[]) || []} onChange={onChange} />;
     case "socials":
       return <Socials value={(value as SocialsVal) || {}} onChange={onChange} />;
+    case "superpowers":
+      return <SuperpowersEditor value={(value as SuperpowerItem[]) || []} onChange={onChange} />;
+    case "top-highlights":
+      return <TopHighlightsEditor value={(value as TopHighlightItem[]) || []} onChange={onChange} />;
+    case "education":
+      return <EducationEditor value={(value as EducationEntry[]) || []} onChange={onChange} />;
     default:
       return null;
   }
@@ -1458,6 +1554,183 @@ function Socials({
           />
         </div>
       ))}
+    </div>
+  );
+}
+
+function SuperpowersEditor({
+  value,
+  onChange,
+}: {
+  value: SuperpowerItem[];
+  onChange: (v: SuperpowerItem[]) => void;
+}) {
+  const add = () => {
+    if (value.length < 3) onChange([...value, { title: "", blurb: "" }]);
+  };
+  const update = (i: number, field: keyof SuperpowerItem, text: string) => {
+    const next = [...value];
+    next[i] = { ...next[i], [field]: text };
+    onChange(next);
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="space-y-4">
+      {value.map((item, i) => (
+        <div key={i} className="card p-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-sans text-brand-ink/60">
+              Superpower {i + 1}
+            </span>
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
+              Remove
+            </button>
+          </div>
+          <input
+            type="text"
+            placeholder="Title — e.g. 'Turning ambiguity into a plan'"
+            maxLength={60}
+            value={item.title}
+            onChange={(e) => update(i, "title", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+          <textarea
+            placeholder="A sentence on what this looks like in practice."
+            maxLength={160}
+            value={item.blurb}
+            onChange={(e) => update(i, "blurb", e.target.value)}
+            rows={2}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink resize-none"
+          />
+        </div>
+      ))}
+      {value.length < 3 && (
+        <button
+          onClick={add}
+          className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
+        >
+          + Add superpower
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TopHighlightsEditor({
+  value,
+  onChange,
+}: {
+  value: TopHighlightItem[];
+  onChange: (v: TopHighlightItem[]) => void;
+}) {
+  const add = () => {
+    if (value.length < 3) onChange([...value, { label: "", url: "" }]);
+  };
+  const update = (i: number, field: keyof TopHighlightItem, text: string) => {
+    const next = [...value];
+    next[i] = { ...next[i], [field]: text };
+    onChange(next);
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="space-y-4">
+      {value.map((item, i) => (
+        <div key={i} className="card p-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-sans text-brand-ink/60">
+              Highlight {i + 1}
+            </span>
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
+              Remove
+            </button>
+          </div>
+          <input
+            type="text"
+            placeholder="Highlight — e.g. 'Led the $20M Series B'"
+            maxLength={80}
+            value={item.label}
+            onChange={(e) => update(i, "label", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+          <input
+            type="url"
+            placeholder="Link (optional)"
+            value={item.url}
+            onChange={(e) => update(i, "url", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+        </div>
+      ))}
+      {value.length < 3 && (
+        <button
+          onClick={add}
+          className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
+        >
+          + Add highlight
+        </button>
+      )}
+    </div>
+  );
+}
+
+function EducationEditor({
+  value,
+  onChange,
+}: {
+  value: EducationEntry[];
+  onChange: (v: EducationEntry[]) => void;
+}) {
+  const add = () => onChange([...value, { school: "", credential: "", year: "" }]);
+  const update = (i: number, field: keyof EducationEntry, text: string) => {
+    const next = [...value];
+    next[i] = { ...next[i], [field]: text };
+    onChange(next);
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="space-y-4">
+      {value.map((item, i) => (
+        <div key={i} className="card p-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-sans text-brand-ink/60">
+              Education {i + 1}
+            </span>
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion">
+              Remove
+            </button>
+          </div>
+          <input
+            type="text"
+            placeholder="School — e.g. 'Stanford University'"
+            value={item.school}
+            onChange={(e) => update(i, "school", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+          <input
+            type="text"
+            placeholder="Credential — e.g. 'MBA' or 'PMP Certification'"
+            value={item.credential}
+            onChange={(e) => update(i, "credential", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+          <input
+            type="text"
+            placeholder="Year — e.g. '2018'"
+            value={item.year}
+            onChange={(e) => update(i, "year", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+        </div>
+      ))}
+      <button
+        onClick={add}
+        className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
+      >
+        + Add education
+      </button>
     </div>
   );
 }

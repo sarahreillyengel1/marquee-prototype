@@ -24,6 +24,7 @@ import type {
   Skill,
   Value,
   Superpower,
+  Credential,
   SectionVisibility,
 } from './profile-types'
 
@@ -251,6 +252,32 @@ export function mapToProfile({ profile, workHistory, skills, answers }: MapperIn
     icon: typeof s.icon === 'string' && s.icon ? s.icon : 'zap',
   }))
 
+  /* education ← answers.ed_education [{school,credential,year}] → Credential */
+  const eduSrc: AnyRec[] = Array.isArray(a.ed_education) ? a.ed_education : []
+  const education: Credential[] = eduSrc
+    .map((e, i) => {
+      const school = String(e.school ?? '').trim()
+      const credential = String(e.credential ?? '').trim()
+      const year = String(e.year ?? '').trim()
+      const short = school
+        ? school
+            .split(/\s+/)
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 3)
+            .join('')
+            .toUpperCase()
+        : firstLetter(credential)
+      return {
+        id: `edu-${i}`,
+        short,
+        title: credential,
+        sub: [school, year].filter(Boolean).join(' · '),
+        verified: false,
+      }
+    })
+    .filter((c) => c.title || c.sub)
+
   /* values ← answers.v_values (names only → best-effort Value) */
   // TODO(beta): value blurbs not collected; only the ordered value names exist.
   const valuesSrc = Array.isArray(a.v_values) ? (a.v_values as unknown[]) : []
@@ -330,7 +357,7 @@ export function mapToProfile({ profile, workHistory, skills, answers }: MapperIn
   const bioShort = String(p.ai_pull_quote ?? bioLong[0] ?? '')
 
   /* stats — derive best-effort */
-  const years = p.years_experience ?? a.l_years
+  const years = p.years_experience ?? a.l_years ?? a.e_years
   const stats: Profile['stats'] = []
   if (years) stats.push({ value: `${years}+`, label: 'Years', goto: '/experience' })
   if (impact.length) stats.push({ value: String(impact.length), label: 'Impact Stories', goto: '/experience' })
@@ -343,7 +370,7 @@ export function mapToProfile({ profile, workHistory, skills, answers }: MapperIn
     impact: show('impact', impact.length > 0),
     superpowers: show('superpowers', superpowers.length > 0),
     media: show('media', media.length > 0),
-    education: show('education', false), // TODO(beta): education not collected yet
+    education: show('education', education.length > 0),
     activeProjects: show('activeProjects', activeProjects.length > 0),
     portfolio: show('portfolio', portfolio.length > 0),
   }
@@ -356,7 +383,7 @@ export function mapToProfile({ profile, workHistory, skills, answers }: MapperIn
     availableLabel: String(p.available_label ?? 'Available for new opportunities'),
     verified: !!p.verified,
     photoUrl: p.avatar_url ? String(p.avatar_url) : '',
-    tagline: String(p.tagline ?? ''),
+    tagline: String(p.tagline ?? '') || String(a.e_role ?? ''),
     slug: name ? name.split(' ')[0].toLowerCase() : '',
     tags: Array.isArray(p.tags) ? p.tags.map(String) : [],
     bioShort,
@@ -381,7 +408,7 @@ export function mapToProfile({ profile, workHistory, skills, answers }: MapperIn
     skills: mappedSkills,
     media,
     portfolio,
-    education: [], // TODO(beta): education & credentials not collected yet
+    education,
 
     sections,
   }
