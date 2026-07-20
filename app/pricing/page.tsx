@@ -38,7 +38,7 @@ export default function PricingPage() {
           </div>
           <div className="flex items-baseline gap-2 mt-3">
             <span className="font-inter font-bold tracking-tight text-7xl md:text-8xl text-brand-ink leading-none">
-              $46
+              $48
             </span>
             <span className="text-brand-ink/60 text-lg">/ year</span>
           </div>
@@ -94,7 +94,7 @@ export default function PricingPage() {
           For context
         </span>
         <h2 className="font-inter font-bold tracking-tight text-3xl md:text-4xl text-brand-ink leading-tight mt-3 max-w-3xl">
-          $46 a year is less than most professionals spend on…
+          $48 a year is less than most professionals spend on…
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
           {[

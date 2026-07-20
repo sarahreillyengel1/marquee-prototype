@@ -166,7 +166,7 @@ export default function SignupPage() {
                 : "text-brand-ink/70 hover:text-brand-ink"
             }`}
           >
-            $46/year
+            $48/year
           </button>
         </div>
 
@@ -175,7 +175,7 @@ export default function SignupPage() {
             <div className="flex items-baseline justify-between mb-4">
               <span className="font-inter font-bold tracking-tight text-2xl text-brand-ink">Marquee</span>
               <span className="font-inter font-bold tracking-tight text-3xl text-brand-ink">
-                $46<span className="text-sm text-brand-ink/60 font-normal font-inter">/year</span>
+                $48<span className="text-sm text-brand-ink/60 font-normal font-inter">/year</span>
               </span>
             </div>
             <p className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-3">
@@ -204,7 +204,7 @@ export default function SignupPage() {
           <p className="text-brand-ink/60 text-sm mb-6">
             {mode === "beta"
               ? "Enter your beta invite code to get started."
-              : "$46/year. Cancel anytime."}
+              : "$48/year. Cancel anytime."}
           </p>
 
           <form
