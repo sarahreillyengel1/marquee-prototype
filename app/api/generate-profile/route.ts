@@ -130,6 +130,13 @@ Skills: ${skillsText || "Not provided"}`;
         ai_insights_summary: generated.insights_summary,
         theme: "light",
         elviis_plus: answers.elviis_plus || [],
+        // ── beta merge: new profile data ──
+        ways_to_work: answers.w_ways || [],
+        social_links: answers.w_socials || {},
+        work_locations: answers.work_prefs?.wp_locations || [],
+        availability_note: answers.work_prefs?.wp_availability || null,
+        available: answers.work_status !== "Not actively looking",
+        available_label: answers.work_status || null,
         generated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }
