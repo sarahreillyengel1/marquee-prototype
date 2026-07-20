@@ -34,7 +34,9 @@ interface Question {
     | "elviis-plus"
     | "work-history-select"
     | "archetype-select"
-    | "work-prefs";
+    | "work-prefs"
+    | "ways-to-work"
+    | "socials";
   placeholder?: string;
   maxLength?: number;
   options?: { value: string; label: string; desc?: string }[];
@@ -85,6 +87,38 @@ const ENNEAGRAM_TYPES = [
   "4 — The Individualist", "5 — The Investigator", "6 — The Loyalist",
   "7 — The Enthusiast", "8 — The Challenger", "9 — The Peacemaker",
   "I don't know",
+];
+
+// ── Ways to work (engagement storefront) ──
+type WayToWork = {
+  id: string;
+  title: string;
+  price: string;
+  rateDisplay: "show" | "contact";
+  flow: "book" | "proposal" | "message";
+  blurb: string;
+  visible: boolean;
+};
+const WTW_SUGGESTIONS: { title: string; blurb: string; flow: WayToWork["flow"] }[] = [
+  { title: "Advisory", blurb: "A focused 1:1 session on a specific problem.", flow: "book" },
+  { title: "Fractional Leadership", blurb: "Embedded leadership, a few days a week.", flow: "proposal" },
+  { title: "Project Work", blurb: "A scoped engagement with a clear deliverable.", flow: "proposal" },
+  { title: "Speaking", blurb: "Talks and workshops for teams, offsites, and events.", flow: "message" },
+  { title: "Content & Partnerships", blurb: "UGC, sponsorships, and creator collaborations.", flow: "message" },
+  { title: "Board / Advisor", blurb: "Ongoing advisory for founders scaling up.", flow: "proposal" },
+  { title: "Full-time role", blurb: "Open to the right full-time opportunity.", flow: "message" },
+  { title: "Consulting Call", blurb: "A paid intro call to see if we're a fit.", flow: "book" },
+  { title: "Mentorship", blurb: "Regular 1:1s to help you grow.", flow: "book" },
+];
+
+// ── Socials ──
+type SocialsVal = { linkedin?: string; instagram?: string; x?: string; tiktok?: string; website?: string };
+const SOCIAL_FIELDS: { key: keyof SocialsVal; label: string; placeholder: string }[] = [
+  { key: "linkedin", label: "LinkedIn", placeholder: "linkedin.com/in/you" },
+  { key: "instagram", label: "Instagram", placeholder: "instagram.com/you" },
+  { key: "x", label: "X", placeholder: "x.com/you" },
+  { key: "tiktok", label: "TikTok", placeholder: "tiktok.com/@you" },
+  { key: "website", label: "Website", placeholder: "yoursite.com" },
 ];
 
 const QUESTIONS: Question[] = [
@@ -247,6 +281,22 @@ const QUESTIONS: Question[] = [
     type: "text", placeholder: "Ideally, I'm looking for…", maxLength: 280,
   },
 
+  // ── W · WAYS TO WORK (engagement storefront) ──
+  {
+    key: "w_ways", section: "W", sectionName: "Ways to Work",
+    sectionDesc: "How people can work with you. Set a rate or keep it private. Add only what applies.",
+    headline: "How do you want to work?",
+    why: "This becomes your storefront. Only what you add shows up. If you just want a full-time role, add that and nothing else.",
+    type: "ways-to-work",
+  },
+  {
+    key: "w_socials", section: "W", sectionName: "Ways to Work",
+    sectionDesc: "",
+    headline: "Where can people find you?",
+    why: "These become the links on your profile.",
+    type: "socials", optional: true,
+  },
+
   // ── ELVISS+ (was ELVIIS+) ──
   {
     key: "elviis_plus", section: "+", sectionName: "ELVISS+",
@@ -274,6 +324,7 @@ const SECTION_INTROS: Record<string, { letter: string; name: string; desc: strin
   I:  { letter: "I",  name: "Impact",           desc: "What changed because you were there — and what people say." },
   S:  { letter: "S",  name: "Skills",           desc: "Your capability map." },
   ST: { letter: "S",  name: "Story",            desc: "The narrative behind the resume." },
+  W:  { letter: "W", name: "Ways to Work",     desc: "How people can work with you." },
   "+": { letter: "+", name: "ELVISS+",          desc: "Beyond job titles." },
   WP: { letter: "→", name: "Work Preferences", desc: "Final details before we build your Marquee." },
 };
@@ -549,6 +600,10 @@ function QuestionInput({
       );
     case "work-prefs":
       return <WorkPrefs value={value as Record<string, unknown>} onChange={onChange} />;
+    case "ways-to-work":
+      return <WaysToWork value={(value as WayToWork[]) || []} onChange={onChange} />;
+    case "socials":
+      return <Socials value={(value as SocialsVal) || {}} onChange={onChange} />;
     default:
       return null;
   }
@@ -1258,6 +1313,151 @@ function ElviisPlus({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function WaysToWork({
+  value,
+  onChange,
+}: {
+  value: WayToWork[];
+  onChange: (v: WayToWork[]) => void;
+}) {
+  const add = (
+    title: string,
+    blurb = "",
+    flow: WayToWork["flow"] = "message"
+  ) => {
+    if (value.some((v) => v.title.toLowerCase() === title.toLowerCase())) return;
+    onChange([
+      ...value,
+      { id: `wtw-${value.length}-${title.replace(/\s+/g, "-").toLowerCase()}`, title, price: "", rateDisplay: "contact", flow, blurb, visible: true },
+    ]);
+  };
+  const update = (i: number, field: keyof WayToWork, val: unknown) => {
+    const next = [...value];
+    next[i] = { ...next[i], [field]: val };
+    onChange(next);
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+  const used = new Set(value.map((v) => v.title.toLowerCase()));
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <div className="text-xs font-sans text-brand-ink/60 mb-2">
+          Add a way to work, then set your rate. Tap to add.
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {WTW_SUGGESTIONS.filter((s) => !used.has(s.title.toLowerCase())).map((s) => (
+            <button
+              key={s.title}
+              onClick={() => add(s.title, s.blurb, s.flow)}
+              className="px-3 py-1.5 rounded-lg border border-brand-stone bg-white text-sm hover:border-brand-ink transition-colors"
+            >
+              + {s.title}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {value.map((item, i) => (
+        <div key={item.id} className="card p-4 space-y-3">
+          <div className="flex justify-between items-center gap-3">
+            <input
+              value={item.title}
+              onChange={(e) => update(i, "title", e.target.value)}
+              className="font-medium text-sm bg-transparent border-b border-transparent focus:border-brand-stone focus:outline-none flex-1 min-w-0"
+            />
+            <label className="flex items-center gap-1.5 text-xs text-brand-ink/60 whitespace-nowrap">
+              <input type="checkbox" checked={item.visible} onChange={() => update(i, "visible", !item.visible)} />
+              Show
+            </label>
+            <button onClick={() => remove(i)} className="text-xs text-brand-ink/70 hover:text-brand-vermillion whitespace-nowrap">
+              Remove
+            </button>
+          </div>
+          <input
+            placeholder="Short description — what this is"
+            maxLength={90}
+            value={item.blurb}
+            onChange={(e) => update(i, "blurb", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-lg border border-brand-stone overflow-hidden text-xs">
+              <button
+                onClick={() => update(i, "rateDisplay", "show")}
+                className={`px-3 py-1.5 ${item.rateDisplay === "show" ? "bg-brand-ink text-white" : "bg-white text-brand-ink/70"}`}
+              >
+                Show rate
+              </button>
+              <button
+                onClick={() => update(i, "rateDisplay", "contact")}
+                className={`px-3 py-1.5 ${item.rateDisplay === "contact" ? "bg-brand-ink text-white" : "bg-white text-brand-ink/70"}`}
+              >
+                Contact for rate
+              </button>
+            </div>
+            {item.rateDisplay === "show" && (
+              <input
+                placeholder="$300 / hr"
+                maxLength={24}
+                value={item.price}
+                onChange={(e) => update(i, "price", e.target.value)}
+                className="w-28 px-3 py-1.5 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+              />
+            )}
+            <select
+              value={item.flow}
+              onChange={(e) => update(i, "flow", e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+            >
+              <option value="book">They book a time</option>
+              <option value="proposal">They request a proposal</option>
+              <option value="message">They send a message</option>
+            </select>
+          </div>
+        </div>
+      ))}
+
+      <button
+        onClick={() => add("New offering")}
+        className="w-full card p-4 text-center text-sm text-brand-ink/70 hover:text-brand-ink hover:border-brand-ink transition-all border-dashed border-2"
+      >
+        + Add a custom way to work
+      </button>
+      {value.length === 0 && (
+        <div className="text-xs text-brand-ink/50 text-center">
+          Only add what applies. If you just want a full-time role, add that and nothing else.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Socials({
+  value,
+  onChange,
+}: {
+  value: SocialsVal;
+  onChange: (v: SocialsVal) => void;
+}) {
+  const v = value || {};
+  return (
+    <div className="space-y-3">
+      {SOCIAL_FIELDS.map((f) => (
+        <div key={f.key}>
+          <label className="text-xs font-sans text-brand-ink/60">{f.label}</label>
+          <input
+            value={v[f.key] || ""}
+            onChange={(e) => onChange({ ...v, [f.key]: e.target.value })}
+            placeholder={f.placeholder}
+            className="w-full px-3 py-2 rounded-lg border border-brand-stone bg-white text-sm focus:outline-none focus:border-brand-ink"
+          />
+        </div>
+      ))}
     </div>
   );
 }
