@@ -14,18 +14,30 @@
 // COLOR SYSTEM
 // ────────────────────────────────────────────────────────────
 
+// From BRAND.md (Brand Essentials). Source of truth. Square 0px, white backgrounds.
 export const colors = {
-  // Primary
-  ink: "#111111",       // Primary text, primary buttons, dark surfaces
-  paper: "#F7F6F2",     // Default page background (replaces cream #F5F0E8)
-  lavender: "#C7B5FF",  // Primary accent (replaces lav-mid #A78BFA)
-
-  // Secondary — used for semantic categorization (work type pills, etc.)
-  vermillion: "#FF5A36",   // Orange-red — alerts, attention
-  sky: "#A8CFFF",          // Light blue — Fractional work
-  softGreen: "#B9E3A5",    // Light green — Project-Based work · progress indicators · icon backgrounds
-  citron: "#E6F06A",       // Yellow-green — Full-Time work
-  stone: "#E9E6DF",        // Warm gray — borders, surfaces, neutral chips
+  // Foundation
+  ink: "#111111",
+  paper: "#FFFFFF",
+  white: "#F7F7F8",
+  stone: "#E6E2D0",
+  taupe: "#DBCDC4",
+  // Brand
+  crimson: "#B21E2F",
+  wine: "#670821",
+  purple: "#C7B5EE",
+  sky: "#C0DDFB",
+  blue: "#1F3BC4",
+  // Accent
+  citron: "#D6E27B",
+  blush: "#F8C3FF",
+  sage: "#73926A",
+  mint: "#B9E3A5",
+  orange: "#FF5436",
+  // Legacy aliases → new hexes (keep existing references working)
+  lavender: "#C7B5EE",
+  vermillion: "#FF5436",
+  softGreen: "#B9E3A5",
 } as const;
 
 // ────────────────────────────────────────────────────────────

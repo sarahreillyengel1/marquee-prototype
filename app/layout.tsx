@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat } from "next/font/google";
+import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Poppins, Caveat } from "next/font/google";
 import "./globals.css";
 
 // Legacy fonts — used by all existing screens until the phase-2 reskin
@@ -28,6 +28,13 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+// Poppins — UI headlines / caps / labels (BRAND.md)
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
+
 const caveat = Caveat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -48,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${caveat.variable} font-sans antialiased`}
+        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${poppins.variable} ${caveat.variable} font-sans antialiased`}
       >
         {children}
       </body>
