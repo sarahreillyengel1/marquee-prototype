@@ -12,6 +12,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [linkedin, setLinkedin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, source }),
+        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, linkedin, source }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || "Couldn't save your spot");
@@ -64,9 +65,9 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h3 className="font-inter font-bold tracking-tight text-3xl mb-2 text-brand-ink">You&apos;re on the list.</h3>
+            <h3 className="font-inter font-bold tracking-tight text-3xl mb-2 text-brand-ink">Application received.</h3>
             <p className="text-brand-ink/70 mb-6">
-              We&apos;ll be in touch as soon as your spot opens.
+              We review every application. If you&apos;re a fit, we&apos;ll email you an invite to the beta.
             </p>
             <button
               onClick={onClose}
@@ -78,9 +79,9 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
         ) : (
           <>
             <div className="mb-6">
-              <h3 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Join the Waitlist</h3>
+              <h3 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Apply to Marquee</h3>
               <p className="text-sm text-brand-ink/70">
-                We&apos;ll email you the moment a spot opens.
+                Marquee is invite-only. Tell us who you are and we&apos;ll be in touch if it&apos;s a fit.
               </p>
             </div>
 
@@ -126,6 +127,20 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 />
               </div>
 
+              <div>
+                <label className="block text-xs uppercase tracking-wider font-semibold text-brand-ink/60 mb-1.5">
+                  LinkedIn
+                </label>
+                <input
+                  type="text"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  required
+                  placeholder="linkedin.com/in/you"
+                  className="w-full px-4 py-2.5 rounded-xl border border-brand-stone bg-white focus:outline-none focus:border-brand-ink transition-colors"
+                />
+              </div>
+
               {error && (
                 <div className="text-brand-vermillion text-sm bg-brand-vermillion/10 rounded-lg px-4 py-3">
                   {error}
@@ -137,7 +152,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 disabled={submitting}
                 className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
               >
-                {submitting ? "Joining…" : "Join the Waitlist"}
+                {submitting ? "Submitting…" : "Apply"}
               </button>
 
               <p className="text-xs text-brand-ink/50 text-center">

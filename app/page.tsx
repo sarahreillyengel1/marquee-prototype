@@ -46,7 +46,7 @@ export default function LandingPage() {
           onClick={() => setWaitlistOpen(true)}
           className="px-6 py-3 rounded-full bg-brand-ink text-white text-sm font-medium hover:bg-brand-ink/90 transition-colors"
         >
-          Join the Waitlist
+          Apply
         </button>
       </nav>
 
@@ -68,7 +68,7 @@ export default function LandingPage() {
                 onClick={() => setWaitlistOpen(true)}
                 className="mt-9 px-8 py-3.5 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors"
               >
-                Join the Waitlist
+                Apply for access
               </button>
             </div>
 

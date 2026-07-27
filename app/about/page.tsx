@@ -117,7 +117,7 @@ export default function AboutPage() {
         <p className="text-xs text-white/50 mt-6">
           Or{" "}
           <Link href="/" className="underline hover:text-white">
-            join the waitlist
+            apply for access
           </Link>{" "}
           if you&apos;re ready to build your Marquee.
         </p>
