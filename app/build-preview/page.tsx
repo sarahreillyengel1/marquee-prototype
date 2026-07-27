@@ -12,7 +12,8 @@ const RAIL = [
   { label: "Build your brand", steps: ["Work With Me", "Media", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["About You", "Experience", "Leadership", "Work With Me"]);
+const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Work With Me"]);
+const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
 
 type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; keywords: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
@@ -102,6 +103,25 @@ export default function BuildPreview() {
     { key: "content", title: "Content Partnership", blurb: "Creator & sponsored work.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per post", hoursPerMonth: "", showRate: false, keywords: "UGC, Sponsored", date: "", cadence: "", booking: "request", desc: "" },
   ]);
   const upOffer = (k: string, patch: Partial<Offer>) => setOffers((o) => o.map((x) => (x.key === k ? { ...x, ...patch } : x)));
+
+  // Impact
+  const [impacts, setImpacts] = useState<{ headline: string; context: string; story: string }[]>([
+    { headline: "Scaled community to 1.5M members", context: "Hello Alice · 2016 – 2018", story: "Built and grew the community platform from launch to 1.5M members through Series A." },
+    { headline: "3.2× pipeline in 18 months", context: "Meridian · 2022 – Present", story: "Repositioned the platform around AI-native workflows and grew qualified pipeline 3.2x." },
+  ]);
+  const upImpact = (i: number, patch: Partial<{ headline: string; context: string; story: string }>) => setImpacts((m) => m.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addImpact = () => setImpacts((m) => (m.length < 4 ? [...m, { headline: "", context: "", story: "" }] : m));
+  const rmImpact = (i: number) => setImpacts((m) => m.filter((_, j) => j !== i));
+
+  // Skills
+  const [skills, setSkills] = useState<{ name: string; level: number }[]>([
+    { name: "Go-to-Market", level: 5 }, { name: "Brand & Positioning", level: 5 }, { name: "Growth", level: 4 }, { name: "Community", level: 4 }, { name: "AI & Automation", level: 3 },
+  ]);
+  const [industries, setIndustries] = useState<string[]>(["SaaS", "Fintech", "Consumer"]);
+  const [expertise, setExpertise] = useState("Category creation, Community-led growth, AI-native GTM");
+  const upSkill = (i: number, level: number) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, level } : x)));
+  const nameSkill = (i: number, name: string) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, name } : x)));
+  const rmSkill = (i: number) => setSkills((s) => s.filter((_, j) => j !== i));
 
   const stepNo = ALL_STEPS.indexOf(active);
 
@@ -371,6 +391,57 @@ export default function BuildPreview() {
             </>
           )}
 
+          {active === "Impact" && (
+            <>
+              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your impact.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Add up to 4 career highlights. Not job duties, the moments something measurably changed because you were there.</p>
+              <div className="space-y-4 max-w-[720px]">
+                {impacts.map((im, i) => (
+                  <div key={i} className="border border-[#E1DED7] p-[18px]">
+                    <div className="flex justify-between items-center mb-3"><span className="font-poppins text-[12px] font-semibold text-[#7d7a74]">Highlight {i + 1}</span><button onClick={() => rmImpact(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <input value={im.headline} onChange={(e) => upImpact(i, { headline: e.target.value })} placeholder="Headline, e.g. Scaled pipeline 3× in 9 months" className="w-full font-poppins font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <input value={im.context} onChange={(e) => upImpact(i, { context: e.target.value })} placeholder="Company / context, e.g. Meridian · 2024" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <textarea value={im.story} onChange={(e) => upImpact(i, { story: e.target.value })} rows={2} placeholder="What you did, what changed, why it mattered." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
+                  </div>
+                ))}
+                {impacts.length < 4 && <button onClick={addImpact} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a highlight</button>}
+              </div>
+            </>
+          )}
+
+          {active === "Skills" && (
+            <>
+              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your skills.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Pulled from your resume. Add, remove, and rate each. Then your industries and areas of expertise.</p>
+
+              <div className="mb-8 max-w-[560px]">
+                <label className="font-poppins text-[13px] font-semibold block mb-2">Skills</label>
+                <input placeholder="Search to add a skill…" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-3 focus:outline-none focus:border-brand-ink" />
+                <div className="space-y-2">
+                  {skills.map((s, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <input value={s.name} onChange={(e) => nameSkill(i, e.target.value)} className="flex-1 font-inter text-[13.5px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                      <div className="flex gap-[3px]">{[1, 2, 3, 4, 5].map((l) => <button key={l} onClick={() => upSkill(i, l)} title={`Level ${l}`} className={`w-[22px] h-[8px] ${l <= s.level ? "bg-[#6B4BD6]" : "bg-[#F0EEE9]"}`} />)}</div>
+                      <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-brand-orange text-[15px]">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <label className="font-poppins text-[13px] font-semibold block mb-2">Industries</label>
+                <div className="flex flex-wrap gap-[8px]">
+                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); return <button key={t} onClick={() => setIndustries((c) => (c.includes(t) ? c.filter((x) => x !== t) : [...c, t]))} className={`font-poppins text-[13px] py-[7px] px-[13px] border ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{t}</button>; })}
+                </div>
+              </div>
+
+              <div className="max-w-[560px]">
+                <label className="font-poppins text-[13px] font-semibold block mb-2">Expertise <span className="font-normal text-[#a8a29a]">· the broader areas you own, searchable</span></label>
+                <input value={expertise} onChange={(e) => setExpertise(e.target.value)} placeholder="Add areas, separated by commas" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+              </div>
+            </>
+          )}
+
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
@@ -451,6 +522,33 @@ export default function BuildPreview() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {active === "Skills" && (
+          <div className="bg-white border border-[#ECEAE4] p-5">
+            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Skills</div>
+            {skills.map((s, i) => (
+              <div key={i} className="mb-2.5">
+                <div className="flex justify-between text-[12px] mb-1"><span className="font-medium">{s.name}</span></div>
+                <div className="h-[6px] bg-[#F0EEE9]"><div className="h-full" style={{ width: `${s.level * 20}%`, background: "linear-gradient(90deg,#C7B5EE,#6B4BD6)" }} /></div>
+              </div>
+            ))}
+            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-5 pt-4 border-t border-[#ECEAE4]">Industries</div>
+            <div className="flex flex-wrap gap-[6px]">{industries.map((t) => <span key={t} className="font-poppins text-[11.5px] py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
+          </div>
+        )}
+
+        {active === "Impact" && (
+          <div className="bg-white border border-[#ECEAE4] p-5">
+            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Impact</div>
+            {impacts.map((im, i) => (
+              <div key={i} className="py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
+                <div className="font-poppins text-[14px] font-semibold leading-snug">{im.headline || "Your highlight"}</div>
+                <div className="font-poppins text-[11.5px] text-[#6B4BD6] mt-0.5">{im.context}</div>
+                <div className="text-[12px] text-[#7d7a74] mt-1 leading-snug">{im.story}</div>
+              </div>
+            ))}
           </div>
         )}
       </aside>
