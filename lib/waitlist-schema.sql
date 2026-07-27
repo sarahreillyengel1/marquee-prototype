@@ -6,6 +6,8 @@ create table public.waitlist (
   email text unique not null,
   first_name text,
   last_name text,
+  linkedin_url text,
+  status text default 'pending',  -- pending | approved | declined
   source text default 'landing',  -- which page / CTA they came from
   utm_source text,
   utm_medium text,

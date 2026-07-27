@@ -3,10 +3,17 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { email, first_name, last_name, source, utm_source, utm_medium, utm_campaign } = body;
+  const { email, first_name, last_name, linkedin, source, utm_source, utm_medium, utm_campaign } = body;
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
+  }
+
+  // Normalize LinkedIn: accept "linkedin.com/in/x" or a full URL, store a clean https URL.
+  let linkedinUrl: string | null = null;
+  const rawLinkedin = typeof linkedin === "string" ? linkedin.trim() : "";
+  if (rawLinkedin) {
+    linkedinUrl = /^https?:\/\//i.test(rawLinkedin) ? rawLinkedin : `https://${rawLinkedin}`;
   }
 
   const supabase = createServerSupabase();
@@ -15,6 +22,8 @@ export async function POST(request: Request) {
     email: email.trim().toLowerCase(),
     first_name: first_name?.trim() || null,
     last_name: last_name?.trim() || null,
+    linkedin_url: linkedinUrl,
+    status: "pending",
     source: source || "landing",
     utm_source: utm_source || null,
     utm_medium: utm_medium || null,

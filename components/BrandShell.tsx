@@ -39,7 +39,7 @@ export default function BrandShell({
           onClick={() => setOpen(true)}
           className="px-6 py-3 rounded-full bg-brand-ink text-white text-sm font-medium hover:bg-brand-ink/90 transition-colors"
         >
-          Join the Waitlist
+          Apply
         </button>
       </nav>
 
