@@ -65,9 +65,9 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h3 className="font-inter font-bold tracking-tight text-3xl mb-2 text-brand-ink">Application received.</h3>
+            <h3 className="font-inter font-bold tracking-tight text-3xl mb-2 text-brand-ink">Request received.</h3>
             <p className="text-brand-ink/70 mb-6">
-              We review every application. If you&apos;re a fit, we&apos;ll email you an invite to the beta.
+              We&apos;re opening the beta to a small group at a time. If you&apos;re a fit, we&apos;ll email you an invitation.
             </p>
             <button
               onClick={onClose}
@@ -79,9 +79,9 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
         ) : (
           <>
             <div className="mb-6">
-              <h3 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Apply to Marquee</h3>
-              <p className="text-sm text-brand-ink/70">
-                Marquee is invite-only. Tell us who you are and we&apos;ll be in touch if it&apos;s a fit.
+              <h3 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Apply for early access</h3>
+              <p className="text-sm text-brand-ink/70 leading-relaxed">
+                Our limited beta is opening soon. We&apos;re inviting a small group of professionals to help shape Marquee from the beginning. Apply below to request an invitation.
               </p>
             </div>
 
@@ -152,7 +152,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 disabled={submitting}
                 className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
               >
-                {submitting ? "Submitting…" : "Apply"}
+                {submitting ? "Sending…" : "Request an Invitation"}
               </button>
 
               <p className="text-xs text-brand-ink/50 text-center">
