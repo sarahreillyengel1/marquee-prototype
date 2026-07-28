@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase";
+import { sendWaitlistConfirmation, sendWaitlistNotification } from "@/lib/email";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -30,13 +31,24 @@ export async function POST(request: Request) {
     utm_campaign: utm_campaign || null,
   });
 
-  // Duplicate email is fine — already on the waitlist
+  // Duplicate email is fine — already on the waitlist (don't re-send the confirmation)
   if (error && error.code !== "23505") {
     console.error("Waitlist insert error:", error);
     return NextResponse.json(
       { error: "Couldn't save your spot. Try again?" },
       { status: 500 }
     );
+  }
+
+  // Fresh application → send "your request is being reviewed" to the applicant, and
+  // (optionally) notify the team. Both are inert until RESEND_API_KEY is configured,
+  // and neither failing blocks the response.
+  if (!error) {
+    const cleanEmail = email.trim().toLowerCase();
+    await Promise.allSettled([
+      sendWaitlistConfirmation(cleanEmail, first_name),
+      sendWaitlistNotification({ first_name, last_name, email: cleanEmail, linkedin_url: linkedinUrl }),
+    ]);
   }
 
   return NextResponse.json({ success: true });
