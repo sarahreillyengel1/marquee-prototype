@@ -12,8 +12,27 @@ const RAIL = [
   { label: "Build your brand", steps: ["Work With Me", "Media", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Work With Me"]);
+const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Work With Me"]);
 const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
+
+// Lightweight keyword suggester for the Superpowers step (preview only — the real product
+// runs this through the Claude generation pass). Pulls notable phrases from the statement.
+const KW_STOP = new Set("i a an and the to of for with into on in at as is are be it its it's their they them we our you your my me can could build builds building drive drives driven that this these those who what which very more most also but so or from by unique".split(" "));
+function extractKeywords(text: string): string[] {
+  const words = text.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter(Boolean);
+  const bigrams: string[] = [];
+  for (let i = 0; i < words.length - 1; i++) {
+    const a = words[i], b = words[i + 1];
+    if (!KW_STOP.has(a) && !KW_STOP.has(b) && a.length > 2 && b.length > 2) bigrams.push(`${a} ${b}`);
+  }
+  const unigrams = words.filter((w) => w.length > 3 && !KW_STOP.has(w));
+  const out: string[] = [];
+  for (const k of [...bigrams, ...unigrams]) {
+    if (!out.includes(k) && !out.some((o) => o.includes(k))) out.push(k);
+    if (out.length >= 6) break;
+  }
+  return out;
+}
 
 type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; keywords: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
@@ -51,7 +70,7 @@ const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Consc
 type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
-  const [active, setActive] = useState("Work With Me");
+  const [active, setActive] = useState("Superpowers");
 
   // About You
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
@@ -122,6 +141,23 @@ export default function BuildPreview() {
   const upSkill = (i: number, level: number) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, level } : x)));
   const nameSkill = (i: number, name: string) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, name } : x)));
   const rmSkill = (i: number) => setSkills((s) => s.filter((_, j) => j !== i));
+
+  // Superpowers — write up to 6 signature statements in your own voice + optional free-form proof.
+  // The profile showcases the top SP_SHOWCASE; the rest live in the bio via "See all". Keywords auto-suggested for search.
+  const SP_MAX = 6, SP_SHOWCASE = 3;
+  const [powers, setPowers] = useState<{ statement: string; proof: string; keywords: string[] }[]>([
+    { statement: "I spot unique white space for startups and build scalable business models that drive revenue.", proof: "At Hello Alice I saw an underserved market of founders, built the community platform around it, and grew it to 1.5M members.", keywords: ["white space", "scalable business models", "revenue", "startups"] },
+    { statement: "I turn complex, ambiguous work into a story people repeat.", proof: "", keywords: ["storytelling", "positioning", "narrative"] },
+    { statement: "I build communities that compound into distribution.", proof: "", keywords: ["community", "distribution", "growth"] },
+    { statement: "I make pricing and packaging decisions that unlock new revenue.", proof: "", keywords: ["pricing", "packaging", "monetization"] },
+  ]);
+  const [kwDraft, setKwDraft] = useState<Record<number, string>>({});
+  const upPower = (i: number, patch: Partial<{ statement: string; proof: string; keywords: string[] }>) => setPowers((c) => c.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addPower = () => setPowers((c) => (c.length < SP_MAX ? [...c, { statement: "", proof: "", keywords: [] }] : c));
+  const rmPower = (i: number) => setPowers((c) => c.filter((_, j) => j !== i));
+  const suggestKw = (i: number) => upPower(i, { keywords: extractKeywords(`${powers[i].statement} ${powers[i].proof}`) });
+  const addKw = (i: number) => { const v = (kwDraft[i] || "").trim(); if (v && !powers[i].keywords.includes(v)) upPower(i, { keywords: [...powers[i].keywords, v] }); setKwDraft((d) => ({ ...d, [i]: "" })); };
+  const rmKw = (i: number, k: string) => upPower(i, { keywords: powers[i].keywords.filter((x) => x !== k) });
 
   const stepNo = ALL_STEPS.indexOf(active);
 
@@ -442,6 +478,36 @@ export default function BuildPreview() {
             </>
           )}
 
+          {active === "Superpowers" && (
+            <>
+              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your superpowers.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">The things you&apos;re uniquely great at — in your own words. Write it like you&apos;d say it out loud. Your profile showcases your top {SP_SHOWCASE}; the rest live in your bio. We pull the keywords that make you findable.</p>
+              <div className="space-y-4 max-w-[720px]">
+                {powers.map((p, i) => (
+                  <div key={i} className={`p-[18px] border ${i < SP_SHOWCASE ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-poppins text-[12px] font-semibold text-[#6B4BD6]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
+                      <button onClick={() => rmPower(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                    </div>
+                    <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-poppins font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
+                    <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Proof — one example (optional). What was the situation, what you did, what changed." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-poppins text-[11.5px] font-semibold text-[#7d7a74]">Search keywords <span className="font-normal text-[#a8a29a]">· helps people find you · never shown on your profile</span></span>
+                        <button onClick={() => suggestKw(i)} className="font-poppins text-[11px] text-[#6B4BD6] hover:underline">↻ Suggest from text</button>
+                      </div>
+                      <div className="flex flex-wrap gap-[6px] items-center">
+                        {p.keywords.map((k) => <span key={k} className="inline-flex items-center gap-1 font-poppins text-[12px] py-[4px] px-[9px] bg-[#F2EEFF] text-[#6B4BD6]">{k}<button onClick={() => rmKw(i, k)} className="text-[#6B4BD6]/50 hover:text-[#6B4BD6]">×</button></span>)}
+                        <input value={kwDraft[i] || ""} onChange={(e) => setKwDraft((d) => ({ ...d, [i]: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addKw(i))} placeholder="add…" className="font-inter text-[12px] py-[4px] px-[8px] border border-[#E1DED7] w-[80px] focus:outline-none focus:border-brand-ink" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {powers.length < SP_MAX && <button onClick={addPower} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a superpower <span className="text-[#a8a29a]">({powers.length}/{SP_MAX})</span></button>}
+              </div>
+            </>
+          )}
+
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
@@ -551,6 +617,31 @@ export default function BuildPreview() {
             ))}
           </div>
         )}
+
+        {active === "Superpowers" && (() => {
+          const filled = powers.filter((p) => p.statement.trim());
+          return (
+            <div className="bg-white border border-[#ECEAE4] p-5">
+              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Superpowers</div>
+              {filled.length ? (
+                <>
+                  {filled.slice(0, SP_SHOWCASE).map((p, i) => (
+                    <div key={i} className="flex gap-2.5 py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
+                      <span className="font-poppins text-[13px] font-semibold text-[#6B4BD6] tabular-nums shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                      <div className="min-w-0">
+                        <div className="font-poppins text-[13.5px] font-semibold leading-snug">{p.statement}</div>
+                        {p.proof && <div className="text-[12px] text-[#7d7a74] mt-1 leading-snug">{p.proof}</div>}
+                      </div>
+                    </div>
+                  ))}
+                  {filled.length > SP_SHOWCASE && (
+                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {filled.length} superpowers →</span><div className="text-[10.5px] text-[#a8a29a] mt-0.5">Opens the Superpowers section in your bio</div></div>
+                  )}
+                </>
+              ) : <div className="text-[12.5px] text-[#7d7a74]">Write the thing you&apos;re uniquely great at.</div>}
+            </div>
+          );
+        })()}
       </aside>
     </div>
   );
