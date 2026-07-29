@@ -12,7 +12,9 @@ const RAIL = [
   { label: "Build your brand", steps: ["Work With Me", "Media", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Work With Me"]);
+const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Work With Me"]);
+const VALUES = ["Integrity", "Directness", "Curiosity", "Craft", "Ownership", "Empathy", "Ambition", "Candor", "Autonomy", "Impact", "Growth", "Transparency", "Resilience", "Kindness", "Rigor", "Creativity", "Collaboration", "Humility", "Optimism", "Pragmatism", "Trust", "Courage", "Discipline", "Generosity", "Focus", "Adaptability", "Accountability", "Vision", "Inclusion", "Balance", "Independence", "Boldness", "Patience", "Gratitude", "Fairness", "Simplicity", "Authenticity", "Service"];
+const VAL_MAX = 12, VAL_FEATURED = 4;
 const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
 const SKILL_LEVELS = ["Foundational", "Proficient", "Advanced", "Expert"];
 // Ordered categories + auto-classification. In the real product this classification is done for the
@@ -94,7 +96,7 @@ const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Consc
 type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
-  const [active, setActive] = useState("Skills");
+  const [active, setActive] = useState("Values");
 
   // About You
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
@@ -186,6 +188,15 @@ export default function BuildPreview() {
   const toggleTop = (i: number) => setSkills((s) => s.map((x, j) => { if (j !== i) return x; if (!x.top && s.filter((y) => y.top).length >= 5) return x; return { ...x, top: !x.top }; }));
   const addLearn = () => { const v = learnDraft.trim(); if (v && !learning.includes(v)) setLearning((c) => [...c, v]); setLearnDraft(""); };
   const rmLearn = (k: string) => setLearning((c) => c.filter((x) => x !== k));
+
+  // Values — choose up to 12; feature up to 4 that lead the profile, the rest live in the bio.
+  const [vals, setVals] = useState<string[]>(["Directness", "Curiosity", "Craft", "Ownership", "Candor", "Growth", "Empathy", "Ambition"]);
+  const [vFeatured, setVFeatured] = useState<string[]>(["Directness", "Curiosity", "Craft", "Ownership"]);
+  const toggleVal = (v: string) => {
+    if (vals.includes(v)) { setVals((c) => c.filter((x) => x !== v)); setVFeatured((f) => f.filter((x) => x !== v)); }
+    else if (vals.length < VAL_MAX) setVals((c) => [...c, v]);
+  };
+  const toggleVFeatured = (v: string) => setVFeatured((c) => (c.includes(v) ? c.filter((x) => x !== v) : c.length < VAL_FEATURED ? [...c, v] : c));
 
   // Superpowers — write up to 6 signature statements in your own voice + optional free-form proof.
   // The profile showcases the top SP_SHOWCASE; the rest live in the bio via "See all". Keywords auto-suggested for search.
@@ -573,6 +584,35 @@ export default function BuildPreview() {
             </>
           )}
 
+          {active === "Values" && (
+            <>
+              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your values.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to 12, then feature the 4 that matter most — they lead your profile; the rest live in your bio.</p>
+
+              <div className="mb-8 max-w-[720px]">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className="font-poppins text-[13px] font-semibold">Your values</label>
+                  <span className="text-[11px] text-[#7d7a74]">{vals.length}/{VAL_MAX}</span>
+                </div>
+                <div className="flex flex-wrap gap-[8px]">
+                  {VALUES.map((v) => { const on = vals.includes(v); const full = !on && vals.length >= VAL_MAX; return <button key={v} disabled={full} onClick={() => toggleVal(v)} className={`font-poppins text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{v}</button>; })}
+                </div>
+              </div>
+
+              {vals.length > 0 && (
+                <div className="max-w-[720px]">
+                  <div className="flex items-baseline justify-between mb-2">
+                    <label className="font-poppins text-[13px] font-semibold">Feature on your profile <span className="font-normal text-[#a8a29a]">· star the {VAL_FEATURED} that matter most</span></label>
+                    <span className="text-[11px] text-[#7d7a74]">★ {vFeatured.length}/{VAL_FEATURED}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-[8px]">
+                    {vals.map((v) => { const on = vFeatured.includes(v); const full = !on && vFeatured.length >= VAL_FEATURED; return <button key={v} disabled={full} onClick={() => toggleVFeatured(v)} className={`font-poppins text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#6B4BD6] bg-[#6B4BD6] text-white" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "★ " : ""}{v}</button>; })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
@@ -712,6 +752,22 @@ export default function BuildPreview() {
             </div>
           );
         })()}
+
+        {active === "Values" && (
+          <div className="bg-white border border-[#ECEAE4] p-5">
+            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Values</div>
+            {vFeatured.length ? (
+              <>
+                <div className="flex flex-wrap gap-[7px]">
+                  {vFeatured.map((v) => <span key={v} className="font-poppins text-[13px] font-medium py-[6px] px-[12px] bg-[#F2EEFF] text-[#6B4BD6]">{v}</span>)}
+                </div>
+                {vals.length > vFeatured.length && (
+                  <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {vals.length} values →</span><div className="text-[10.5px] text-[#a8a29a] mt-0.5">Opens the Values section in your bio</div></div>
+                )}
+              </>
+            ) : <div className="text-[12.5px] text-[#7d7a74]">Star up to 4 to feature here.</div>}
+          </div>
+        )}
 
         {active === "Impact" && (
           <div className="bg-white border border-[#ECEAE4] p-5">
