@@ -12,7 +12,14 @@ const RAIL = [
   { label: "Build your brand", steps: ["Work With Me", "Media", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Work With Me"]);
+const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Work With Me", "Media"]);
+const MEDIA_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video", "Deck"];
+const MEDIA_FEATURED = 4;
+// Branded fallback colors when a media item has no cover image (never gray).
+const MEDIA_COLORS: Record<string, string> = {
+  Press: "#E6E2D0", Talk: "#C0DDFB", Podcast: "#C7B5EE", Writing: "#D6E27B",
+  Portfolio: "#B9E3A5", Video: "#FF5436", Deck: "#DBCDC4",
+};
 const VALUES = ["Integrity", "Directness", "Curiosity", "Craft", "Ownership", "Empathy", "Ambition", "Candor", "Autonomy", "Impact", "Growth", "Transparency", "Resilience", "Kindness", "Rigor", "Creativity", "Collaboration", "Humility", "Optimism", "Pragmatism", "Trust", "Courage", "Discipline", "Generosity", "Focus", "Adaptability", "Accountability", "Vision", "Inclusion", "Balance", "Independence", "Boldness", "Patience", "Gratitude", "Fairness", "Simplicity", "Authenticity", "Service"];
 const VAL_MAX = 12, VAL_FEATURED = 4;
 const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
@@ -96,7 +103,7 @@ const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Consc
 type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
-  const [active, setActive] = useState("Values");
+  const [active, setActive] = useState("Media");
 
   // About You
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
@@ -197,6 +204,20 @@ export default function BuildPreview() {
     else if (vals.length < VAL_MAX) setVals((c) => [...c, v]);
   };
   const toggleVFeatured = (v: string) => setVFeatured((c) => (c.includes(v) ? c.filter((x) => x !== v) : c.length < VAL_FEATURED ? [...c, v] : c));
+
+  // Media — press, talks, writing, podcasts, portfolio. Star to feature in the profile gallery; rest in bio.
+  type Media = { kind: string; title: string; outlet: string; url: string; featured: boolean };
+  const [media, setMedia] = useState<Media[]>([
+    { kind: "Press", title: "The operators rebuilding personal branding", outlet: "TechCrunch", url: "", featured: true },
+    { kind: "Talk", title: "Category creation in a crowded market", outlet: "SaaStr 2024", url: "", featured: true },
+    { kind: "Podcast", title: "Building Marquee in public", outlet: "Lenny's Podcast", url: "", featured: true },
+    { kind: "Writing", title: "Why the resume is dead", outlet: "Substack", url: "", featured: false },
+    { kind: "Portfolio", title: "Hello Alice community platform", outlet: "Case study", url: "", featured: false },
+  ]);
+  const upMedia = (i: number, patch: Partial<Media>) => setMedia((m) => m.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addMedia = () => setMedia((m) => [...m, { kind: "Press", title: "", outlet: "", url: "", featured: false }]);
+  const rmMedia = (i: number) => setMedia((m) => m.filter((_, j) => j !== i));
+  const toggleMediaFeatured = (i: number) => setMedia((m) => m.map((x, j) => { if (j !== i) return x; if (!x.featured && m.filter((y) => y.featured).length >= MEDIA_FEATURED) return x; return { ...x, featured: !x.featured }; }));
 
   // Superpowers — write up to 6 signature statements in your own voice + optional free-form proof.
   // The profile showcases the top SP_SHOWCASE; the rest live in the bio via "See all". Keywords auto-suggested for search.
@@ -613,6 +634,35 @@ export default function BuildPreview() {
             </>
           )}
 
+          {active === "Media" && (
+            <>
+              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your media.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Press, talks, writing, podcasts, portfolio — the work that shows what you do. Star up to {MEDIA_FEATURED} to feature in your gallery; the rest live in your bio.</p>
+              <div className="space-y-4 max-w-[720px]">
+                {media.map((m, i) => (
+                  <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex flex-wrap gap-[6px]">
+                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-poppins text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button onClick={() => toggleMediaFeatured(i)} title="Feature in gallery" className={`text-[16px] leading-none ${m.featured ? "text-[#6B4BD6]" : "text-[#d8d4cc] hover:text-[#6B4BD6]"}`}>★</button>
+                        <button onClick={() => rmMedia(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                      </div>
+                    </div>
+                    <input value={m.title} onChange={(e) => upMedia(i, { title: e.target.value })} placeholder="Title, e.g. The operators rebuilding personal branding" className="w-full font-poppins font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <div className="flex gap-2 mb-2">
+                      <input value={m.outlet} onChange={(e) => upMedia(i, { outlet: e.target.value })} placeholder="Source / outlet" className="flex-1 min-w-0 font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                      <input value={m.url} onChange={(e) => upMedia(i, { url: e.target.value })} placeholder="Link (optional)" className="flex-1 min-w-0 font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    </div>
+                    <button className="w-full font-poppins text-[12px] text-[#7d7a74] py-[10px] border border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Upload cover image (optional)</button>
+                  </div>
+                ))}
+                <button onClick={addMedia} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add media</button>
+              </div>
+            </>
+          )}
+
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
@@ -749,6 +799,40 @@ export default function BuildPreview() {
 
               <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-4 pt-3 border-t border-[#ECEAE4]">Industries</div>
               <div className="flex flex-wrap gap-[6px]">{industries.map((t) => <span key={t} className="font-poppins text-[11.5px] py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
+            </div>
+          );
+        })()}
+
+        {active === "Media" && (() => {
+          const feat = media.filter((m) => m.featured);
+          const rest = media.length - feat.length;
+          return (
+            <div className="bg-white border border-[#ECEAE4] p-5">
+              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Media</div>
+              {feat.length ? (
+                <>
+                  <div className="space-y-3">
+                    {feat.map((m, i) => (
+                      <div key={i} className="border border-[#ECEAE4]">
+                        <div className="aspect-video relative flex items-center justify-center" style={{ background: MEDIA_COLORS[m.kind] || "#F4F2EF" }}>
+                          <span className="font-poppins text-[12px] font-semibold uppercase tracking-[0.12em] text-[#111111]/45">{m.kind}</span>
+                          <span className="absolute top-2 left-2 font-poppins text-[9.5px] font-semibold py-[2px] px-[6px] bg-white/85 text-[#3a352f]">{m.kind}</span>
+                        </div>
+                        <div className="p-2.5 flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="font-poppins text-[12.5px] font-semibold leading-snug">{m.title || "Untitled"}</div>
+                            {m.outlet && <div className="font-poppins text-[11px] text-[#7d7a74] mt-0.5">{m.outlet}</div>}
+                          </div>
+                          <span className="text-[#a8a29a] text-[12px] shrink-0 mt-0.5">↗</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {rest > 0 && (
+                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {media.length} in bio →</span></div>
+                  )}
+                </>
+              ) : <div className="text-[12.5px] text-[#7d7a74]">Star media to feature it in your gallery.</div>}
             </div>
           );
         })()}
