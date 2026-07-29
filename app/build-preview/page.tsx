@@ -14,6 +14,30 @@ const RAIL = [
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
 const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Work With Me"]);
 const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
+const SKILL_LEVELS = ["Foundational", "Proficient", "Advanced", "Expert"];
+// Ordered categories + auto-classification. In the real product this classification is done for the
+// user (lookup + AI) so they never tag hard/soft or pick a category — they only set proficiency.
+const SKILL_CATEGORIES = ["Marketing & Growth", "Leadership", "Communication", "Product", "Technical", "Finance", "Other"];
+const SKILL_META: Record<string, { cat: string; type: "hard" | "soft" }> = {
+  "Go-to-Market": { cat: "Marketing & Growth", type: "hard" },
+  "Brand & Positioning": { cat: "Marketing & Growth", type: "hard" },
+  "Growth": { cat: "Marketing & Growth", type: "hard" },
+  "Demand Gen": { cat: "Marketing & Growth", type: "hard" },
+  "Lifecycle Marketing": { cat: "Marketing & Growth", type: "hard" },
+  "Team Leadership": { cat: "Leadership", type: "soft" },
+  "Hiring": { cat: "Leadership", type: "soft" },
+  "Coaching": { cat: "Leadership", type: "soft" },
+  "Storytelling": { cat: "Communication", type: "soft" },
+  "Public Speaking": { cat: "Communication", type: "soft" },
+  "Writing": { cat: "Communication", type: "soft" },
+  "Product Strategy": { cat: "Product", type: "hard" },
+  "Roadmapping": { cat: "Product", type: "hard" },
+  "AI & Automation": { cat: "Technical", type: "hard" },
+  "SQL": { cat: "Technical", type: "hard" },
+  "Financial Modeling": { cat: "Finance", type: "hard" },
+};
+const catOf = (n: string) => SKILL_META[n]?.cat ?? "Other";
+const typeOf = (n: string): "hard" | "soft" => SKILL_META[n]?.type ?? "hard";
 
 // Lightweight keyword suggester for the Superpowers step (preview only — the real product
 // runs this through the Claude generation pass). Pulls notable phrases from the statement.
@@ -70,7 +94,7 @@ const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Consc
 type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
-  const [active, setActive] = useState("Superpowers");
+  const [active, setActive] = useState("Skills");
 
   // About You
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
@@ -132,15 +156,36 @@ export default function BuildPreview() {
   const addImpact = () => setImpacts((m) => (m.length < 4 ? [...m, { headline: "", context: "", story: "" }] : m));
   const rmImpact = (i: number) => setImpacts((m) => m.filter((_, j) => j !== i));
 
-  // Skills
-  const [skills, setSkills] = useState<{ name: string; level: number }[]>([
-    { name: "Go-to-Market", level: 5 }, { name: "Brand & Positioning", level: 5 }, { name: "Growth", level: 4 }, { name: "Community", level: 4 }, { name: "AI & Automation", level: 3 },
+  // Skills — top 5 starred, each with a named proficiency level (slider). Hard/soft + category are
+  // auto-classified (see SKILL_META), not entered by the user. Plus "currently learning" + industries.
+  type Skill = { name: string; level: string; top: boolean };
+  const [skills, setSkills] = useState<Skill[]>([
+    { name: "Go-to-Market", level: "Expert", top: true },
+    { name: "Brand & Positioning", level: "Expert", top: true },
+    { name: "Storytelling", level: "Expert", top: true },
+    { name: "Growth", level: "Advanced", top: true },
+    { name: "Team Leadership", level: "Advanced", top: true },
+    { name: "Demand Gen", level: "Advanced", top: false },
+    { name: "Lifecycle Marketing", level: "Proficient", top: false },
+    { name: "Hiring", level: "Proficient", top: false },
+    { name: "Coaching", level: "Advanced", top: false },
+    { name: "Public Speaking", level: "Proficient", top: false },
+    { name: "Writing", level: "Advanced", top: false },
+    { name: "Product Strategy", level: "Advanced", top: false },
+    { name: "Roadmapping", level: "Proficient", top: false },
+    { name: "AI & Automation", level: "Proficient", top: false },
+    { name: "SQL", level: "Foundational", top: false },
+    { name: "Financial Modeling", level: "Foundational", top: false },
   ]);
   const [industries, setIndustries] = useState<string[]>(["SaaS", "Fintech", "Consumer"]);
-  const [expertise, setExpertise] = useState("Category creation, Community-led growth, AI-native GTM");
-  const upSkill = (i: number, level: number) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, level } : x)));
-  const nameSkill = (i: number, name: string) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, name } : x)));
+  const [learning, setLearning] = useState<string[]>(["AI Agents", "Data Modeling"]);
+  const [learnDraft, setLearnDraft] = useState("");
+  const upSkillField = (i: number, patch: Partial<Skill>) => setSkills((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const rmSkill = (i: number) => setSkills((s) => s.filter((_, j) => j !== i));
+  const topCount = skills.filter((s) => s.top).length;
+  const toggleTop = (i: number) => setSkills((s) => s.map((x, j) => { if (j !== i) return x; if (!x.top && s.filter((y) => y.top).length >= 5) return x; return { ...x, top: !x.top }; }));
+  const addLearn = () => { const v = learnDraft.trim(); if (v && !learning.includes(v)) setLearning((c) => [...c, v]); setLearnDraft(""); };
+  const rmLearn = (k: string) => setLearning((c) => c.filter((x) => x !== k));
 
   // Superpowers — write up to 6 signature statements in your own voice + optional free-form proof.
   // The profile showcases the top SP_SHOWCASE; the rest live in the bio via "See all". Keywords auto-suggested for search.
@@ -448,32 +493,52 @@ export default function BuildPreview() {
           {active === "Skills" && (
             <>
               <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your skills.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Pulled from your resume. Add, remove, and rate each. Then your industries and areas of expertise.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Your skills, how deep they run, and what you&apos;re growing into. Star up to 5 to lead your profile, then slide to set how deep each one runs. We sort them into categories for you.</p>
+
+              <div className="mb-8 max-w-[680px]">
+                <div className="flex items-center gap-3 mb-4">
+                  <input placeholder="Search to add a skill…" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                  <span className="text-[11px] text-[#7d7a74] shrink-0 whitespace-nowrap">★ {topCount}/5 top · {skills.length} skills</span>
+                </div>
+                <div className="space-y-5">
+                  {SKILL_CATEGORIES.map((cat) => {
+                    const rows = skills.map((s, i) => ({ s, i })).filter((x) => catOf(x.s.name) === cat);
+                    if (!rows.length) return null;
+                    return (
+                      <div key={cat}>
+                        <div className="font-poppins text-[11px] font-semibold text-[#7d7a74] uppercase tracking-[0.08em] mb-2">{cat} <span className="font-normal text-[#a8a29a] normal-case tracking-normal">· {rows.length}</span></div>
+                        <div className="space-y-2">
+                          {rows.map(({ s, i }) => (
+                            <div key={i} className="flex items-center gap-3 border border-[#E1DED7] py-[7px] px-[10px]">
+                              <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#6B4BD6]" : "text-[#d8d4cc] hover:text-[#6B4BD6]"}`}>★</button>
+                              <input value={s.name} onChange={(e) => upSkillField(i, { name: e.target.value })} className="flex-1 min-w-0 font-inter text-[13.5px] py-[4px] focus:outline-none" />
+                              <div className="w-[150px] shrink-0">
+                                <input type="range" min={1} max={4} step={1} value={SKILL_LEVELS.indexOf(s.level) + 1} onChange={(e) => upSkillField(i, { level: SKILL_LEVELS[+e.target.value - 1] })} className="w-full accent-[#6B4BD6] cursor-pointer" />
+                                <div className="font-poppins text-[10px] text-[#7d7a74] text-right -mt-[2px]">{s.level}</div>
+                              </div>
+                              <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-brand-orange text-[15px] shrink-0">×</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div className="mb-8 max-w-[560px]">
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Skills</label>
-                <input placeholder="Search to add a skill…" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-3 focus:outline-none focus:border-brand-ink" />
-                <div className="space-y-2">
-                  {skills.map((s, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <input value={s.name} onChange={(e) => nameSkill(i, e.target.value)} className="flex-1 font-inter text-[13.5px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-                      <div className="flex gap-[3px]">{[1, 2, 3, 4, 5].map((l) => <button key={l} onClick={() => upSkill(i, l)} title={`Level ${l}`} className={`w-[22px] h-[8px] ${l <= s.level ? "bg-[#6B4BD6]" : "bg-[#F0EEE9]"}`} />)}</div>
-                      <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-brand-orange text-[15px]">×</button>
-                    </div>
-                  ))}
+                <label className="font-poppins text-[13px] font-semibold block mb-1">Currently learning <span className="font-normal text-[#a8a29a]">· the top skills you&apos;re building right now</span></label>
+                <div className="flex flex-wrap gap-[6px] items-center border border-[#E1DED7] py-[7px] px-[9px]">
+                  {learning.map((k) => <span key={k} className="inline-flex items-center gap-1 font-poppins text-[12px] py-[4px] px-[9px] bg-[#EAF6E4] text-[#4f7a43]">{k}<button onClick={() => rmLearn(k)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
+                  <input value={learnDraft} onChange={(e) => setLearnDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLearn())} placeholder="add a skill…" className="flex-1 min-w-[100px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
                 </div>
               </div>
 
-              <div className="mb-8">
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Industries</label>
+              <div className="max-w-[680px]">
+                <label className="font-poppins text-[13px] font-semibold block mb-2">Industries <span className="font-normal text-[#a8a29a]">· where you&apos;ve worked · powers search</span></label>
                 <div className="flex flex-wrap gap-[8px]">
-                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); return <button key={t} onClick={() => setIndustries((c) => (c.includes(t) ? c.filter((x) => x !== t) : [...c, t]))} className={`font-poppins text-[13px] py-[7px] px-[13px] border ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{t}</button>; })}
+                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); return <button key={t} onClick={() => setIndustries((c) => (c.includes(t) ? c.filter((x) => x !== t) : [...c, t]))} className={`font-poppins text-[13px] py-[7px] px-[13px] border ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
                 </div>
-              </div>
-
-              <div className="max-w-[560px]">
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Expertise <span className="font-normal text-[#a8a29a]">· the broader areas you own, searchable</span></label>
-                <input value={expertise} onChange={(e) => setExpertise(e.target.value)} placeholder="Add areas, separated by commas" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
               </div>
             </>
           )}
@@ -591,19 +656,62 @@ export default function BuildPreview() {
           </div>
         )}
 
-        {active === "Skills" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Skills</div>
-            {skills.map((s, i) => (
-              <div key={i} className="mb-2.5">
-                <div className="flex justify-between text-[12px] mb-1"><span className="font-medium">{s.name}</span></div>
-                <div className="h-[6px] bg-[#F0EEE9]"><div className="h-full" style={{ width: `${s.level * 20}%`, background: "linear-gradient(90deg,#C7B5EE,#6B4BD6)" }} /></div>
+        {active === "Skills" && (() => {
+          const top5 = skills.filter((s) => s.top).slice(0, 5);
+          const lvl = (l: string) => SKILL_LEVELS.indexOf(l) + 1;
+          const PER_CAT = 3;
+          return (
+            <div className="bg-white border border-[#ECEAE4] p-5">
+              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2">Top Skills</div>
+              <div className="flex flex-wrap gap-[6px] mb-4">
+                {top5.length ? top5.map((s) => <span key={s.name} className="font-poppins text-[12px] font-medium py-[4px] px-[10px] bg-brand-ink text-white">{s.name}</span>) : <span className="text-[12px] text-[#7d7a74]">Star up to 5.</span>}
               </div>
-            ))}
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-5 pt-4 border-t border-[#ECEAE4]">Industries</div>
-            <div className="flex flex-wrap gap-[6px]">{industries.map((t) => <span key={t} className="font-poppins text-[11.5px] py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
-          </div>
-        )}
+
+              <div className="flex items-baseline justify-between mb-2 pt-3 border-t border-[#ECEAE4]">
+                <span className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74]">Skill Map</span>
+                <span className="text-[9.5px] text-[#a8a29a]">by category</span>
+              </div>
+              <div className="space-y-3">
+                {SKILL_CATEGORIES.map((cat) => {
+                  const inCat = skills.filter((s) => catOf(s.name) === cat).sort((a, b) => lvl(b.level) - lvl(a.level));
+                  if (!inCat.length) return null;
+                  const show = inCat.slice(0, PER_CAT);
+                  const more = inCat.length - show.length;
+                  return (
+                    <div key={cat}>
+                      <div className="flex justify-between items-baseline mb-1.5"><span className="font-poppins text-[10.5px] font-semibold text-[#3a352f]">{cat}</span><span className="text-[9.5px] text-[#a8a29a]">{inCat.length}</span></div>
+                      {show.map((s) => (
+                        <div key={s.name} className="mb-[6px]">
+                          <div className="flex justify-between items-baseline mb-[2px]"><span className="font-poppins text-[11px]">{s.name}</span><span className="text-[9px] text-[#a8a29a]">{s.level}</span></div>
+                          <div className="relative h-[7px]">
+                            <div className="absolute inset-0 flex">{[0, 1, 2, 3].map((c) => <div key={c} className={`flex-1 bg-[#F6F4F0] ${c < 3 ? "border-r border-[#EAE7DF]" : ""}`} />)}</div>
+                            <div className="absolute top-0 left-0 h-full" style={{ width: `${lvl(s.level) * 25}%`, background: typeOf(s.name) === "hard" ? "linear-gradient(90deg,#C7B5EE,#6B4BD6)" : "repeating-linear-gradient(45deg,#CDBFEF,#CDBFEF 3px,#E7DFF9 3px,#E7DFF9 6px)" }} />
+                          </div>
+                        </div>
+                      ))}
+                      {more > 0 && <div className="font-poppins text-[10px] text-[#6B4BD6] cursor-pointer mt-0.5">+{more} more</div>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-3 mt-3 pt-2 text-[10px] text-[#7d7a74]">
+                <span className="inline-flex items-center gap-1"><span className="w-[10px] h-[8px] inline-block" style={{ background: "linear-gradient(90deg,#C7B5EE,#6B4BD6)" }} /> Hard</span>
+                <span className="inline-flex items-center gap-1"><span className="w-[10px] h-[8px] inline-block" style={{ background: "repeating-linear-gradient(45deg,#CDBFEF,#CDBFEF 3px,#E7DFF9 3px,#E7DFF9 6px)" }} /> Soft</span>
+                <span className="text-[#a8a29a]">· auto-sorted</span>
+              </div>
+
+              {learning.length > 0 && (
+                <>
+                  <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-4 pt-3 border-t border-[#ECEAE4]">Currently Learning</div>
+                  <div className="flex flex-wrap gap-[6px]">{learning.map((k) => <span key={k} className="font-poppins text-[11px] py-[2px] px-[8px] bg-[#EAF6E4] text-[#4f7a43]">↗ {k}</span>)}</div>
+                </>
+              )}
+
+              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-4 pt-3 border-t border-[#ECEAE4]">Industries</div>
+              <div className="flex flex-wrap gap-[6px]">{industries.map((t) => <span key={t} className="font-poppins text-[11.5px] py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
+            </div>
+          );
+        })()}
 
         {active === "Impact" && (
           <div className="bg-white border border-[#ECEAE4] p-5">
