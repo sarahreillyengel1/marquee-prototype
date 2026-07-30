@@ -19,7 +19,7 @@ const PRINCIPLES = [
 ];
 
 const LETTER = [
-  "Across my 30-year career — leading go-to-market and operations at venture-backed startups like Salesforce, LTK, and Hello Alice, and founding my own influencer marketing agency and consulting company — I learned early on that a static resume could never capture what someone is actually capable of, or how they operate.",
+  "Across my 30-year career — leading go-to-market and operations at venture-backed startups like Salesforce, LTK, and Hello Alice, and founding my own influencer marketing agency and consulting company — I learned early on that a static resume could never capture what someone is capable of, or how they operate.",
   "Spending a decade in the creator economy revealed a fundamental truth: visibility is currency. Creators have an entire ecosystem designed to monetize their identity, build an audience, and capture opportunity. High-value professionals deserve that same modern infrastructure.",
   "Career growth isn't one-dimensional. Professionals today lead core teams, advise companies, launch podcasts, serve on boards, and build side projects — often while excelling in their primary roles. Yet traditional platforms only show past titles. They fail to communicate your current skills, your real-time availability, or how to work with you today.",
   "I searched for a dedicated space designed for high-value professional identity, but couldn't find one. So, I built Marquee.",
