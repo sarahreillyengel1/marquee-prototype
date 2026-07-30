@@ -363,7 +363,7 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">Product</h4>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Product</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><a href="#what" className="hover:text-dred">What it is</a></li>
                 <li><a href="#how" className="hover:text-dred">How it works</a></li>
@@ -374,11 +374,10 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">Company</h4>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Company</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><Link href="/about" className="hover:text-dred">About</Link></li>
                 <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-dred">Newsletter</a></li>
-                <li><a href="#" className="hover:text-dred">Press</a></li>
                 <li><a href="mailto:hello@marquee.bio" className="hover:text-dred">Contact</a></li>
               </ul>
             </div>

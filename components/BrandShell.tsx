@@ -55,7 +55,6 @@ export default function BrandShell({
             <FooterCol title="Company" links={[
               { label: "About", href: "/about" },
               { label: "Newsletter", href: "https://beknownweekly.substack.com/" },
-              { label: "Press", href: "#" },
               { label: "Contact", href: "mailto:hello@marquee.bio" },
             ]} />
           </div>
@@ -74,7 +73,7 @@ export default function BrandShell({
 function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">{title}</h4>
+      <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">{title}</h4>
       <ul className="space-y-[9px]">
         {links.map((l) => (
           <li key={l.label}>
