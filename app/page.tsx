@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import WaitlistModal from "@/components/WaitlistModal";
+import { IconLinkedIn, IconX, IconInstagram } from "@/components/icons";
 
 // ── shared class tokens (v7) ──
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
@@ -72,7 +73,7 @@ const FAQS = [
   ["Is this a replacement for LinkedIn?", "No. LinkedIn is where your network lives, and it does that well. Marquee is where your work lives: what you do, how you work, what you charge, and how someone books you. Most people keep both and put their Marquee link in their LinkedIn bio."],
   ["Who is Marquee for?", "Anyone whose value does not fit on one line. Fractional executives, consultants, coaches, advisors, founders, creators, and people in full-time roles who also advise, speak, teach, or sell. If you earn from more than one thing, or you plan to, this was built for you."],
   ["Who can see my profile?", "You decide. The Career Blueprint produces two things: a private read only you see, including your constraints and what you need to earn, and a public profile with what you choose to show. Nothing moves from one to the other without you."],
-  ["When is it live?", "The Career Blueprint is live now and free. Profiles are open to a small invited group today, with public access later this year. Request an invitation and we will come back to you with a date."],
+  ["When is it live?", "The Career Blueprint is live now and free. Profiles are open to a small invited group today, with public access later this year. Request early access and we will come back to you with a date."],
 ];
 
 export default function HomePage() {
@@ -95,7 +96,7 @@ export default function HomePage() {
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-5 items-center">
             <Link href="/signup" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
-            <button onClick={() => apply("nav")} className={`${BTN} bg-red text-white hover:bg-dred !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request an invitation</button>
+            <button onClick={() => apply("nav")} className={`${BTN} bg-red text-white hover:bg-dred !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request early access</button>
           </div>
         </div>
       </nav>
@@ -109,9 +110,10 @@ export default function HomePage() {
             <div className={`${SCRIPT} text-dred my-[18px]`}>Be known. Not filtered.</div>
             <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
             <div className="flex flex-wrap gap-3 mt-8">
-              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request an invitation</button>
+              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
               <a href="#blueprint" className={`${BTN} border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
+            <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
           <div className="flex justify-center">
             <PhonePreview />
@@ -278,7 +280,7 @@ export default function HomePage() {
               <ul className="list-none my-[22px_0_30px] flex-1 text-left">
                 {["Your own marquee.bio/username link", "Media, projects, and work highlights in one place", "Every way you work, with clear rates", "Inbound contact routing tied directly to your work style", "Storefront, booking, and payments"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
               </ul>
-              <button onClick={() => apply("pricing")} className={`${BTN} bg-white text-dred block w-full`}>Request an invitation</button>
+              <button onClick={() => apply("pricing")} className={`${BTN} bg-white text-dred block w-full`}>Request early access</button>
             </div>
           </div>
         </div>
@@ -341,19 +343,26 @@ export default function HomePage() {
           <h2 className={`${H2} max-w-[940px] mx-auto`}>Your professional identity in one link.</h2>
           <div className={`${SCRIPT} mt-[18px]`}>marquee.bio/yourname</div>
           <div className="flex flex-wrap gap-3 justify-center mt-8">
-            <button onClick={() => apply("closing")} className={`${BTN} bg-white text-dred`}>Request an invitation</button>
+            <button onClick={() => apply("closing")} className={`${BTN} bg-white text-dred`}>Request early access</button>
             <a href="#blueprint" className={`${BTN} border-white/70 text-white`}>Get Free Career Blueprint</a>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER (dark red) ── */}
-      <footer className="bg-dred text-white pt-16 pb-9">
+      {/* ── FOOTER (ink) ── */}
+      <footer className="bg-ink text-white pt-16 pb-9">
         <div className={WRAP}>
           <div className="grid sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
               <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
+              <div className="flex items-center gap-3 mt-6">
+                {[IconLinkedIn, IconX, IconInstagram].map((Ic, i) => (
+                  <a key={i} href="#" aria-label="social" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
+                    <Ic className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
             </div>
             <div>
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">Product</h4>
@@ -370,9 +379,9 @@ export default function HomePage() {
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">Company</h4>
               <ul className="space-y-[9px] text-[14.5px] text-white/90">
                 <li><Link href="/about" className="hover:text-white">About</Link></li>
-                <li><a href="#" className="hover:text-white">Newsletter</a></li>
+                <li><a href="https://beknown.substack.com" target="_blank" rel="noopener" className="hover:text-white">Newsletter</a></li>
                 <li><a href="#" className="hover:text-white">Press</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
+                <li><a href="mailto:hello@marquee.bio" className="hover:text-white">Contact</a></li>
               </ul>
             </div>
           </div>

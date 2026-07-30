@@ -22,17 +22,17 @@ export default function BrandShell({
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-5 items-center">
             <Link href="/signup" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
-            <button onClick={() => setOpen(true)} className="px-5 py-[10px] rounded-full bg-red text-white text-[13.5px] font-semibold hover:bg-dred transition-colors whitespace-nowrap">Request an invitation</button>
+            <button onClick={() => setOpen(true)} className="px-5 py-[10px] rounded-full bg-red text-white text-[13.5px] font-semibold hover:bg-dred transition-colors whitespace-nowrap">Request early access</button>
           </div>
         </div>
       </nav>
 
-      <main className="flex-1 max-w-[1240px] mx-auto w-full px-[clamp(20px,5vw,80px)] py-[clamp(48px,7vw,96px)]">
+      <main className="flex-1 w-full">
         {children}
       </main>
 
-      {/* Footer — dark red, matches homepage */}
-      <footer className="bg-dred text-white pt-16 pb-9">
+      {/* Footer — ink, matches homepage */}
+      <footer className="bg-ink text-white pt-16 pb-9">
         <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]">
           <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
@@ -56,9 +56,9 @@ export default function BrandShell({
             ]} />
             <FooterCol title="Company" links={[
               { label: "About", href: "/about" },
-              { label: "Newsletter", href: "#" },
+              { label: "Newsletter", href: "https://beknown.substack.com" },
               { label: "Press", href: "#" },
-              { label: "Contact", href: "#" },
+              { label: "Contact", href: "mailto:hello@marquee.bio" },
             ]} />
           </div>
           <div className="mt-12 pt-[22px] border-t border-white/20 flex justify-between flex-wrap gap-[14px] text-[13px] text-white/65">

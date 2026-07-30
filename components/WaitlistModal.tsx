@@ -152,7 +152,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 disabled={submitting}
                 className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
               >
-                {submitting ? "Sending…" : "Request an Invitation"}
+                {submitting ? "Sending…" : "Request early access"}
               </button>
 
               <p className="text-xs text-brand-ink/50 text-center">

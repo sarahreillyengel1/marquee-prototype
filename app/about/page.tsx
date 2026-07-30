@@ -1,77 +1,105 @@
 import BrandShell from "@/components/BrandShell";
-import Link from "next/link";
-import { SignalM } from "@/components/icons";
+import ApplyButton from "@/components/ApplyButton";
+import Image from "next/image";
 
 export const metadata = { title: "About · Marquee" };
 
-const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(40px,5.6vw,74px)]";
-const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(31px,3.7vw,50px)]";
-const H3 = "font-lora font-normal leading-[1.15] text-[clamp(20px,1.7vw,25px)]";
+const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
+const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(38px,5.2vw,66px)]";
+const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.08] text-[clamp(28px,3.4vw,44px)]";
 const EYEBROW = "text-[12px] font-bold tracking-[0.18em] uppercase text-dred";
+const BTN = "inline-block px-7 py-[15px] rounded-full text-[15.5px] font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
 const PRINCIPLES = [
-  { title: "Depth over performance", body: "Networks reward posting. Resumes reward keywords. Marquee rewards depth — the through-line that follows you across companies and titles." },
-  { title: "You own the story", body: "We help you excavate the narrative that's already there. Every word on your Marquee is yours to keep, edit, or delete. We don't rank you against anyone." },
-  { title: "Human, not algorithmic", body: "No feeds. No filters that reduce you to keywords. Marquee is designed to be read by humans deciding whether they'd want to work with you." },
-  { title: "Slow and considered", body: "The Career Blueprint takes real time because your answers matter. The AI writes with care because your voice matters. We're not optimizing for engagement — we're optimizing for accuracy." },
+  ["You are more than your job title.", "Resumes and LinkedIn force professionals into chronological timelines and past job titles. Marquee gives you a space to showcase your superpowers, real-world impact, and how you work today."],
+  ["Discovery is broken.", "Traditional platforms bury you in a sea of millions, using algorithms that miss true expertise and forcing people to act like content creators just to get noticed. Marquee creates a high-intent discovery space focused on real capability."],
+  ["Your identity belongs to you.", "Your professional identity should be unified, not fragmented across half a dozen tools and platforms. Marquee gives you one link to share anywhere — a space where you own your complete story."],
+  ["Hiring should be human.", "Resumes get filtered by AI, reducing talented professionals to keywords. Marquee bypasses the application process entirely, giving decision-makers full visibility into your capabilities and real-time availability so they can contact you directly."],
+  ["Income from your experience.", "Modern professionals often do more than their 9-to-5. They advise, consult, speak, coach, build, invest, and sell digital products. Marquee makes it easy to showcase how people can work with you and create new opportunities to earn income from your expertise."],
+];
+
+const LETTER = [
+  "Across my 30-year career — leading go-to-market and operations at venture-backed startups like Salesforce, LTK, and Hello Alice, and founding my own influencer marketing agency and consulting company — I learned early on that a static resume could never capture what someone is actually capable of, or how they operate.",
+  "Spending a decade in the creator economy revealed a fundamental truth: visibility is currency. Creators have an entire ecosystem designed to monetize their identity, build an audience, and capture opportunity. High-value professionals deserve that same modern infrastructure.",
+  "Career growth isn't one-dimensional. Professionals today lead core teams, advise companies, launch podcasts, serve on boards, and build side projects — often while excelling in their primary roles. Yet traditional platforms only show past titles. They fail to communicate your current skills, your real-time availability, or how to work with you today.",
+  "I searched for a dedicated space designed for high-value professional identity, but couldn't find one. So, I built Marquee.",
+  "Marquee provides executives, operators, independent talent, and rising leaders with a unified, self-owned space to showcase their complete story, signal real-time bandwidth, package their expertise, and open doors to direct collaboration.",
+  "I'm making Marquee the new standard for talent. I invite you to build your story here — and please reach out directly as you do. I want to hear from you as we build this together.",
 ];
 
 export default function AboutPage() {
   return (
     <BrandShell source="about">
-      {/* Hero */}
-      <div className={EYEBROW}>About</div>
-      <h1 className={`${H1} mt-3 max-w-4xl`}>We&apos;re building the platform we wished existed.</h1>
-      <p className="text-[clamp(17px,1.35vw,21px)] leading-[1.55] mt-6 max-w-2xl">
-        Resumes flatten people. LinkedIn rewards performance over substance. We started Marquee because we believe your work — and the story behind it — deserves a place of its own.
-      </p>
+      {/* Hero (white) */}
+      <section className="py-[clamp(56px,7vw,96px)]">
+        <div className={`${WRAP} max-w-[900px]`}>
+          <div className={EYEBROW}>About</div>
+          <h1 className={`${H1} mt-4`}>Meet the platform redefining professional identity.</h1>
+          <p className="text-[clamp(17px,1.35vw,21px)] leading-[1.55] mt-6 max-w-[760px]">
+            Marquee was built to solve a simple truth: high-value professionals deserve a single, self-owned space to tell their full career story, showcase how they work, monetize their expertise, and get discovered by the right people.
+          </p>
+        </div>
+      </section>
 
-      {/* Thesis */}
-      <div className="mt-24 grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
-        <div>
-          <div className={EYEBROW}>Our thesis</div>
-          <h2 className={`${H2} mt-3`}>The resume is dead.</h2>
-          <div className="mt-6 space-y-4 text-[15.5px] leading-[1.6] text-ink/80">
-            <p>What replaces it isn&apos;t another list of jobs — it&apos;s a rich, shareable profile built around who you actually are when you work. Marquee captures the through-line that follows you across companies and titles.</p>
-            <p>We don&apos;t compete with LinkedIn. We do something LinkedIn can&apos;t: give you a home for the story behind your work, on the URL that&apos;s actually yours.</p>
+      {/* A Note From Our Founder (beige, full-bleed) */}
+      <section className="bg-beige py-[clamp(56px,7vw,96px)]">
+        <div className={`${WRAP} grid md:grid-cols-[.85fr_1.15fr] gap-[clamp(28px,5vw,64px)] items-start`}>
+          <div>
+            <div className="relative w-full max-w-[360px] aspect-[4/5] overflow-hidden">
+              <Image src="/images/sarah-founder.jpg" alt="Sarah Reilly Engel, Founder & CEO of Marquee" fill className="object-cover" sizes="(min-width:768px) 360px, 100vw" />
+            </div>
+          </div>
+          <div>
+            <div className={EYEBROW}>A note from our founder</div>
+            <h2 className={`${H2} mt-3`}>Hi, I&apos;m Sarah.</h2>
+            <div className="mt-6 space-y-4 text-[16px] leading-[1.65] text-ink/85 max-w-[640px]">
+              {LETTER.map((p, i) => <p key={i}>{p}</p>)}
+            </div>
+            <div className="mt-7">
+              <div className="font-lora text-[20px] leading-tight">Sarah Reilly Engel</div>
+              <div className="text-[13px] text-dred font-semibold tracking-[0.02em] mt-1">Founder &amp; CEO, Marquee</div>
+            </div>
           </div>
         </div>
-        <div className="relative flex justify-center md:justify-end">
-          <SignalM className="w-64 md:w-80" color="#CBBCF0" />
+      </section>
+
+      {/* Guiding Principles (white) */}
+      <section className="py-[clamp(56px,7vw,96px)]">
+        <div className={WRAP}>
+          <div className={EYEBROW}>Our guiding principles</div>
+          <h2 className={`${H2} mt-3 max-w-[720px]`}>What we build by.</h2>
+          <div className="grid md:grid-cols-2 gap-x-14 gap-y-12 mt-14">
+            {PRINCIPLES.map(([t, b], i) => (
+              <div key={t} className="flex gap-5">
+                <span className="font-lora text-[30px] text-dred leading-none shrink-0">{i + 1}</span>
+                <div>
+                  <h3 className="font-lora text-[clamp(20px,1.7vw,25px)] leading-[1.2]">{t}</h3>
+                  <p className="text-[15px] text-ink/75 mt-2 leading-[1.6]">{b}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Pull quote */}
-      <div className="mt-24 py-16 bg-beige border border-beigeLine rounded-[10px] px-10 md:px-16">
-        <p className="font-script text-[clamp(34px,4.5vw,58px)] leading-tight text-center max-w-3xl mx-auto text-dred">
-          Be known. Not filtered.
-        </p>
-      </div>
-
-      {/* Principles */}
-      <div className="mt-24 pt-16 border-t border-hair">
-        <div className={EYEBROW}>What we believe</div>
-        <h2 className={`${H2} mt-3 max-w-3xl`}>Four principles we build by.</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12 mt-14">
-          {PRINCIPLES.map((p, i) => (
-            <div key={p.title}>
-              <span className="font-lora text-[30px] text-dred">0{i + 1}</span>
-              <h3 className={`${H3} mt-2`}>{p.title}</h3>
-              <p className="text-[15px] text-ink/75 mt-3 leading-[1.6]">{p.body}</p>
-            </div>
-          ))}
+      {/* Be known. Not filtered. (blue, full-bleed) */}
+      <section className="bg-blue py-[clamp(48px,6vw,80px)]">
+        <div className={`${WRAP} text-center`}>
+          <p className="font-script text-[clamp(38px,5vw,64px)] leading-tight text-dred">Be known. Not filtered.</p>
         </div>
-      </div>
+      </section>
 
-      {/* Contact CTA */}
-      <div className="mt-24 bg-dred text-white rounded-[10px] p-12 md:p-16">
-        <h2 className={`${H2} max-w-2xl`}>Have thoughts, questions, or a story to share?</h2>
-        <p className="text-white/80 mt-4 max-w-xl text-[16px] leading-[1.6]">We read every message. Feedback from our beta users is quite literally the product roadmap.</p>
-        <a href="mailto:hello@marquee.bio" className="inline-block mt-8 px-7 py-[15px] rounded-full bg-white text-dred font-semibold hover:bg-white/90 transition-colors">hello@marquee.bio</a>
-        <p className="text-[13px] text-white/60 mt-6">
-          Or <Link href="/" className="underline hover:text-white">request an invitation</Link> if you&apos;re ready to build your Marquee.
-        </p>
-      </div>
+      {/* CTA (dark red, full-bleed) */}
+      <section className="bg-dred text-white py-[clamp(56px,7vw,92px)]">
+        <div className={`${WRAP} text-center`}>
+          <h2 className={`${H2} max-w-[820px] mx-auto`}>Build your story on Marquee.</h2>
+          <p className="text-white/80 mt-4 text-[16px] leading-[1.6] max-w-[560px] mx-auto">Early access is open now. Beta opens September 1 — request yours and I&apos;ll be in touch.</p>
+          <div className="flex flex-wrap gap-3 justify-center mt-8">
+            <ApplyButton label="Request early access" source="about-cta" className={`${BTN} bg-white text-dred`} />
+            <a href="https://beknown.substack.com" target="_blank" rel="noopener" className={`${BTN} border-white/70 text-white`}>Subscribe to the newsletter</a>
+          </div>
+        </div>
+      </section>
     </BrandShell>
   );
 }
