@@ -95,7 +95,7 @@ export default function HomePage() {
         <div className={`${WRAP} py-[14px] flex items-center justify-between gap-4`}>
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-5 items-center">
-            <Link href="/signup" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
+            <Link href="/login" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
             <button onClick={() => apply("nav")} className={`${BTN} bg-red text-white hover:bg-dred !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request early access</button>
           </div>
         </div>

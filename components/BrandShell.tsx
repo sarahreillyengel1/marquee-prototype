@@ -21,7 +21,7 @@ export default function BrandShell({
         <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)] py-[14px] flex items-center justify-between gap-4">
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-5 items-center">
-            <Link href="/signup" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
+            <Link href="/login" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
             <button onClick={() => setOpen(true)} className="px-5 py-[10px] rounded-full bg-red text-white text-[13.5px] font-semibold hover:bg-dred transition-colors whitespace-nowrap">Request early access</button>
           </div>
         </div>
