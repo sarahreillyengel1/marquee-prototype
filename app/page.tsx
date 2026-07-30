@@ -8,14 +8,14 @@ import { IconInstagram } from "@/components/icons";
 
 // ── shared class tokens (v7) ──
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
-const SECTION = "py-[clamp(56px,7vw,104px)]";
+const SECTION = "py-[clamp(44px,6.5vw,104px)]";
 const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(40px,5.6vw,74px)]";
 const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(31px,3.7vw,50px)]";
 const H3 = "font-lora font-normal leading-[1.15] text-[clamp(21px,1.9vw,27px)]";
 const EYEBROW = "text-[12px] font-bold tracking-[0.18em] uppercase text-dred";
 const SCRIPT = "font-script leading-none text-[clamp(30px,3.4vw,44px)]";
 const LEDE = "text-[clamp(17px,1.35vw,21px)] leading-[1.55]";
-const BTN = "inline-block px-7 py-[15px] rounded-full text-[15.5px] font-semibold text-center border-[1.5px] border-transparent transition-colors";
+const BTN = "inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
 const QUOTES: [string, string][] = [
   ["I pivoted my career, but my resume and LinkedIn were stuck in my past role—they didn't reflect my real capabilities. I was getting screened out by AI filters and missing opportunities. My Marquee bio finally shows who I am, and I'm excited to share it.", "The career pivot"],
@@ -28,7 +28,7 @@ const QUOTES: [string, string][] = [
 const PILLARS = [
   { h: "Identity", lead: "Who you are, beyond the resume and chronological work history.", body: "Marquee captures the full story—your experience, your impact, skills, superpowers, values, and the way you lead.", li: ["Skills & superpowers", "Real-world impact", "How you lead & what you value", "What you're building next", "What you're open to"] },
   { h: "Discovery", lead: "Found for who you are today, not where you worked yesterday.", body: "Marquee handles discovery differently—focusing on your skills, how you choose to engage, whether you're open right now, and direct requests that put you first.", li: ["Searchable by skill & expertise", "Searchable by how you engage", "Searchable by availability", "No feed, no InMail, no spam", "Every request reaches you first"] },
-  { h: "Opportunity", lead: "Monetize your expertise.", body: "Every way to work with you on a single page, complete with your rates.", li: ["Consulting, advisory, & fractional roles", "Speaking & office hours", "Digital products, workshops, & courses", "Your custom storefront", "Your terms, your rates"] },
+  { h: "Opportunity", lead: "Monetize your expertise.", body: "Every way to work with you on a single page, complete with your rates, so you can earn income from your expertise.", li: ["Consulting, advisory, & fractional roles", "Speaking & office hours", "Digital products, workshops, & courses", "Your custom storefront", "Your terms, your rates"] },
 ];
 
 const STEPS = [
@@ -111,7 +111,7 @@ export default function HomePage() {
             <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
             <div className="flex flex-wrap gap-3 mt-8">
               <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
-              <a href="#blueprint" className={`${BTN} border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
+              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
             <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
@@ -170,12 +170,12 @@ export default function HomePage() {
         <div className={WRAP}>
           <div className={EYEBROW}>How it works</div>
           <h2 className={`${H2} mt-4`}>Four steps.</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-[22px] mt-11">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12 mt-14">
             {STEPS.map(([n, h, b]) => (
-              <div key={n} className="border-t-[3px] border-red pt-[18px]">
-                <div className="font-lora text-[15px] text-dred">{n}</div>
-                <h3 className="font-lora text-[22px] leading-[1.15] my-[6px_0_8px]">{h}</h3>
-                <p className="text-[15px] leading-[1.6]">{b}</p>
+              <div key={n}>
+                <div className="font-lora text-[clamp(40px,4vw,52px)] text-dred leading-none">{n}</div>
+                <h3 className="font-lora text-[22px] leading-[1.2] mt-4 mb-2">{h}</h3>
+                <p className="text-[15px] leading-[1.6] text-ink/75">{b}</p>
               </div>
             ))}
           </div>
@@ -220,10 +220,9 @@ export default function HomePage() {
       <section id="blueprint" className={`${SECTION} bg-dred text-white`}>
         <div className={`${WRAP} grid md:grid-cols-2 gap-[clamp(26px,4vw,58px)] items-center`}>
           <div>
-            <div className="text-[12px] font-bold tracking-[0.18em] uppercase text-white/80">Start here</div>
-            <h2 className={`${H2} mt-4`}>The Career Blueprint.</h2>
-            <p className="font-lora italic text-[clamp(17px,1.35vw,21px)] leading-[1.55] mt-3">Most career advice starts with the job. This starts with you.</p>
-            <p className={`${LEDE} mt-[18px]`}>When you&apos;ve been doing the same work for years, or you&apos;re making a career pivot, it&apos;s hard to see your own experience objectively. You&apos;re often too close to recognize what makes you valuable, where your greatest opportunities are, or how everything you&apos;ve built connects to what&apos;s next.</p>
+            <div className="text-[12px] font-bold tracking-[0.18em] uppercase text-white/80">The Career Blueprint</div>
+            <h2 className={`${H2} mt-4`}>Most career advice starts with the job. This starts with you.</h2>
+            <p className={`${LEDE} mt-6`}>When you&apos;ve been doing the same work for years, or you&apos;re making a career pivot, it&apos;s hard to see your own experience objectively. You&apos;re often too close to recognize what makes you valuable, where your greatest opportunities are, or how everything you&apos;ve built connects to what&apos;s next.</p>
             <p className={`${LEDE} mt-[14px]`}>Uncover your passions, purpose, and goals, then translate them into a clear direction and a plan.</p>
             <div className="mt-8"><a href="#apply" className={`${BTN} bg-white text-dred`}>Get Free Career Blueprint</a></div>
           </div>
@@ -233,7 +232,7 @@ export default function HomePage() {
                 <div className="w-[46px] h-[46px] rounded-[10px] bg-beige flex items-center justify-center shrink-0 text-dred font-lora text-[18px]">{s.split(" ")[1]}</div>
                 <div>
                   <div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-dred">{s}</div>
-                  <h3 className="font-lora text-[22px] my-[4px_0_7px]">{h}</h3>
+                  <h3 className="font-lora text-[22px] mt-1 mb-[7px]">{h}</h3>
                   <p className="text-[14.5px] leading-[1.55]">{p}</p>
                 </div>
               </div>
@@ -248,7 +247,7 @@ export default function HomePage() {
           <div className={EYEBROW}>Why now</div>
           <h2 className={`${H2} mt-4 max-w-[1000px]`}>The rules of work are being rewritten. Humans need a modern professional identity platform.</h2>
           <p className={`${LEDE} mt-5 max-w-[900px]`}>Somewhere between ATS filters, AI noise, LinkedIn cringe, and the fading corporate ladder, hiring got less human.</p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-[18px] mt-10">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-[18px] mt-10">
             {STATS.map(([v, l, s]) => (
               <div key={l} className="bg-beige border border-beigeLine rounded-[10px] p-[28px]">
                 <div className="font-lora text-dred leading-none text-[clamp(32px,3.2vw,42px)]">{v}</div>
@@ -268,16 +267,16 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-[22px] mt-11 max-w-[880px] mx-auto">
             <div className="bg-white border border-hair rounded-[10px] p-[38px_34px] flex flex-col text-center">
               <h3 className={H3}>Career Blueprint</h3>
-              <div className="font-lora text-[50px] my-[16px_0_6px]">Free</div>
-              <ul className="list-none my-[22px_0_30px] flex-1 text-left">
+              <div className="font-lora text-[50px] mt-4 mb-1.5">Free</div>
+              <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
                 {["Guided questionnaire to identify your purpose and strengths", "30-day personalized career roadmap", "Where your income opportunities are"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-hair last:border-0">{l}</li>)}
               </ul>
-              <a href="#blueprint" className={`${BTN} border-ink text-ink hover:bg-ink hover:text-white block w-full`}>Get Free Career Blueprint</a>
+              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white block w-full`}>Get Free Career Blueprint</a>
             </div>
             <div className="bg-dred text-white border border-dred rounded-[10px] p-[38px_34px] flex flex-col text-center">
               <h3 className={H3}>Professional</h3>
-              <div className="font-lora text-[50px] my-[16px_0_6px]">$99<small className="font-inter text-[14px] text-white/80"> / year</small></div>
-              <ul className="list-none my-[22px_0_30px] flex-1 text-left">
+              <div className="font-lora text-[50px] mt-4 mb-1.5">$99<small className="font-inter text-[14px] text-white/80"> / year</small></div>
+              <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
                 {["Your own marquee.bio/username link", "Media, projects, and work highlights in one place", "Every way you work, with clear rates", "Inbound contact routing tied directly to your work style", "Storefront, booking, and payments"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
               </ul>
               <button onClick={() => apply("pricing")} className={`${BTN} bg-white text-dred block w-full`}>Request early access</button>
@@ -313,7 +312,7 @@ export default function HomePage() {
           <h2 className={`${H2} mt-4 max-w-[960px] mx-auto`}>Your work lives everywhere. Your full story lives nowhere.</h2>
           <p className={`${LEDE} mt-[18px] max-w-[860px] mx-auto`}>Professionals are missing out on income, visibility, and high-impact opportunities because their identity is scattered across multiple tools. When the world only sees disconnected fragments of what you do, no single place captures your true capabilities, your full story, or how to actually work with you today.</p>
           <Image src="/images/marquee-stack-graphic.png" alt="A professional surrounded by the disconnected tools their identity is scattered across: LinkedIn, resume, personal website, newsletter, link in bio, portfolio, speaking, advisory, booking, products, projects, and media mentions." width={740} height={740} className="w-full max-w-[740px] h-auto mx-auto mt-6" priority />
-          <div className="text-[30px] text-red leading-none my-[22px_0_20px]">↓</div>
+          <div className="text-[30px] text-red leading-none mt-10 mb-7">↓</div>
           <button onClick={() => apply("stack")} className={`${BTN} bg-red text-white hover:bg-dred text-[17px] !px-[34px] !py-[18px]`}>Get one link for your professional story</button>
           <div className={`${SCRIPT} text-dred mt-5`}>marquee.bio/yourname</div>
         </div>
@@ -344,48 +343,48 @@ export default function HomePage() {
           <div className={`${SCRIPT} mt-[18px]`}>marquee.bio/yourname</div>
           <div className="flex flex-wrap gap-3 justify-center mt-8">
             <button onClick={() => apply("closing")} className={`${BTN} bg-white text-dred`}>Request early access</button>
-            <a href="#blueprint" className={`${BTN} border-white/70 text-white`}>Get Free Career Blueprint</a>
+            <a href="#blueprint" className={`${BTN} !border-white/70 text-white`}>Get Free Career Blueprint</a>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER (ink) ── */}
-      <footer className="bg-ink text-white pt-16 pb-9">
+      {/* ── FOOTER (white) ── */}
+      <footer className="bg-white text-ink border-t border-hair pt-16 pb-9">
         <div className={WRAP}>
           <div className="grid sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
-              <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
+              <p className="text-[14.5px] text-ink/65 max-w-[300px]">The professional identity platform for human opportunity.</p>
               <div className="flex items-center gap-3 mt-6">
-                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
+                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-hair hover:bg-ink hover:text-white hover:border-ink transition-colors flex items-center justify-center text-ink">
                   <IconInstagram className="w-4 h-4" />
                 </a>
               </div>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">Product</h4>
-              <ul className="space-y-[9px] text-[14.5px] text-white/90">
-                <li><a href="#what" className="hover:text-white">What it is</a></li>
-                <li><a href="#how" className="hover:text-white">How it works</a></li>
-                <li><a href="#earn" className="hover:text-white">Monetize your expertise</a></li>
-                <li><a href="#blueprint" className="hover:text-white">Career Blueprint</a></li>
-                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-                <li><a href="#business" className="hover:text-white">For businesses &amp; recruiters</a></li>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">Product</h4>
+              <ul className="space-y-[9px] text-[14.5px] text-ink/70">
+                <li><a href="#what" className="hover:text-dred">What it is</a></li>
+                <li><a href="#how" className="hover:text-dred">How it works</a></li>
+                <li><a href="#earn" className="hover:text-dred">Monetize your expertise</a></li>
+                <li><a href="#blueprint" className="hover:text-dred">Career Blueprint</a></li>
+                <li><a href="#pricing" className="hover:text-dred">Pricing</a></li>
+                <li><a href="#business" className="hover:text-dred">For businesses &amp; recruiters</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">Company</h4>
-              <ul className="space-y-[9px] text-[14.5px] text-white/90">
-                <li><Link href="/about" className="hover:text-white">About</Link></li>
-                <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-white">Newsletter</a></li>
-                <li><a href="#" className="hover:text-white">Press</a></li>
-                <li><a href="mailto:hello@marquee.bio" className="hover:text-white">Contact</a></li>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">Company</h4>
+              <ul className="space-y-[9px] text-[14.5px] text-ink/70">
+                <li><Link href="/about" className="hover:text-dred">About</Link></li>
+                <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-dred">Newsletter</a></li>
+                <li><a href="#" className="hover:text-dred">Press</a></li>
+                <li><a href="mailto:hello@marquee.bio" className="hover:text-dred">Contact</a></li>
               </ul>
             </div>
           </div>
-          <div className="mt-12 pt-[22px] border-t border-white/20 flex justify-between flex-wrap gap-[14px] text-[13px] text-white/65">
+          <div className="mt-12 pt-[22px] border-t border-hair flex justify-between flex-wrap gap-[14px] text-[13px] text-ink/55">
             <div>© 2026 Marquee</div>
-            <div><a href="#" className="hover:text-white">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-white">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-white">Have a code? Sign in →</Link></div>
+            <div><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></div>
           </div>
         </div>
       </footer>
@@ -395,40 +394,14 @@ export default function HomePage() {
   );
 }
 
-// Hero phone frame — a scrollable live profile preview (HANDOFF slot).
+// Hero phone frame — iframes the REAL profile app (scrollable, always in sync).
+// URL is configurable: localhost in dev, the deployed profile app in production.
 function PhonePreview() {
+  const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL || "http://localhost:5173/?embed";
   return (
     <div className="relative w-[326px] max-w-full aspect-[9/19] border-[11px] border-ink rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
       <div className="absolute top-[14px] left-1/2 -translate-x-1/2 w-[104px] h-[22px] bg-ink rounded-full z-20" />
-      <div className="h-full overflow-y-auto overscroll-contain bg-white px-5 pt-12 pb-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="w-[60px] h-[60px] rounded-full bg-beige border border-beigeLine mb-3" />
-        <div className="font-lora text-[24px] leading-[1.05]">Lauren Ellis</div>
-        <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-dred mt-2">Marketing &amp; Operations Leader</div>
-        <div className="text-[12px] leading-[1.5] mt-2 text-ink/80">I help companies build what&apos;s next — from positioning to growth systems.</div>
-        <div className="flex flex-wrap gap-[5px] mt-3">
-          {["Go-to-Market", "Brand", "Growth"].map((t) => <span key={t} className="text-[10.5px] border border-beigeLine px-2 py-[3px]">{t}</span>)}
-        </div>
-        <button className="w-full mt-3 bg-red text-white text-[12.5px] font-semibold py-[9px] rounded-full">Work with Lauren</button>
-
-        <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-2">Featured</div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="aspect-video bg-blue" /><div className="aspect-video bg-purple" />
-          <div className="aspect-video bg-beige" /><div className="aspect-video bg-blue/60" />
-        </div>
-
-        <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-1">Open to</div>
-        {[["Advisory", "$300 / hr"], ["Fractional", "$8k / mo"], ["Speaking", "From $5k"]].map(([a, b]) => (
-          <div key={a} className="flex justify-between items-center border-b border-beigeLine py-[9px] text-[12px]"><span className="font-medium">{a}</span><span className="text-dred">{b}</span></div>
-        ))}
-
-        <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-2">Skills</div>
-        {[["Go-to-Market", 1], ["Brand & Positioning", 1], ["Growth", 0.8], ["Community", 0.65]].map(([n, w], i) => (
-          <div key={i} className="mb-2">
-            <div className="text-[11px] mb-1">{n}</div>
-            <div className="h-[6px] bg-beige"><div className="h-full bg-red" style={{ width: `${(w as number) * 100}%` }} /></div>
-          </div>
-        ))}
-      </div>
+      <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
     </div>
   );
 }

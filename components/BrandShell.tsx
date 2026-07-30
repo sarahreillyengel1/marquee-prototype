@@ -32,14 +32,14 @@ export default function BrandShell({
       </main>
 
       {/* Footer — ink, matches homepage */}
-      <footer className="bg-ink text-white pt-16 pb-9">
+      <footer className="bg-white text-ink border-t border-hair pt-16 pb-9">
         <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]">
           <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
-              <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
+              <p className="text-[14.5px] text-ink/65 max-w-[300px]">The professional identity platform for human opportunity.</p>
               <div className="flex items-center gap-3 mt-6">
-                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
+                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-hair hover:bg-ink hover:text-white hover:border-ink transition-colors flex items-center justify-center text-ink">
                   <IconInstagram className="w-4 h-4" />
                 </a>
               </div>
@@ -59,9 +59,9 @@ export default function BrandShell({
               { label: "Contact", href: "mailto:hello@marquee.bio" },
             ]} />
           </div>
-          <div className="mt-12 pt-[22px] border-t border-white/20 flex justify-between flex-wrap gap-[14px] text-[13px] text-white/65">
+          <div className="mt-12 pt-[22px] border-t border-hair flex justify-between flex-wrap gap-[14px] text-[13px] text-ink/55">
             <span>© 2026 Marquee</span>
-            <span><a href="#" className="hover:text-white">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-white">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-white">Have a code? Sign in →</Link></span>
+            <span><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></span>
           </div>
         </div>
       </footer>
@@ -74,11 +74,11 @@ export default function BrandShell({
 function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">{title}</h4>
+      <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-dred mb-[14px]">{title}</h4>
       <ul className="space-y-[9px]">
         {links.map((l) => (
           <li key={l.label}>
-            <Link href={l.href} className="text-[14.5px] text-white/90 hover:text-white transition-colors">{l.label}</Link>
+            <Link href={l.href} className="text-[14.5px] text-ink/70 hover:text-dred transition-colors">{l.label}</Link>
           </li>
         ))}
       </ul>
