@@ -394,14 +394,36 @@ export default function HomePage() {
   );
 }
 
-// Hero phone frame — iframes the REAL profile app (scrollable, always in sync).
-// URL is configurable: localhost in dev, the deployed profile app in production.
+// Hero phone frame. If NEXT_PUBLIC_PROFILE_EMBED_URL is set (deployed profile app, or
+// localhost in dev), iframe the REAL profile; otherwise render a prod-safe self-contained mock.
 function PhonePreview() {
-  const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL || "http://localhost:5173/?embed";
+  const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL;
   return (
     <div className="relative w-[326px] max-w-full aspect-[9/19] border-[11px] border-ink rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
       <div className="absolute top-[14px] left-1/2 -translate-x-1/2 w-[104px] h-[22px] bg-ink rounded-full z-20" />
-      <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
+      {src ? (
+        <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
+      ) : (
+        <div className="h-full overflow-y-auto overscroll-contain bg-white px-5 pt-12 pb-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="w-[60px] h-[60px] rounded-full bg-beige border border-beigeLine mb-3" />
+          <div className="font-lora text-[24px] leading-[1.05]">Lauren Ellis</div>
+          <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-dred mt-2">Marketing &amp; Operations Leader</div>
+          <div className="text-[12px] leading-[1.5] mt-2 text-ink/80">I help companies build what&apos;s next — from positioning to growth systems.</div>
+          <div className="flex flex-wrap gap-[5px] mt-3">
+            {["Go-to-Market", "Brand", "Growth"].map((t) => <span key={t} className="text-[10.5px] border border-beigeLine px-2 py-[3px]">{t}</span>)}
+          </div>
+          <button className="w-full mt-3 bg-red text-white text-[12.5px] font-semibold py-[9px] rounded-full">Work with Lauren</button>
+          <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-2">Featured</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="aspect-video bg-blue" /><div className="aspect-video bg-purple" />
+            <div className="aspect-video bg-beige" /><div className="aspect-video bg-blue/60" />
+          </div>
+          <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-1">Open to</div>
+          {[["Advisory", "$300 / hr"], ["Fractional", "$8k / mo"], ["Speaking", "From $5k"]].map(([a, b]) => (
+            <div key={a} className="flex justify-between items-center border-b border-beigeLine py-[9px] text-[12px]"><span className="font-medium">{a}</span><span className="text-dred">{b}</span></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
