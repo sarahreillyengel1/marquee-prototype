@@ -399,8 +399,8 @@ export default function HomePage() {
 function PhonePreview() {
   const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL;
   return (
-    <div className="relative w-[326px] max-w-full aspect-[9/19] border-[11px] border-ink rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
-      <div className="absolute top-[14px] left-1/2 -translate-x-1/2 w-[104px] h-[22px] bg-ink rounded-full z-20" />
+    <div className="relative w-[236px] sm:w-[300px] md:w-[326px] max-w-full aspect-[9/19] border-[9px] sm:border-[11px] border-ink rounded-[36px] sm:rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
+      <div className="absolute top-[12px] sm:top-[14px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[104px] h-[20px] sm:h-[22px] bg-ink rounded-full z-20" />
       {src ? (
         <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
       ) : (
