@@ -5,10 +5,9 @@ import Image from "next/image";
 export const metadata = { title: "About · Marquee" };
 
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
-const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(38px,5.2vw,66px)]";
-const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.08] text-[clamp(28px,3.4vw,44px)]";
+const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(28px,6vw,66px)]";
+const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.08] text-[clamp(22px,4.5vw,44px)]";
 const EYEBROW = "text-[12px] font-bold tracking-[0.18em] uppercase text-dred";
-const BTN = "inline-block px-7 py-[15px] rounded-full text-[15.5px] font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
 const PRINCIPLES = [
   ["You are more than your job title.", "Resumes and LinkedIn force professionals into chronological timelines and past job titles. Marquee gives you a space to showcase your superpowers, real-world impact, and how you work today."],
@@ -31,28 +30,37 @@ export default function AboutPage() {
   return (
     <BrandShell source="about">
       {/* Hero (white) */}
-      <section className="py-[clamp(56px,7vw,96px)]">
+      <section className="py-[clamp(48px,6vw,88px)]">
         <div className={`${WRAP} max-w-[900px]`}>
           <div className={EYEBROW}>About</div>
           <h1 className={`${H1} mt-4`}>Meet the platform redefining professional identity.</h1>
-          <p className="text-[clamp(17px,1.35vw,21px)] leading-[1.55] mt-6 max-w-[760px]">
+          <p className="text-[clamp(15px,2vw,20px)] leading-[1.55] mt-6 max-w-[760px]">
             Marquee was built to solve a simple truth: high-value professionals deserve a single, self-owned space to tell their full career story, showcase how they work, monetize their expertise, and get discovered by the right people.
           </p>
         </div>
       </section>
 
+      {/* Tagline moment — between hero and founder note */}
+      <section className="pb-[clamp(28px,5vw,56px)]">
+        <div className={`${WRAP} flex items-center gap-6 justify-center`}>
+          <span className="hidden sm:block h-px flex-1 max-w-[130px] bg-hair" />
+          <p className="font-script text-[clamp(34px,5.5vw,64px)] leading-tight text-dred text-center">Be known. Not filtered.</p>
+          <span className="hidden sm:block h-px flex-1 max-w-[130px] bg-hair" />
+        </div>
+      </section>
+
       {/* A Note From Our Founder (beige, full-bleed) */}
-      <section className="bg-beige py-[clamp(56px,7vw,96px)]">
+      <section className="bg-beige py-[clamp(48px,6vw,88px)]">
         <div className={`${WRAP} grid md:grid-cols-[.85fr_1.15fr] gap-[clamp(28px,5vw,64px)] items-start`}>
           <div>
-            <div className="relative w-full max-w-[360px] aspect-[4/5] overflow-hidden">
-              <Image src="/images/sarah-founder.jpg" alt="Sarah Reilly Engel, Founder & CEO of Marquee" fill className="object-cover" sizes="(min-width:768px) 360px, 100vw" />
+            <div className="relative w-full max-w-[380px] aspect-[4/5] overflow-hidden">
+              <Image src="/images/sarah-founder.jpg" alt="Sarah Reilly Engel, Founder & CEO of Marquee" fill className="object-cover" sizes="(min-width:768px) 380px, 100vw" priority />
             </div>
           </div>
           <div>
             <div className={EYEBROW}>A note from our founder</div>
             <h2 className={`${H2} mt-3`}>Hi, I&apos;m Sarah.</h2>
-            <div className="mt-6 space-y-4 text-[16px] leading-[1.65] text-ink/85 max-w-[640px]">
+            <div className="mt-6 space-y-4 text-[15.5px] leading-[1.65] text-ink/85 max-w-[640px]">
               {LETTER.map((p, i) => <p key={i}>{p}</p>)}
             </div>
             <div className="mt-7">
@@ -64,16 +72,15 @@ export default function AboutPage() {
       </section>
 
       {/* Guiding Principles (white) */}
-      <section className="py-[clamp(56px,7vw,96px)]">
+      <section className="py-[clamp(48px,6vw,88px)]">
         <div className={WRAP}>
           <div className={EYEBROW}>Our guiding principles</div>
-          <h2 className={`${H2} mt-3 max-w-[720px]`}>What we build by.</h2>
-          <div className="grid md:grid-cols-2 gap-x-14 gap-y-12 mt-14">
+          <div className="grid md:grid-cols-2 gap-x-14 gap-y-11 mt-10">
             {PRINCIPLES.map(([t, b], i) => (
               <div key={t} className="flex gap-5">
                 <span className="font-lora text-[30px] text-dred leading-none shrink-0">{i + 1}</span>
                 <div>
-                  <h3 className="font-lora text-[clamp(20px,1.7vw,25px)] leading-[1.2]">{t}</h3>
+                  <h3 className="font-lora text-[clamp(19px,1.7vw,24px)] leading-[1.2]">{t}</h3>
                   <p className="text-[15px] text-ink/75 mt-2 leading-[1.6]">{b}</p>
                 </div>
               </div>
@@ -82,21 +89,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Be known. Not filtered. (blue, full-bleed) */}
-      <section className="bg-blue py-[clamp(48px,6vw,80px)]">
-        <div className={`${WRAP} text-center`}>
-          <p className="font-script text-[clamp(38px,5vw,64px)] leading-tight text-dred">Be known. Not filtered.</p>
-        </div>
-      </section>
-
       {/* CTA (dark red, full-bleed) */}
-      <section className="bg-dred text-white py-[clamp(56px,7vw,92px)]">
+      <section className="bg-dred text-white py-[clamp(44px,6vw,80px)]">
         <div className={`${WRAP} text-center`}>
-          <h2 className={`${H2} max-w-[820px] mx-auto`}>Build your story on Marquee.</h2>
-          <p className="text-white/80 mt-4 text-[16px] leading-[1.6] max-w-[560px] mx-auto">Early access is open now. Beta opens September 1 — request yours and I&apos;ll be in touch.</p>
-          <div className="flex flex-wrap gap-3 justify-center mt-8">
-            <ApplyButton label="Request early access" source="about-cta" className={`${BTN} bg-white text-dred`} />
-            <a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className={`${BTN} border-white/70 text-white`}>Subscribe to the newsletter</a>
+          <h2 className={`${H2} max-w-[760px] mx-auto`}>Build your story on Marquee.</h2>
+          <div className="flex flex-wrap gap-3 justify-center mt-7">
+            <ApplyButton label="Request early access" source="about-cta" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold bg-white text-dred" />
+            <a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold border-[1.5px] border-white/70 text-white">Subscribe to the newsletter</a>
           </div>
         </div>
       </section>

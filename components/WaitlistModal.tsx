@@ -13,6 +13,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedin, setLinkedin] = useState("");
+  const [role, setRole] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -38,7 +39,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, linkedin, source }),
+        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, linkedin, role, source }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || "Couldn't save your spot");
@@ -83,6 +84,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
               <p className="text-sm text-brand-ink/70 leading-relaxed">
                 Our limited beta is opening soon. We&apos;re inviting a small group of professionals to help shape Marquee from the beginning. Apply below to request an invitation.
               </p>
+              <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-dred mt-3">Beta officially starts 9/1</p>
             </div>
 
             <form onSubmit={submit} className="space-y-4">
@@ -141,6 +143,15 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
                 />
               </div>
 
+              <div>
+                <label className="block text-xs uppercase tracking-wider font-semibold text-brand-ink/60 mb-1.5">I am a…</label>
+                <div className="flex gap-2">
+                  {["Professional", "Recruiter", "Both"].map((r) => (
+                    <button key={r} type="button" onClick={() => setRole(r)} className={`flex-1 py-2.5 px-2 rounded-xl border text-sm font-medium transition-colors ${role === r ? "border-red bg-red/[0.06] text-red" : "border-brand-stone text-brand-ink/70 hover:border-brand-ink"}`}>{r}</button>
+                  ))}
+                </div>
+              </div>
+
               {error && (
                 <div className="text-brand-vermillion text-sm bg-brand-vermillion/10 rounded-lg px-4 py-3">
                   {error}
@@ -150,7 +161,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
+                className="w-full px-6 py-3 rounded-full bg-red text-white font-semibold hover:bg-dred transition-colors disabled:opacity-50"
               >
                 {submitting ? "Sending…" : "Request early access"}
               </button>

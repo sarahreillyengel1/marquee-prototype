@@ -321,13 +321,12 @@ export default function HomePage() {
       </section>
 
       {/* ── FAQ (beige) ── */}
-      <section className={`${SECTION} bg-beige`}>
+      <section className="py-[clamp(32px,5vw,68px)] bg-beige">
         <div className={WRAP}>
-          <div className={EYEBROW}>Questions</div>
-          <h2 className={`${H2} mt-4`}>Questions we get.</h2>
-          <div className="mt-10 max-w-[900px]">
+          <div className={EYEBROW}>FAQ</div>
+          <div className="mt-6 max-w-[900px]">
             {FAQS.map(([q, a], i) => (
-              <details key={q} open={i === 0} className="border-b border-hair py-5 group">
+              <details key={q} open={i === 0} className="border-b border-hair py-[18px] group">
                 <summary className="text-[18px] font-semibold cursor-pointer list-none flex justify-between gap-5 [&::-webkit-details-marker]:hidden">
                   {q}<span className="text-red text-[24px] leading-none group-open:hidden">+</span><span className="text-red text-[24px] leading-none hidden group-open:inline">–</span>
                 </summary>

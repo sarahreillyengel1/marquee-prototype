@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { email, first_name, last_name, linkedin, source, utm_source, utm_medium, utm_campaign } = body;
+  const { email, first_name, last_name, linkedin, role, source, utm_source, utm_medium, utm_campaign } = body;
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     last_name: last_name?.trim() || null,
     linkedin_url: linkedinUrl,
     status: "pending",
+    notes: role ? `role: ${role}` : null,
     source: source || "landing",
     utm_source: utm_source || null,
     utm_medium: utm_medium || null,
