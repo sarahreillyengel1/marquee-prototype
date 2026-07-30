@@ -19,6 +19,16 @@ const config: Config = {
         coral: { DEFAULT: "#FB7185", lt: "#FFF1F2" },
         navy: { DEFAULT: "#1E3A5F", lt: "#E8EEF5" },
 
+        // ── v7 homepage tokens (marquee-site-v7 / HANDOFF) — the whole system, no tints ──
+        red: "#C1052F",       // primary CTA, accents, matrix dots, step rules
+        dred: "#7C1226",      // ALL colored text, dark sections, footer
+        blue: "#C9DDF7",      // section background
+        purple: "#CBBCF0",    // section background
+        beige: "#F6F2EC",     // boxes, cards, section background
+        beigeLine: "#E3DBD0",
+        hair: "#DDD7CE",      // rules only
+        paper: "#FFFFFF",
+
         // ── Brand palette (landing page + phase-2 reskin) ──
         brand: {
           ink: "#111111",
@@ -38,6 +48,9 @@ const config: Config = {
         // Brand fonts
         inter: ["var(--font-inter)", "system-ui", "sans-serif"],
         caveat: ["var(--font-caveat)", "cursive"],
+        // v7 homepage: display serif (Canela → Lora fallback) + script
+        lora: ["var(--font-canela)", "var(--font-lora)", "Georgia", "serif"],
+        script: ["var(--font-caveat)", "cursive"],
       },
       borderRadius: {
         pill: "100px",
