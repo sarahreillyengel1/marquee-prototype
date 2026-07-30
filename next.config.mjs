@@ -6,6 +6,15 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["pdf-parse"],
   },
+  // Retired standalone marketing pages — the v7 homepage covers these on-page.
+  async redirects() {
+    return [
+      { source: "/product", destination: "/#what", permanent: true },
+      { source: "/pricing", destination: "/#pricing", permanent: true },
+      { source: "/resources", destination: "/#faq", permanent: true },
+      { source: "/assessment", destination: "/#blueprint", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import WaitlistModal from "@/components/WaitlistModal";
 import { IconLinkedIn, IconX, IconInstagram } from "@/components/icons";
 
-// Shared shell for the marketing pages — matches the landing page nav + footer.
+// Shared shell for the marketing pages — matches the v7 homepage nav + footer.
 export default function BrandShell({
   children,
   source = "page",
@@ -15,95 +15,56 @@ export default function BrandShell({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="brand-body min-h-screen font-inter flex flex-col">
-      {/* Nav — matches landing */}
-      <nav className="px-8 md:px-16 py-6 flex items-center justify-between max-w-[1400px] mx-auto w-full">
-        <Link href="/" className="wordmark text-lg text-brand-ink">
-          MARQUEE
-        </Link>
-        <div className="hidden md:flex items-center gap-16">
-          <Link href="/product" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
-            Product
-          </Link>
-          <Link href="/pricing" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
-            Pricing
-          </Link>
-          <Link href="/resources" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
-            Resources
-          </Link>
-          <Link href="/about" className="text-sm text-brand-ink hover:opacity-60 transition-opacity">
-            About
-          </Link>
+    <div className="min-h-screen bg-paper text-ink font-inter flex flex-col">
+      {/* Nav — minimal, matches homepage */}
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-hair">
+        <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)] py-[14px] flex items-center justify-between gap-4">
+          <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
+          <div className="flex gap-5 items-center">
+            <Link href="/signup" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
+            <button onClick={() => setOpen(true)} className="px-5 py-[10px] rounded-full bg-red text-white text-[13.5px] font-semibold hover:bg-dred transition-colors whitespace-nowrap">Request an invitation</button>
+          </div>
         </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="px-6 py-3 rounded-full bg-brand-ink text-white text-sm font-medium hover:bg-brand-ink/90 transition-colors"
-        >
-          Request an Invitation
-        </button>
       </nav>
 
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-8 md:px-16 pt-4 md:pt-8 pb-16 md:pb-24">
+      <main className="flex-1 max-w-[1240px] mx-auto w-full px-[clamp(20px,5vw,80px)] py-[clamp(48px,7vw,96px)]">
         {children}
       </main>
 
-      {/* Footer — matches landing */}
-      <footer className="bg-brand-ink text-white px-8 md:px-16 py-12">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
-          <div className="col-span-2">
-            <div className="wordmark text-lg">MARQUEE</div>
-            <p className="text-sm text-white/70 mt-3 max-w-xs">
-              Personal brand platform for professionals.
-            </p>
-            <div className="flex items-center gap-3 mt-6">
-              <a
-                href="https://www.linkedin.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
-              >
-                <IconLinkedIn className="w-4 h-4" />
-              </a>
-              <a
-                href="https://x.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="X"
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
-              >
-                <IconX className="w-4 h-4" />
-              </a>
-              <a
-                href="https://www.instagram.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white"
-              >
-                <IconInstagram className="w-4 h-4" />
-              </a>
+      {/* Footer — dark red, matches homepage */}
+      <footer className="bg-dred text-white pt-16 pb-9">
+        <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]">
+          <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
+            <div className="col-span-2 md:col-span-1">
+              <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
+              <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
+              <div className="flex items-center gap-3 mt-6">
+                {[IconLinkedIn, IconX, IconInstagram].map((Ic, i) => (
+                  <a key={i} href="#" aria-label="social" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-dred transition-colors flex items-center justify-center text-white">
+                    <Ic className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
             </div>
+            <FooterCol title="Product" links={[
+              { label: "What it is", href: "/#what" },
+              { label: "How it works", href: "/#how" },
+              { label: "Monetize", href: "/#earn" },
+              { label: "Career Blueprint", href: "/#blueprint" },
+              { label: "Pricing", href: "/#pricing" },
+              { label: "For business", href: "/#business" },
+            ]} />
+            <FooterCol title="Company" links={[
+              { label: "About", href: "/about" },
+              { label: "Newsletter", href: "#" },
+              { label: "Press", href: "#" },
+              { label: "Contact", href: "#" },
+            ]} />
           </div>
-          <FooterCol title="Product" links={[
-            { label: "How It Works", href: "/product" },
-            { label: "Pricing", href: "/pricing" },
-            { label: "Career Assessment", href: "/assessment" },
-          ]} />
-          <FooterCol title="Company" links={[
-            { label: "About Us", href: "/about" },
-            { label: "Contact", href: "/about" },
-          ]} />
-          <FooterCol title="Resources" links={[
-            { label: "FAQ", href: "/resources" },
-            { label: "Help Center", href: "/resources" },
-          ]} />
-        </div>
-        <div className="max-w-[1400px] mx-auto mt-12 pt-8 border-t border-white/10 flex items-center justify-between text-xs text-white/50">
-          <span>© 2026 Marquee</span>
-          <Link href="/signup" className="hover:text-white transition-colors">
-            Have a beta code? Sign in →
-          </Link>
+          <div className="mt-12 pt-[22px] border-t border-white/20 flex justify-between flex-wrap gap-[14px] text-[13px] text-white/65">
+            <span>© 2026 Marquee</span>
+            <span><a href="#" className="hover:text-white">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-white">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-white">Have a code? Sign in →</Link></span>
+          </div>
         </div>
       </footer>
 
@@ -112,25 +73,14 @@ export default function BrandShell({
   );
 }
 
-function FooterCol({
-  title,
-  links,
-}: {
-  title: string;
-  links: { label: string; href: string }[];
-}) {
+function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h4 className="font-semibold text-sm mb-4">{title}</h4>
-      <ul className="space-y-3">
+      <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">{title}</h4>
+      <ul className="space-y-[9px]">
         {links.map((l) => (
           <li key={l.label}>
-            <Link
-              href={l.href}
-              className="text-sm text-white/70 hover:text-white transition-colors"
-            >
-              {l.label}
-            </Link>
+            <Link href={l.href} className="text-[14.5px] text-white/90 hover:text-white transition-colors">{l.label}</Link>
           </li>
         ))}
       </ul>
