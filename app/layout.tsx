@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat, Lora } from "next/font/google";
 import localFont from "next/font/local";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // Canela (licensed trial) — the real display serif for the v7 homepage. Lora stays as fallback.
