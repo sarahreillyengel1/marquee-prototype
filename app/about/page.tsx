@@ -96,7 +96,7 @@ export default function AboutPage() {
           <p className="text-white/80 mt-4 text-[16px] leading-[1.6] max-w-[560px] mx-auto">Early access is open now. Beta opens September 1 — request yours and I&apos;ll be in touch.</p>
           <div className="flex flex-wrap gap-3 justify-center mt-8">
             <ApplyButton label="Request early access" source="about-cta" className={`${BTN} bg-white text-dred`} />
-            <a href="https://beknown.substack.com" target="_blank" rel="noopener" className={`${BTN} border-white/70 text-white`}>Subscribe to the newsletter</a>
+            <a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className={`${BTN} border-white/70 text-white`}>Subscribe to the newsletter</a>
           </div>
         </div>
       </section>

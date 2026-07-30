@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import WaitlistModal from "@/components/WaitlistModal";
-import { IconLinkedIn, IconX, IconInstagram } from "@/components/icons";
+import { IconInstagram } from "@/components/icons";
 
 // ── shared class tokens (v7) ──
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
@@ -357,11 +357,9 @@ export default function HomePage() {
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
               <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
               <div className="flex items-center gap-3 mt-6">
-                {[IconLinkedIn, IconX, IconInstagram].map((Ic, i) => (
-                  <a key={i} href="#" aria-label="social" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
-                    <Ic className="w-4 h-4" />
-                  </a>
-                ))}
+                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
+                  <IconInstagram className="w-4 h-4" />
+                </a>
               </div>
             </div>
             <div>
@@ -379,7 +377,7 @@ export default function HomePage() {
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/65 mb-[14px]">Company</h4>
               <ul className="space-y-[9px] text-[14.5px] text-white/90">
                 <li><Link href="/about" className="hover:text-white">About</Link></li>
-                <li><a href="https://beknown.substack.com" target="_blank" rel="noopener" className="hover:text-white">Newsletter</a></li>
+                <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-white">Newsletter</a></li>
                 <li><a href="#" className="hover:text-white">Press</a></li>
                 <li><a href="mailto:hello@marquee.bio" className="hover:text-white">Contact</a></li>
               </ul>

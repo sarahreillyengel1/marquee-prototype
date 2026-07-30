@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import WaitlistModal from "@/components/WaitlistModal";
-import { IconLinkedIn, IconX, IconInstagram } from "@/components/icons";
+import { IconInstagram } from "@/components/icons";
 
 // Shared shell for the marketing pages — matches the v7 homepage nav + footer.
 export default function BrandShell({
@@ -39,11 +39,9 @@ export default function BrandShell({
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
               <p className="text-[14.5px] text-white/80 max-w-[300px]">The professional identity platform for human opportunity.</p>
               <div className="flex items-center gap-3 mt-6">
-                {[IconLinkedIn, IconX, IconInstagram].map((Ic, i) => (
-                  <a key={i} href="#" aria-label="social" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-dred transition-colors flex items-center justify-center text-white">
-                    <Ic className="w-4 h-4" />
-                  </a>
-                ))}
+                <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-white/35 hover:bg-white hover:text-ink transition-colors flex items-center justify-center text-white">
+                  <IconInstagram className="w-4 h-4" />
+                </a>
               </div>
             </div>
             <FooterCol title="Product" links={[
@@ -56,7 +54,7 @@ export default function BrandShell({
             ]} />
             <FooterCol title="Company" links={[
               { label: "About", href: "/about" },
-              { label: "Newsletter", href: "https://beknown.substack.com" },
+              { label: "Newsletter", href: "https://beknownweekly.substack.com/" },
               { label: "Press", href: "#" },
               { label: "Contact", href: "mailto:hello@marquee.bio" },
             ]} />
