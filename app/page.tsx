@@ -109,9 +109,9 @@ export default function HomePage() {
             <h1 className={`${H1} mt-[18px]`}>Your work deserves the spotlight.</h1>
             <div className={`${SCRIPT} text-dred my-[18px]`}>Be known. Not filtered.</div>
             <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
-            <div className="flex flex-wrap gap-3 mt-8">
-              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
-              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mt-8">
+              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred w-full sm:w-auto`}>Request early access</button>
+              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white w-full sm:w-auto`}>Get Free Career Blueprint</a>
             </div>
             <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
