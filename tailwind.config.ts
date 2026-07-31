@@ -20,7 +20,7 @@ const config: Config = {
         navy: { DEFAULT: "#1E3A5F", lt: "#E8EEF5" },
 
         // ── v7 homepage tokens (marquee-site-v7 / HANDOFF) — the whole system, no tints ──
-        red: "#C1052F",       // primary CTA, accents, matrix dots, step rules
+        red: "#F8563A",       // primary CTA, accents, matrix dots, step rules
         dred: "#7C1226",      // ALL colored text, dark sections, footer
         blue: "#C9DDF7",      // section background
         purple: "#CBBCF0",    // section background
