@@ -96,7 +96,7 @@ export default function HomePage() {
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-5 items-center">
             <Link href="/login" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
-            <button onClick={() => apply("nav")} className={`${BTN} bg-red text-white hover:bg-dred !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request early access</button>
+            <button onClick={() => apply("nav")} className={`${BTN} bg-dred text-white hover:bg-red !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request early access</button>
           </div>
         </div>
       </nav>
@@ -265,21 +265,21 @@ export default function HomePage() {
           <div className={EYEBROW}>What it costs</div>
           <h2 className={`${H2} mt-4`}>Pricing.</h2>
           <div className="grid md:grid-cols-2 gap-[22px] mt-11 max-w-[880px] mx-auto">
-            <div className="bg-white border border-hair rounded-[10px] p-[38px_34px] flex flex-col text-center">
+            <div className="bg-dred text-white border border-dred rounded-[10px] p-[38px_34px] flex flex-col text-center">
               <h3 className={H3}>Career Blueprint</h3>
               <div className="font-lora text-[clamp(34px,5vw,50px)] mt-4 mb-1.5">Free</div>
               <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
-                {["Guided questionnaire to identify your purpose and strengths", "30-day personalized career roadmap", "Where your income opportunities are"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-hair last:border-0">{l}</li>)}
+                {["Guided questionnaire to identify your purpose and strengths", "30-day personalized career roadmap", "Where your income opportunities are"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
               </ul>
-              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white block w-full`}>Get Free Career Blueprint</a>
+              <a href="#blueprint" className={`${BTN} bg-white text-dred block w-full`}>Get Free Career Blueprint</a>
             </div>
-            <div className="bg-dred text-white border border-dred rounded-[10px] p-[38px_34px] flex flex-col text-center">
+            <div className="bg-white border border-hair rounded-[10px] p-[38px_34px] flex flex-col text-center">
               <h3 className={H3}>Professional</h3>
-              <div className="font-lora text-[clamp(34px,5vw,50px)] mt-4 mb-1.5">$99<small className="font-inter text-[14px] text-white/80"> / year</small></div>
+              <div className="font-lora text-[clamp(34px,5vw,50px)] mt-4 mb-1.5">$99<small className="font-inter text-[14px] text-dred"> / year</small></div>
               <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
-                {["Your own marquee.bio/username link", "Media, projects, and work highlights in one place", "Every way you work, with clear rates", "Inbound contact routing tied directly to your work style", "Storefront, booking, and payments"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
+                {["Your own marquee.bio/username link", "Media, projects, and work highlights in one place", "Every way you work, with clear rates", "Inbound contact routing tied directly to your work style", "Storefront, booking, and payments"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-hair last:border-0">{l}</li>)}
               </ul>
-              <button onClick={() => apply("pricing")} className={`${BTN} bg-white text-dred block w-full`}>Request early access</button>
+              <button onClick={() => apply("pricing")} className={`${BTN} bg-red text-white hover:bg-dred block w-full`}>Request early access</button>
             </div>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function HomePage() {
             <div className={EYEBROW}>For businesses &amp; recruiters</div>
             <h2 className={`${H2} mt-4`}>Discover the human beyond the title.</h2>
             <p className={`${LEDE} mt-4`}>Search by skills, superpowers, core values, leadership style, industry experience and impact.</p>
-            <div className="mt-8"><button onClick={() => apply("business")} className={`${BTN} bg-red text-white hover:bg-dred`}>Join the waitlist</button></div>
+            <div className="mt-8"><button onClick={() => apply("business")} className={`${BTN} bg-dred text-white hover:bg-red`}>Join the waitlist</button></div>
           </div>
           <div>
             {BIZ.map(([b, s]) => (
@@ -314,7 +314,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-[720px] overflow-hidden mt-4" style={{ aspectRatio: "740 / 545" }}>
             <Image src="/images/marquee-stack-graphic.png" alt="A professional surrounded by the disconnected tools their identity is scattered across: LinkedIn, resume, personal website, newsletter, link in bio, portfolio, speaking, advisory, booking, products, projects, and media mentions." width={740} height={740} className="w-full h-auto block" priority />
           </div>
-          <div className="text-[30px] text-red leading-none mt-4 mb-6">↓</div>
+          <div className="text-[30px] text-dred leading-none mt-4 mb-6">↓</div>
           <button onClick={() => apply("stack")} className={`${BTN} bg-red text-white hover:bg-dred text-[17px] !px-[34px] !py-[18px]`}>Get one link for your professional story</button>
           <div className={`${SCRIPT} text-dred mt-5`}>marquee.bio/yourname</div>
         </div>
@@ -399,7 +399,7 @@ export default function HomePage() {
 function PhonePreview() {
   const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL;
   return (
-    <div className="relative w-[236px] sm:w-[300px] md:w-[326px] max-w-full aspect-[9/19] border-[9px] sm:border-[11px] border-ink rounded-[36px] sm:rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
+    <div className="relative w-[236px] sm:w-[300px] md:w-[326px] max-w-full aspect-[9/17] border-[9px] sm:border-[11px] border-ink rounded-[36px] sm:rounded-[44px] bg-white shadow-[0_30px_70px_rgba(17,17,17,0.18)] overflow-hidden">
       <div className="absolute top-[12px] sm:top-[14px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[104px] h-[20px] sm:h-[22px] bg-ink rounded-full z-20" />
       {src ? (
         <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
