@@ -109,9 +109,9 @@ export default function HomePage() {
             <h1 className={`${H1} mt-[18px]`}>Your work deserves the spotlight.</h1>
             <div className={`${SCRIPT} text-dred my-[18px]`}>Be known. Not filtered.</div>
             <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mt-8">
-              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred w-full sm:w-auto`}>Request early access</button>
-              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white w-full sm:w-auto`}>Get Free Career Blueprint</a>
+            <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-8">
+              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
+              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
             <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
@@ -192,47 +192,30 @@ export default function HomePage() {
           <div className={EYEBROW}>Monetize your expertise</div>
           <h2 className={`${H2} mt-4 max-w-[940px]`}>You&apos;ve built the expertise. Now turn it into income.</h2>
           <p className={`${LEDE} mt-4 max-w-[860px]`}>You already solve problems faster than most, lead rooms, and give high-value advice. Marquee lets you package that knowledge, set your rates, and sell your time or products in one place.</p>
-          <div className="hidden md:block mt-[34px] overflow-x-auto">
-            <table className="w-full border-collapse bg-white rounded-[10px] overflow-hidden min-w-[560px]">
+          <div className="mt-[34px]">
+            <table className="w-full border-collapse bg-white rounded-[10px] overflow-hidden table-fixed">
               <thead>
                 <tr>
                   {["Ways to work with you", "Set a rate", "Request a proposal", "Book & pay here", "Link out"].map((h, i) => (
-                    <th key={h} className={`text-[11.5px] font-bold tracking-[0.1em] uppercase text-dred p-[16px_10px] border-b-[1.5px] border-dred align-bottom ${i === 0 ? "text-left pl-[22px] w-[34%]" : "text-center"}`}>{h}</th>
+                    <th key={h} className={`font-bold tracking-[0.05em] md:tracking-[0.1em] uppercase text-dred text-[8.5px] md:text-[11.5px] leading-tight p-[7px_3px] md:p-[16px_10px] border-b-[1.5px] border-dred align-bottom ${i === 0 ? "text-left pl-[10px] md:pl-[22px] w-[34%]" : "text-center"}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {MATRIX.map(([label, sub, dots], r) => (
                   <tr key={label} className={r % 2 === 0 ? "bg-beige" : ""}>
-                    <td className="p-[14px_10px] pl-[22px] text-left font-semibold text-[15px] border-b border-beigeLine">
-                      {label}<small className="block font-normal text-[12.5px] text-dred mt-[2px]">{sub}</small>
+                    <td className="p-[8px_4px] md:p-[14px_10px] pl-[10px] md:pl-[22px] text-left font-semibold text-[11.5px] md:text-[15px] leading-tight border-b border-beigeLine">
+                      {label}<small className="block font-normal text-[9.5px] md:text-[12.5px] text-dred mt-[2px]">{sub}</small>
                     </td>
                     {dots.map((on, c) => (
-                      <td key={c} className="p-[14px_10px] text-center border-b border-beigeLine">
-                        <span className={`inline-block w-3 h-3 rounded-full ${on ? "bg-red" : "border-[1.5px] border-beigeLine"}`} />
+                      <td key={c} className="p-[8px_3px] md:p-[14px_10px] text-center border-b border-beigeLine">
+                        <span className={`inline-block w-2 h-2 md:w-3 md:h-3 rounded-full ${on ? "bg-red" : "border-[1.5px] border-beigeLine"}`} />
                       </td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-          {/* Mobile: stacked cards instead of a scrolling table */}
-          <div className="md:hidden mt-8 space-y-3">
-            {MATRIX.map(([label, sub, dots]) => (
-              <div key={label} className="border border-beigeLine rounded-[10px] p-4 bg-white">
-                <div className="font-semibold text-[15px]">{label}</div>
-                <div className="text-[12.5px] text-dred mt-0.5">{sub}</div>
-                <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
-                  {["Set a rate", "Request a proposal", "Book & pay", "Link out"].map((col, i) => (
-                    <div key={col} className="flex items-center gap-2 text-[13px]">
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${dots[i] ? "bg-red" : "border-[1.5px] border-beigeLine"}`} />
-                      <span className={dots[i] ? "" : "text-ink/40"}>{col}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
