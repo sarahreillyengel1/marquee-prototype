@@ -192,7 +192,7 @@ export default function HomePage() {
           <div className={EYEBROW}>Monetize your expertise</div>
           <h2 className={`${H2} mt-4 max-w-[940px]`}>You&apos;ve built the expertise. Now turn it into income.</h2>
           <p className={`${LEDE} mt-4 max-w-[860px]`}>You already solve problems faster than most, lead rooms, and give high-value advice. Marquee lets you package that knowledge, set your rates, and sell your time or products in one place.</p>
-          <div className="mt-[34px] overflow-x-auto">
+          <div className="hidden md:block mt-[34px] overflow-x-auto">
             <table className="w-full border-collapse bg-white rounded-[10px] overflow-hidden min-w-[560px]">
               <thead>
                 <tr>
@@ -216,6 +216,23 @@ export default function HomePage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          {/* Mobile: stacked cards instead of a scrolling table */}
+          <div className="md:hidden mt-8 space-y-3">
+            {MATRIX.map(([label, sub, dots]) => (
+              <div key={label} className="border border-beigeLine rounded-[10px] p-4 bg-white">
+                <div className="font-semibold text-[15px]">{label}</div>
+                <div className="text-[12.5px] text-dred mt-0.5">{sub}</div>
+                <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
+                  {["Set a rate", "Request a proposal", "Book & pay", "Link out"].map((col, i) => (
+                    <div key={col} className="flex items-center gap-2 text-[13px]">
+                      <span className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${dots[i] ? "bg-red" : "border-[1.5px] border-beigeLine"}`} />
+                      <span className={dots[i] ? "" : "text-ink/40"}>{col}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
