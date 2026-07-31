@@ -80,6 +80,8 @@ export default function HomePage() {
   const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [waitlistSource, setWaitlistSource] = useState("homepage");
   const [q, setQ] = useState(0);
+  const [hero, setHero] = useState("phone"); // ?hero=browser to preview the browser-framed variant
+  useEffect(() => { const h = new URLSearchParams(window.location.search).get("hero"); if (h) setHero(h); }, []);
 
   const apply = (source: string) => { setWaitlistSource(source); setWaitlistOpen(true); };
 
@@ -116,7 +118,7 @@ export default function HomePage() {
             <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
           <div className="flex justify-center">
-            <PhonePreview />
+            {hero === "browser" ? <BrowserPreview /> : <PhonePreview />}
           </div>
         </div>
       </section>
@@ -400,6 +402,22 @@ export default function HomePage() {
 
 // Hero phone frame. If NEXT_PUBLIC_PROFILE_EMBED_URL is set (deployed profile app, or
 // localhost in dev), iframe the REAL profile; otherwise render a prod-safe self-contained mock.
+// Alternative hero: the profile shown in a minimal browser frame, desktop layout scaled to fit (static-feeling).
+function BrowserPreview() {
+  const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL || "http://localhost:5173/?embed";
+  return (
+    <div className="w-full max-w-[600px] mx-auto border border-hair rounded-[12px] overflow-hidden shadow-[0_30px_70px_rgba(17,17,17,0.14)] bg-white">
+      <div className="flex items-center gap-2 px-3.5 h-9 bg-[#F1EEE8] border-b border-hair">
+        {[0, 1, 2].map((i) => <span key={i} className="w-2.5 h-2.5 rounded-full bg-[#DDD7CE]" />)}
+        <div className="ml-2 flex-1 max-w-[260px] h-5 rounded-full bg-white border border-hair flex items-center px-3 text-[10.5px] text-ink/50">marquee.bio/lauren-ellis</div>
+      </div>
+      <div className="relative w-full h-[440px] overflow-hidden">
+        <iframe src={src} title="Marquee profile" loading="lazy" className="absolute top-0 left-0 border-0" style={{ width: "1120px", height: "1500px", transform: "scale(0.5357)", transformOrigin: "top left" }} />
+      </div>
+    </div>
+  );
+}
+
 function PhonePreview() {
   const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL;
   return (
