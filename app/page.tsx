@@ -15,7 +15,7 @@ const H3 = "font-lora font-normal leading-[1.15] text-[clamp(18px,3vw,27px)]";
 const EYEBROW = "text-[12px] font-bold tracking-[0.18em] uppercase text-dred";
 const SCRIPT = "font-script leading-none text-[clamp(23px,5vw,44px)]";
 const LEDE = "text-[clamp(15px,2vw,18px)] leading-[1.55]";
-const BTN = "inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold text-center border-[1.5px] border-transparent transition-colors";
+const BTN = "inline-block px-5 py-[10px] text-[13.5px] sm:px-6 sm:py-[13px] sm:text-[15px] rounded-full font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
 const QUOTES: [string, string][] = [
   ["I pivoted my career, but my resume and LinkedIn were stuck in my past role—they didn't reflect my real capabilities. I was getting screened out by AI filters and missing opportunities. My Marquee bio finally shows who I am, and I'm excited to share it.", "The career pivot"],
@@ -319,7 +319,7 @@ export default function HomePage() {
             <Image src="/images/marquee-stack-graphic.png" alt="A professional surrounded by the disconnected tools their identity is scattered across: LinkedIn, resume, personal website, newsletter, link in bio, portfolio, speaking, advisory, booking, products, projects, and media mentions." width={740} height={740} className="w-full h-auto block" priority />
           </div>
           <div className="text-[30px] text-dred leading-none mt-4 mb-6">↓</div>
-          <button onClick={() => apply("stack")} className={`${BTN} bg-red text-white hover:bg-dred text-[17px] !px-[34px] !py-[18px]`}>Get one link for your professional story</button>
+          <button onClick={() => apply("stack")} className={`${BTN} bg-red text-white hover:bg-dred sm:text-[17px] sm:!px-[34px] sm:!py-[18px]`}>Get one link for your professional story</button>
           <div className={`${SCRIPT} text-dred mt-5`}>marquee.bio/yourname</div>
         </div>
       </section>
