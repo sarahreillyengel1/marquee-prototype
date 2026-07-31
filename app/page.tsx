@@ -179,6 +179,10 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <div className="text-center mt-14">
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-dred">Your personalized professional link</div>
+            <div className={`${SCRIPT} text-dred mt-2`}>marquee.bio/yourname</div>
+          </div>
         </div>
       </section>
 
