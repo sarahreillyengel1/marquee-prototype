@@ -115,7 +115,7 @@ export default function HomePage() {
             </div>
             <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
           </div>
-          <div className="flex justify-center">
+          <div className="hidden md:flex justify-center">
             <PhonePreview />
           </div>
         </div>
