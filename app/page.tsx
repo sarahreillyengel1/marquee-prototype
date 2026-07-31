@@ -406,7 +406,7 @@ function PhonePreview() {
     <div className="relative w-[210px] sm:w-[248px] md:w-[278px] max-w-full aspect-[9/17.5] border-[9px] sm:border-[10px] border-ink rounded-[34px] sm:rounded-[40px] bg-white shadow-[0_26px_60px_rgba(17,17,17,0.16)] overflow-hidden mx-auto">
       <div className="absolute top-[12px] sm:top-[14px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[104px] h-[20px] sm:h-[22px] bg-ink rounded-full z-20" />
       {src ? (
-        <iframe src={src} title="Marquee profile preview" loading="lazy" className="w-full h-full border-0 block" />
+        <iframe src={src} title="Marquee profile preview" loading="lazy" tabIndex={-1} aria-hidden="true" className="w-full h-full border-0 block pointer-events-none select-none" />
       ) : (
         <div className="h-full overflow-y-auto overscroll-contain bg-white px-5 pt-12 pb-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-[60px] h-[60px] rounded-full bg-beige border border-beigeLine mb-3" />
