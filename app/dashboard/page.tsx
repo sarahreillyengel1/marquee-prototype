@@ -34,6 +34,7 @@ const INTENT_LABELS: Record<string, string> = {
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
   const [contacts, setContacts] = useState<ContactRequest[]>([]);
+  const [views, setViews] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedContact, setExpandedContact] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -50,7 +51,7 @@ export default function DashboardPage() {
         return;
       }
 
-      const [{ data: profileData }, { data: contactData }] = await Promise.all([
+      const [{ data: profileData }, { data: contactData }, { count: viewCount }] = await Promise.all([
         supabase.from("generated_profiles").select("*").eq("user_id", user.id).single(),
         supabase
           .from("contact_requests")
@@ -58,6 +59,10 @@ export default function DashboardPage() {
           .eq("profile_user_id", user.id)
           .is("archived_at", null)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("profile_views")
+          .select("*", { count: "exact", head: true })
+          .eq("profile_user_id", user.id),
       ]);
 
       if (!profileData) {
@@ -67,6 +72,7 @@ export default function DashboardPage() {
 
       setProfile(profileData);
       setContacts(contactData || []);
+      setViews(viewCount ?? 0);
       setLoading(false);
     }
     load();
@@ -180,6 +186,22 @@ export default function DashboardPage() {
               View profile
             </Link>
           </div>
+        </div>
+
+        {/* Profile views */}
+        <div className="bg-white rounded-2xl p-6 mb-4 border border-brand-stone">
+          <h3 className="text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-2">
+            Profile views
+          </h3>
+          <div className="flex items-baseline gap-2">
+            <span className="font-inter font-bold tracking-tight text-4xl md:text-5xl text-brand-ink tabular-nums">
+              {views === null ? "—" : views.toLocaleString()}
+            </span>
+            <span className="text-sm text-brand-ink/60">all time</span>
+          </div>
+          <p className="text-xs text-brand-ink/50 mt-2">
+            Every time someone opens your Marquee. Only you can see this.
+          </p>
         </div>
 
         {/* Inbox */}

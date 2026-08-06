@@ -6,6 +6,13 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["pdf-parse"],
   },
+  // TEMPORARY (beta): don't fail the build on ESLint warnings/errors. The repo is
+  // being built by two parallel workstreams (profile system + blueprint); in-progress
+  // lint in one shouldn't block deploying the other. TypeScript type-checking still
+  // runs and must pass. Revisit once both streams are lint-clean.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

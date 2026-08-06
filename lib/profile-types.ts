@@ -5,6 +5,8 @@
 // The live DB data is mapped into this shape by lib/profile-mapper.ts.
 // ─────────────────────────────────────────────────────────────
 
+import type { ProfileTypeKey } from './profile-system'
+
 export type RateDisplay = 'show' | 'contact' // "contact for rate" instead of a number
 
 export type EngagementKey =
@@ -36,6 +38,16 @@ export interface Social {
   kind: 'linkedin' | 'instagram' | 'x' | 'tiktok' | 'website'
   url: string
   visible: boolean
+}
+
+/** The 4 owner-curated CTAs shown as a row directly below the hero, on every profile.
+ *  `type` is a short verb label (Contact / Book / Shop / Read …); `destination` is an
+ *  external URL, or an internal page key when `internal` is true. */
+export interface Action {
+  type: string
+  label: string
+  destination: string
+  internal?: boolean
 }
 
 export interface Role {
@@ -88,6 +100,8 @@ export interface MediaItem {
   title: string
   sub?: string
   bg: string
+  /** optional background image (overrides bg) for the Featured Media hero tiles */
+  image?: string
   darkText?: boolean
   play?: boolean
   /** external link OR internal route (e.g. 'portfolio') */
@@ -123,6 +137,16 @@ export interface Profile {
   tagline: string
   slug: string
   tags: string[]
+
+  /** BACKGROUND ONLY — never rendered. Primary leads; secondary optional (Professional
+   *  can be solo). Used to pre-check recommended sections in onboarding. */
+  types?: { primary: ProfileTypeKey; secondary?: ProfileTypeKey }
+  /** Owner-selected home sections (from SECTION_CATALOG keys). When present, a section
+   *  renders only if it's in this list AND has data. Undefined = show all filled. */
+  enabledSections?: string[]
+  /** The 4 owner-curated CTAs, shown as a row directly below the hero. */
+  actions?: Action[]
+
   bioShort: string
   bioLong: string[]
   bookedFor: string[]

@@ -402,17 +402,57 @@ function Hero() {
   );
 }
 
-function StatCards() {
+// The 4 owner-curated CTAs — a row directly below the hero, on every profile.
+function Actions() {
   const { profile, goto } = useStore();
-  const cls = ["lav", "deep", "peach"];
+  const acts = (profile.actions || []).slice(0, 4);
+  if (!acts.length) return null;
   return (
-    <section className="stats3 smt">
-      {profile.stats.map((s, i) => (
-        <div key={i} className={"stat " + cls[i % 3]} onClick={() => goto(s.goto.includes("experience") ? "experience" : "how-i-work")}>
-          <span className="arw"><Icon name="arrow-up-right" /></span>
-          <div className="big">{s.value}</div><div className="lbl">{s.label}</div>
-        </div>
-      ))}
+    <section className="actions4 smt">
+      {acts.map((a, i) => {
+        const inner = (
+          <>
+            <span className="act-type">{a.type}</span>
+            <span className="act-label">{a.label}</span>
+            <span className="act-arw"><Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></span>
+          </>
+        );
+        return a.internal
+          ? <div key={i} className="actcard" onClick={() => goto(a.destination as PageKey)}>{inner}</div>
+          : <a key={i} className="actcard" href={a.destination} target="_blank" rel="noopener">{inner}</a>;
+      })}
+    </section>
+  );
+}
+
+// Featured Media — up to 3 large tiles directly below the Actions row.
+function HeroMedia() {
+  const { profile, goto } = useStore();
+  const feat = profile.media.slice(0, 3);
+  if (!feat.length) return null;
+  if (profile.enabledSections && !profile.enabledSections.includes("media")) return null;
+  return (
+    <section className="smt">
+      <BlockHead title="Featured Media" />
+      <div className="stats3 heromedia" style={{ marginTop: 14 }}>
+        {feat.map((m) => {
+          const inner = (
+            <>
+              <div className="hm-shade" />
+              <span className="hm-type">{m.type}</span>
+              {m.play && <span className="hm-play">▶</span>}
+              <div className="hm-meta">
+                <div className="hm-title">{m.title}</div>
+                {(m.source || m.sub) && <div className="hm-src">{m.source || m.sub} <Icon name="arrow-up-right" style={{ width: 12, height: 12 }} /></div>}
+              </div>
+            </>
+          );
+          const style: CSSProperties = m.image ? { backgroundImage: `url(${m.image})` } : { background: m.bg };
+          return m.internal
+            ? <div key={m.id} className="hmcard" style={style} onClick={() => goto(m.internal as PageKey)}>{inner}</div>
+            : <a key={m.id} className="hmcard" style={style} href={m.url} target="_blank" rel="noopener">{inner}</a>;
+        })}
+      </div>
     </section>
   );
 }
@@ -420,12 +460,16 @@ function StatCards() {
 function ProfilePage() {
   const { profile, goto } = useStore();
   const s = profile.sections;
+  const has = (arr?: unknown[]) => Array.isArray(arr) && arr.length > 0;
+  // a section shows only if the owner has it on (or hasn't customized) AND it has content
+  const on = (k: string) => !profile.enabledSections || profile.enabledSections.includes(k);
   return (
     <div className="page on">
       <Hero />
-      <StatCards />
+      <Actions />
+      <HeroMedia />
 
-      {s.activeProjects && (
+      {on("activeProjects") && s.activeProjects && has(profile.activeProjects) && (
         <section className="smt">
           <BlockHead title="Active Projects" />
           <div className="pgrid">
@@ -439,6 +483,7 @@ function ProfilePage() {
         </section>
       )}
 
+      {on("experience") && has(profile.roles) && (
       <section className="ewrap smt">
         <div className="card timeline">
           <BlockHead title="Experience" sub="Timeline" />
@@ -459,8 +504,9 @@ function ProfilePage() {
           </div>
         </div>
       </section>
+      )}
 
-      {s.impact && (
+      {on("impact") && s.impact && has(profile.impact) && (
         <section className="impact smt">
           <BlockHead title="Impact" link="View all impact stories" onLink={() => goto("experience")} />
           <div className="igrid">
@@ -472,7 +518,9 @@ function ProfilePage() {
         </section>
       )}
 
+      {((on("leadership") && has(profile.leadership)) || (on("values") && has(profile.values)) || (on("skills") && has(profile.skills))) && (
       <section className="cols3 smt">
+        {on("leadership") && has(profile.leadership) && (
         <div className="card col">
           <BlockHead title="Leadership" />
           <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>How I lead and build teams</div>
@@ -481,6 +529,8 @@ function ProfilePage() {
           ))}
           <span className="blink" style={{ marginLeft: 0 }} onClick={() => goto("how-i-work")}>View all leadership <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
         </div>
+        )}
+        {on("values") && has(profile.values) && (
         <div className="card col">
           <BlockHead title="Values" />
           <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>Principles that guide my work</div>
@@ -489,14 +539,18 @@ function ProfilePage() {
           ))}
           <span className="blink" style={{ marginLeft: 0 }} onClick={() => goto("how-i-work")}>View all values <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
         </div>
+        )}
+        {on("skills") && has(profile.skills) && (
         <div className="card col">
           <BlockHead title="Skills" link="View all" onLink={() => goto("how-i-work")} />
           <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>What I bring to the table</div>
           <Skills />
         </div>
+        )}
       </section>
+      )}
 
-      {s.media && (
+      {on("media") && s.media && has(profile.media) && (
         <section className="smt">
           <BlockHead title="Media" link="View all media" onLink={() => goto("media")} />
           <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
@@ -505,7 +559,17 @@ function ProfilePage() {
         </section>
       )}
 
-      {s.education && (
+      {on("testimonials") && profile.testimonial && (
+        <section className="smt">
+          <BlockHead title="Testimonials" />
+          <div className="card" style={{ padding: 22 }}>
+            <p style={{ fontSize: 16, lineHeight: 1.55, color: "var(--ink)", margin: "2px 0 12px", maxWidth: 720 }}>&ldquo;{profile.testimonial.quote}&rdquo;</p>
+            <div style={{ fontSize: 13, color: "var(--gray)" }}>{profile.testimonial.who}</div>
+          </div>
+        </section>
+      )}
+
+      {on("education") && s.education && has(profile.education) && (
         <section className="smt">
           <BlockHead title="Education & Credentials" />
           <div className="edu-grid">

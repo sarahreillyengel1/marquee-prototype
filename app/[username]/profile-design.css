@@ -478,3 +478,21 @@
 .mq-root .photo-empty .pe-ic{ width:46px; height:46px; border-radius:0; background:rgba(255,255,255,0.65); display:flex; align-items:center; justify-content:center; }
 .mq-root .photo-empty .pe-ic svg{ width:22px; height:22px; }
 .mq-root .photo-empty .pe-t{ font-size:12px; font-weight:600; }
+
+/* ── Actions bar (4 owner-curated CTAs) + Featured Media hero tiles (ported from marquee-app) ── */
+.mq-root .actions4{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.mq-root .actcard{ position:relative; border:1px solid var(--line); border-radius:var(--r); background:var(--stone); padding:18px 44px 16px 18px; display:flex; flex-direction:column; cursor:pointer; text-decoration:none; color:var(--ink); transition:transform .18s, box-shadow .2s, background .18s, border-color .18s; min-height:92px; }
+.mq-root .actcard:hover{ transform:translateY(-2px); box-shadow:var(--sh-lift); background:var(--cta-lt); border-color:var(--pur); }
+.mq-root .act-type{ font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--pur); }
+.mq-root .act-label{ font-size:16.5px; font-weight:700; line-height:1.22; margin-top:8px; color:var(--ink); }
+.mq-root .act-arw{ position:absolute; top:16px; right:16px; width:26px; height:26px; border-radius:50%; background:var(--pur); color:#fff; display:flex; align-items:center; justify-content:center; transition:transform .18s; }
+.mq-root .actcard:hover .act-arw{ transform:translate(1px,-1px); }
+@media (max-width:720px){ .mq-root .actions4{ grid-template-columns:repeat(2,1fr); } }
+.mq-root .hmcard{ position:relative; min-height:196px; border-radius:var(--r); overflow:hidden; display:block; background-size:cover; background-position:center; cursor:pointer; border:1px solid var(--line2); transition:transform .18s, box-shadow .2s; }
+.mq-root .hmcard:hover{ transform:translateY(-2px); box-shadow:var(--sh-lift); }
+.mq-root .hm-shade{ position:absolute; inset:0; background:linear-gradient(to top, rgba(17,17,17,.78), rgba(17,17,17,.10) 52%, rgba(17,17,17,0) 78%); }
+.mq-root .hm-type{ position:absolute; top:12px; left:12px; z-index:2; font-size:9.5px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--ink); background:rgba(255,255,255,.92); padding:4px 8px; }
+.mq-root .hm-play{ position:absolute; top:11px; right:12px; z-index:2; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; color:var(--ink); font-size:11px; padding-left:2px; }
+.mq-root .hm-meta{ position:absolute; left:14px; right:14px; bottom:13px; z-index:2; color:#fff; }
+.mq-root .hm-title{ font-size:15.5px; font-weight:600; line-height:1.24; }
+.mq-root .hm-src{ display:flex; align-items:center; gap:4px; font-size:11.5px; margin-top:5px; color:rgba(255,255,255,.86); }

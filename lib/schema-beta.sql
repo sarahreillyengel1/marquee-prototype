@@ -53,3 +53,30 @@ begin
       for delete using (bucket_id = 'media' and auth.uid()::text = (storage.foldername(name))[1]);
   end if;
 end $$;
+
+-- ── profile_views: one row per public view (private analytics) ──
+-- V1 surfaces only a total count on the owner's dashboard. We store a row per
+-- view (with referrer + path) now, so the 30-day trend and referrer breakdown
+-- are later queries — no migration needed. Inserts happen server-side via the
+-- service role (see app/api/profile/[username]/view), so RLS blocks anon writes
+-- and self/bot filtering stays in one place.
+create table if not exists public.profile_views (
+  id              uuid primary key default gen_random_uuid(),
+  profile_user_id uuid not null references auth.users(id) on delete cascade,
+  viewed_at       timestamptz not null default now(),
+  referrer        text,        -- document.referrer at view time (for later "viewed from LinkedIn")
+  path            text         -- which username/path was viewed
+);
+create index if not exists idx_profile_views_user on public.profile_views(profile_user_id, viewed_at desc);
+
+alter table public.profile_views enable row level security;
+
+do $$
+begin
+  -- Only the profile owner can read their own view rows. No public/anon select,
+  -- no anon insert — the service-role API route is the only writer.
+  if not exists (select 1 from pg_policies where policyname = 'Owner can read own profile views') then
+    create policy "Owner can read own profile views" on public.profile_views
+      for select using (auth.uid() = profile_user_id);
+  end if;
+end $$;
