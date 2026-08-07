@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { email, first_name, last_name, linkedin, source, utm_source, utm_medium, utm_campaign } = body;
+  const { email, first_name, last_name, linkedin, role, source, utm_source, utm_medium, utm_campaign } = body;
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
@@ -25,13 +25,14 @@ export async function POST(request: Request) {
     last_name: last_name?.trim() || null,
     linkedin_url: linkedinUrl,
     status: "pending",
+    notes: role ? `role: ${role}` : null,
     source: source || "landing",
     utm_source: utm_source || null,
     utm_medium: utm_medium || null,
     utm_campaign: utm_campaign || null,
   });
 
-  // Duplicate email is fine — already on the waitlist (don't re-send the confirmation)
+  // Duplicate email is fine — already on the waitlist
   if (error && error.code !== "23505") {
     console.error("Waitlist insert error:", error);
     return NextResponse.json(
@@ -40,9 +41,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fresh application → send "your request is being reviewed" to the applicant, and
-  // (optionally) notify the team. Both are inert until RESEND_API_KEY is configured,
-  // and neither failing blocks the response.
+  // Fresh application → confirmation to the applicant + notification to the team.
+  // Both are inert until RESEND_API_KEY is set; neither failing blocks the response.
   if (!error) {
     const cleanEmail = email.trim().toLowerCase();
     await Promise.allSettled([
