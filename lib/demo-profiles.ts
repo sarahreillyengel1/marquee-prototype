@@ -278,7 +278,82 @@ const brendan: Profile = {
   sections: { impact: true, superpowers: false, media: true, education: true, activeProjects: false, portfolio: false },
 }
 
+// ── Creator / Coach — Michaela. Podcast + 1:1s + retreats. Media-led, no work history. ──
+const michaela: Profile = {
+  name: 'Michaela Reilly',
+  headline: 'Podcast Host · Integration Coach',
+  location: 'Boulder, CO',
+  available: true,
+  availableLabel: 'Booking sessions & retreats',
+  verified: true,
+  photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80&auto=format&fit=crop',
+  tagline: 'Motherhood, medicine, and meaning — in one place.',
+  slug: 'michaela',
+  tags: ['Psychedelic Integration', 'Motherhood', 'Breathwork', 'Somatics', 'Retreats', 'Ceremony'],
+  types: { primary: 'creator', secondary: 'coach' },
+  enabledSections: ['media', 'skills', 'testimonials'],
+  actions: [
+    { type: 'Listen', label: 'Latest episode', destination: 'https://open.spotify.com' },
+    { type: 'Book', label: 'Book integration', destination: 'https://cal.com/michaela' },
+    { type: 'Attend', label: 'Sign up for retreat', destination: 'https://example.com/retreat' },
+    { type: 'Book', label: 'Book speaking', destination: 'https://cal.com/michaela-speak' },
+  ],
+  bioShort:
+    'Host of the Psychedelic Mom podcast. I help mothers integrate deep inner work into ordinary life — through conversation, 1:1 sessions, and small seasonal retreats.',
+  bioLong: [
+    'I spent a decade as a stay-at-home mom before psychedelics cracked something open. Psychedelic Mom started as a way to make sense of it out loud — and became a community of thousands of women doing the same.',
+    'Now I host the podcast, guide integration one-on-one, and run small seasonal retreats. My work lives at the intersection of motherhood, medicine, and meaning.',
+  ],
+  bookedFor: [],
+  highlights: [],
+  rating: { stars: 5, count: 210, label: 'Loved by listeners' },
+  testimonial: {
+    quote: 'Michaela holds space like no one else. Her retreat gave me language for things I’d carried silently for years.',
+    who: 'Dana R. · retreat guest',
+  },
+  socials: [
+    { kind: 'instagram', url: 'https://instagram.com', visible: true },
+    { kind: 'tiktok', url: 'https://tiktok.com', visible: true },
+    { kind: 'website', url: 'https://example.com', visible: true },
+  ],
+  openTo: [
+    { key: 'advisory', label: 'Integration Sessions', note: '1:1 · virtual', visible: true },
+    { key: 'project', label: 'Retreats', note: 'Small groups · seasonal', visible: true },
+    { key: 'speaking', label: 'Speaking', note: 'Talks & workshops', visible: true },
+  ],
+  engagements: [
+    { key: 'advisory', icon: 'compass', title: 'Integration Sessions', price: 'Inquire', rateDisplay: 'show', visible: true, flow: 'book', blurb: 'A grounded 1:1 to integrate your experience into daily life.' },
+    { key: 'project', icon: 'file', title: 'Retreats', price: 'Inquire', rateDisplay: 'show', visible: true, flow: 'availability', blurb: 'Small-group seasonal retreats — ceremony, breathwork, and rest.' },
+    { key: 'speaking', icon: 'play-circle', title: 'Speaking', price: 'By event', rateDisplay: 'contact', visible: true, flow: 'availability', blurb: 'Talks and workshops on motherhood, medicine, and integration.' },
+  ],
+  stats: [],
+  activeProjects: [],
+  roles: [],
+  impact: [],
+  leadership: [],
+  leadershipBelief: '',
+  values: [],
+  superpowers: [],
+  skills: [
+    { name: 'Psychedelic Integration', score: 34 },
+    { name: 'Breathwork', score: 26 },
+    { name: 'Somatic Facilitation', score: 24 },
+    { name: 'Group Facilitation', score: 22 },
+    { name: 'Trauma-Informed Care', score: 20 },
+    { name: 'Ceremony Design', score: 16 },
+    { name: 'Community Building', score: 15 },
+  ],
+  media: [
+    { id: 's1', type: 'Podcast', title: 'The Mother Wound & the Medicine', bg: '#CBBCF0', image: 'https://picsum.photos/seed/psymom1/640/440', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen on Spotify' },
+    { id: 's2', type: 'Podcast', title: 'Microdosing Through Motherhood', bg: '#C9DDF7', image: 'https://picsum.photos/seed/psymom2/640/440', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen on Spotify' },
+    { id: 's3', type: 'Podcast', title: 'Coming Home to Your Body', bg: '#F8C3FF', image: 'https://picsum.photos/seed/psymom3/640/440', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen on Spotify' },
+  ],
+  portfolio: [],
+  education: [],
+  sections: { impact: false, superpowers: false, media: true, education: false, activeProjects: false, portfolio: false },
+}
+
 // Slug → demo profile. app/[username]/page.tsx serves these directly (no DB fetch).
 export const DEMO_PROFILES: Record<string, Profile> = {
-  katie, sarah, rebecca, brendan,
+  katie, sarah, rebecca, brendan, michaela,
 }

@@ -59,7 +59,7 @@ export default function BrandShell({
             ]} />
           </div>
           <div className="mt-12 pt-[22px] border-t border-hair flex justify-between flex-wrap gap-[14px] text-[13px] text-ink/55">
-            <span>© 2026 Marquee</span>
+            <span>© 2026 Marquee Identity, Inc.</span>
             <span><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></span>
           </div>
         </div>

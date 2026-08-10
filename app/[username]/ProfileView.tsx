@@ -811,15 +811,10 @@ function BioPage() {
 
 /* ─────────────── public footer (visitor conversion) ─────────────── */
 function PublicFooter() {
-  const { profile } = useStore();
-  const first = profile.name.split(" ")[0] || profile.name;
-  const slug = first.toLowerCase();
+  // A profile is the member's surface — Marquee's presence is one discreet link out, nothing more.
   return (
     <footer className="pubfoot public-only">
-      <div className="k">Be known, not filtered.</div>
-      <p>This is {first}’s Marquee — one link for who they are and every way to work with them.</p>
-      <a className="pub-cta" href="https://marquee.bio" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Build your own Marquee <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></a>
-      <div className="made">Made with <b>Marquee</b> · marquee.bio/{slug}</div>
+      <a className="made" href="https://marquee.bio" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Made with <b>Marquee</b> <Icon name="arrow-up-right" style={{ width: 12, height: 12 }} /></a>
     </footer>
   );
 }

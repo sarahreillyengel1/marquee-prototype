@@ -387,7 +387,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-10 flex justify-between flex-wrap gap-[14px] text-[13px] text-ink">
-            <div>© 2026 Marquee</div>
+            <div>© 2026 Marquee Identity, Inc.</div>
             <div><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></div>
           </div>
         </div>
