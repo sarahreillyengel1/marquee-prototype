@@ -17,21 +17,29 @@ import Results from "./Results";
 type Answers = Record<string, any>;
 
 export default function BlueprintFlow() {
-  const [stage, setStage] = useState<"intro" | "questions" | "generating" | "results" | "error">("intro");
+  const [stage, setStage] = useState<"intro" | "questions" | "capture" | "saved" | "generating" | "results" | "error">("intro");
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [hydrated, setHydrated] = useState(false);
   const [result, setResult] = useState<BlueprintResult | null>(null);
   const [shareId, setShareId] = useState<string | null>(null);
 
-  async function generate() {
+  // ── Signup gate: capture first/last/email at "get results" and "save & finish later" ──
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [captureMode, setCaptureMode] = useState<"results" | "save">("results");
+  const [lead, setLead] = useState({ first_name: "", last_name: "", email: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [leadErr, setLeadErr] = useState<string | null>(null);
+
+  async function generate(idArg?: string | null) {
+    const sid = idArg !== undefined ? idArg : sessionId;
     setStage("generating");
     window.scrollTo({ top: 0, behavior: "smooth" });
     try {
       const res = await fetch("/api/blueprint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ id: sid, answers }),
       });
       if (!res.ok) throw new Error("bad response");
       const data = await res.json();
@@ -42,6 +50,28 @@ export default function BlueprintFlow() {
     } catch {
       setStage("error");
     }
+  }
+
+  // Save the lead (→ waitlist source=blueprint + in-progress session), then either
+  // generate into that session ("results") or confirm ("save"). Never blocks on a
+  // failed save — the user always moves forward.
+  async function submitLead() {
+    const email = lead.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setLeadErr("Please enter a valid email."); return; }
+    setLeadErr(null);
+    setSubmitting(true);
+    let id: string | null = sessionId;
+    try {
+      const res = await fetch("/api/blueprint/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: sessionId, first_name: lead.first_name, last_name: lead.last_name, email, answers, current_step: currentQ }),
+      });
+      if (res.ok) { const d = await res.json(); id = d.id ?? id; setSessionId(id); }
+    } catch { /* proceed regardless */ }
+    setSubmitting(false);
+    if (captureMode === "results") generate(id);
+    else setStage("saved");
   }
 
   useEffect(() => {
@@ -126,6 +156,64 @@ export default function BlueprintFlow() {
     );
   }
 
+  // ── CAPTURE (signup gate: get results / save & finish later) ──
+  if (stage === "capture") {
+    const forResults = captureMode === "results";
+    return (
+      <div className="max-w-[520px] mx-auto py-12 md:py-16">
+        <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-dred mb-4">
+          {forResults ? "Last step" : "Save your progress"}
+        </span>
+        <h1 className="font-lora font-normal text-4xl md:text-5xl text-ink leading-[1.08]">
+          {forResults ? "Where should we send your Blueprint?" : "Save it for later."}
+        </h1>
+        <p className="font-inter text-ink/70 mt-5 leading-relaxed">
+          {forResults
+            ? "Your Blueprint is ready. Add your details and we’ll build it now — and email you the link so it’s always one click away."
+            : "Enter your details and we’ll save your progress, so you can pick up right where you left off."}
+        </p>
+        <div className="mt-8 grid grid-cols-2 gap-4">
+          <input value={lead.first_name} onChange={(e) => setLead({ ...lead, first_name: e.target.value })} placeholder="First name"
+            className="border border-hair px-4 py-3.5 font-inter text-ink placeholder:text-ink/40 focus:border-ink outline-none" />
+          <input value={lead.last_name} onChange={(e) => setLead({ ...lead, last_name: e.target.value })} placeholder="Last name"
+            className="border border-hair px-4 py-3.5 font-inter text-ink placeholder:text-ink/40 focus:border-ink outline-none" />
+        </div>
+        <input value={lead.email} onChange={(e) => setLead({ ...lead, email: e.target.value })} type="email" placeholder="you@email.com"
+          className="mt-4 w-full border border-hair px-4 py-3.5 font-inter text-ink placeholder:text-ink/40 focus:border-ink outline-none" />
+        {leadErr && <p className="font-inter text-sm text-dred mt-3">{leadErr}</p>}
+        <button disabled={submitting} onClick={submitLead}
+          className="mt-6 w-full bg-ink text-white font-sans font-semibold py-4 hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          {submitting ? "Saving…" : forResults ? "Build my Blueprint →" : "Save my progress →"}
+        </button>
+        <button onClick={() => setStage("questions")}
+          className="block mx-auto mt-5 font-sans text-[12px] text-ink/50 hover:text-dred underline underline-offset-4">
+          {forResults ? "← Back to questions" : "← Keep going"}
+        </button>
+        <p className="font-inter text-xs text-ink/40 mt-6 text-center">
+          Free. We&apos;ll email your Blueprint and occasional Marquee updates — no spam.
+        </p>
+      </div>
+    );
+  }
+
+  // ── SAVED (confirmation for "save & finish later") ──
+  if (stage === "saved") {
+    return (
+      <div className="max-w-[520px] mx-auto py-16 text-center">
+        <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-dred mb-4">Saved</span>
+        <h1 className="font-lora font-normal text-4xl md:text-5xl text-ink leading-[1.08]">You&apos;re saved.</h1>
+        <p className="font-inter text-ink/70 mt-5 leading-relaxed">
+          We emailed a link to <b className="text-ink">{lead.email || "your inbox"}</b> so you can finish anytime.
+          Your answers are saved on this device too.
+        </p>
+        <button onClick={() => setStage("questions")}
+          className="mt-8 bg-ink text-white font-sans font-semibold px-8 py-4 hover:bg-black transition-colors">
+          Keep going &rarr;
+        </button>
+      </div>
+    );
+  }
+
   // ── GENERATING ──
   if (stage === "generating") {
     return (
@@ -162,7 +250,7 @@ export default function BlueprintFlow() {
           <button onClick={() => setStage("questions")} className="border border-hair text-ink font-sans font-semibold px-7 py-3.5 hover:border-ink transition-colors">
             Back
           </button>
-          <button onClick={generate} className="bg-ink text-white font-sans font-semibold px-7 py-3.5 hover:bg-black transition-colors">
+          <button onClick={() => generate()} className="bg-ink text-white font-sans font-semibold px-7 py-3.5 hover:bg-black transition-colors">
             Try again →
           </button>
         </div>
@@ -216,12 +304,19 @@ export default function BlueprintFlow() {
         </button>
         <button
           disabled={!answered}
-          onClick={() => { if (currentQ < QUESTIONS.length - 1) goToQ(currentQ + 1); else generate(); }}
+          onClick={() => { if (currentQ < QUESTIONS.length - 1) goToQ(currentQ + 1); else { setCaptureMode("results"); setStage("capture"); } }}
           className="flex-1 bg-ink text-white font-sans font-semibold py-3.5 hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {currentQ === QUESTIONS.length - 1 ? "Build my Blueprint →" : "Next →"}
+          {currentQ === QUESTIONS.length - 1 ? "Get my Blueprint →" : "Next →"}
         </button>
       </div>
+
+      <button
+        onClick={() => { setCaptureMode("save"); setStage("capture"); }}
+        className="block mx-auto mt-7 font-sans text-[12px] text-ink/45 hover:text-dred underline underline-offset-4"
+      >
+        Save &amp; finish later
+      </button>
     </div>
   );
 }
