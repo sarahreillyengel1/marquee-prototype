@@ -88,19 +88,19 @@ export default function BlueprintFlow() {
   if (stage === "intro") {
     return (
       <div className="max-w-[700px] mx-auto py-6 md:py-10">
-        <span className="block font-poppins text-[11px] font-medium uppercase tracking-[0.16em] text-brand-wine mb-4">
+        <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-dred mb-4">
           Free · {QUESTIONS.length} questions
         </span>
-        <h1 className="font-poppins font-semibold text-5xl md:text-6xl text-brand-ink leading-[1.04] tracking-[-0.01em]">
+        <h1 className="font-lora font-normal text-5xl md:text-6xl text-ink leading-[1.04] tracking-[-0.01em]">
           {INTRO.title}
         </h1>
-        <p className="font-poppins font-medium text-2xl md:text-[26px] text-brand-ink/60 mt-4 leading-[1.3]">
+        <p className="font-lora font-normal text-2xl md:text-[26px] text-ink/60 mt-4 leading-[1.3]">
           {INTRO.subtitle}
         </p>
-        <p className="font-inter text-brand-ink/70 mt-6 leading-relaxed">{INTRO.body}</p>
+        <p className="font-inter text-ink/70 mt-6 leading-relaxed">{INTRO.body}</p>
 
-        <div className="bg-brand-white border border-brand-stone p-6 md:p-7 mt-9">
-          <div className="font-poppins text-[11px] font-medium uppercase tracking-[0.16em] text-brand-ink/45 mb-5">
+        <div className="bg-white border border-hair p-6 md:p-7 mt-9">
+          <div className="font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-ink/45 mb-5">
             {INTRO.eyebrow}
           </div>
           <div className="space-y-4">
@@ -108,8 +108,8 @@ export default function BlueprintFlow() {
               <div key={it.title} className="flex gap-3.5">
                 <div className="text-2xl leading-none shrink-0">{it.icon}</div>
                 <div>
-                  <div className="font-poppins font-semibold text-brand-ink text-[15px]">{it.title}</div>
-                  <div className="font-inter text-sm text-brand-ink/60 leading-relaxed mt-0.5">{it.desc}</div>
+                  <div className="font-sans font-semibold text-ink text-[15px]">{it.title}</div>
+                  <div className="font-inter text-sm text-ink/60 leading-relaxed mt-0.5">{it.desc}</div>
                 </div>
               </div>
             ))}
@@ -118,7 +118,7 @@ export default function BlueprintFlow() {
 
         <button
           onClick={() => { goToQ(currentQ || 0); setStage("questions"); }}
-          className="w-full mt-8 bg-brand-ink text-white font-poppins font-semibold py-4 hover:bg-black transition-colors"
+          className="w-full mt-8 bg-ink text-white font-sans font-semibold py-4 hover:bg-black transition-colors"
         >
           {currentQ > 0 ? "Resume the Blueprint →" : "Start the Blueprint →"}
         </button>
@@ -130,18 +130,18 @@ export default function BlueprintFlow() {
   if (stage === "generating") {
     return (
       <div className="max-w-[640px] mx-auto py-16 text-center">
-        <span className="block font-poppins text-[11px] font-medium uppercase tracking-[0.16em] text-brand-wine mb-4">
+        <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-dred mb-4">
           Building your Blueprint
         </span>
-        <h1 className="font-poppins font-semibold text-4xl md:text-5xl text-brand-ink leading-[1.08]">
+        <h1 className="font-lora font-normal text-4xl md:text-5xl text-ink leading-[1.08]">
           Reading your answers,<br />researching, and writing.
         </h1>
-        <p className="font-inter text-brand-ink/70 mt-6 leading-relaxed">
+        <p className="font-inter text-ink/70 mt-6 leading-relaxed">
           This takes up to a minute — we research the people you admire and tailor every
           recommendation to what you told us. Hang tight.
         </p>
-        <div className="mt-10 h-[3px] w-full bg-brand-stone overflow-hidden">
-          <div className="h-full w-1/3 bg-brand-wine bp-indeterminate" />
+        <div className="mt-10 h-[3px] w-full bg-beige overflow-hidden">
+          <div className="h-full w-1/3 bg-dred bp-indeterminate" />
         </div>
         <style>{`@keyframes bpslide{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}.bp-indeterminate{animation:bpslide 1.3s ease-in-out infinite}`}</style>
       </div>
@@ -152,17 +152,17 @@ export default function BlueprintFlow() {
   if (stage === "error") {
     return (
       <div className="max-w-[640px] mx-auto py-16 text-center">
-        <h1 className="font-poppins font-semibold text-4xl text-brand-ink leading-[1.08]">
+        <h1 className="font-lora font-normal text-4xl text-ink leading-[1.08]">
           That didn&apos;t go through.
         </h1>
-        <p className="font-inter text-brand-ink/70 mt-5 leading-relaxed">
+        <p className="font-inter text-ink/70 mt-5 leading-relaxed">
           The Blueprint couldn&apos;t be generated just now. Your answers are still saved — try again.
         </p>
         <div className="flex gap-4 justify-center mt-8">
-          <button onClick={() => setStage("questions")} className="border border-brand-stone text-brand-ink font-poppins font-semibold px-7 py-3.5 hover:border-brand-ink transition-colors">
+          <button onClick={() => setStage("questions")} className="border border-hair text-ink font-sans font-semibold px-7 py-3.5 hover:border-ink transition-colors">
             Back
           </button>
-          <button onClick={generate} className="bg-brand-ink text-white font-poppins font-semibold px-7 py-3.5 hover:bg-black transition-colors">
+          <button onClick={generate} className="bg-ink text-white font-sans font-semibold px-7 py-3.5 hover:bg-black transition-colors">
             Try again →
           </button>
         </div>
@@ -188,19 +188,19 @@ export default function BlueprintFlow() {
 
   return (
     <div className="max-w-[700px] mx-auto py-6 md:py-10">
-      <div className="flex items-center justify-between font-poppins text-[11px] font-medium uppercase tracking-[0.14em] text-brand-ink/45">
-        <span className="text-brand-wine">{q.cat}</span>
+      <div className="flex items-center justify-between font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-ink/45">
+        <span className="text-dred">{q.cat}</span>
         <span>{currentQ + 1} of {QUESTIONS.length}</span>
       </div>
-      <div className="w-full h-[3px] bg-brand-stone mt-2 mb-9 overflow-hidden">
-        <div className="h-full bg-brand-wine transition-all duration-300" style={{ width: `${progress}%` }} />
+      <div className="w-full h-[3px] bg-beige mt-2 mb-9 overflow-hidden">
+        <div className="h-full bg-dred transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
 
-      <h2 className="font-poppins font-semibold text-[28px] md:text-[34px] text-brand-ink leading-[1.15] tracking-[-0.01em]">
+      <h2 className="font-lora font-normal text-[28px] md:text-[34px] text-ink leading-[1.15] tracking-[-0.01em]">
         {q.prompt}
       </h2>
       {q.maxSelect && (q.type === "multi" || q.type === "profiletype") ? (
-        <p className="font-inter text-sm text-brand-ink/55 mt-2">Choose up to {q.maxSelect}</p>
+        <p className="font-inter text-sm text-ink/55 mt-2">Choose up to {q.maxSelect}</p>
       ) : null}
 
       <div className="mt-7">
@@ -210,14 +210,14 @@ export default function BlueprintFlow() {
       <div className="flex gap-4 mt-10">
         <button
           onClick={() => { if (currentQ > 0) goToQ(currentQ - 1); else setStage("intro"); }}
-          className="flex-1 border border-brand-stone text-brand-ink font-poppins font-semibold py-3.5 hover:border-brand-ink transition-colors"
+          className="flex-1 border border-hair text-ink font-sans font-semibold py-3.5 hover:border-ink transition-colors"
         >
           ← Back
         </button>
         <button
           disabled={!answered}
           onClick={() => { if (currentQ < QUESTIONS.length - 1) goToQ(currentQ + 1); else generate(); }}
-          className="flex-1 bg-brand-ink text-white font-poppins font-semibold py-3.5 hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 bg-ink text-white font-sans font-semibold py-3.5 hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {currentQ === QUESTIONS.length - 1 ? "Build my Blueprint →" : "Next →"}
         </button>
@@ -256,7 +256,7 @@ function Field({
           onChange={(e) => save(q.id, e.target.value)}
           placeholder="Your answer here…"
           rows={4}
-          className="w-full border-2 border-brand-stone bg-white p-4 font-inter text-base text-brand-ink placeholder:text-brand-ink/30 focus:outline-none focus:border-brand-ink resize-y leading-relaxed"
+          className="w-full border-2 border-hair bg-white p-4 font-inter text-base text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink resize-y leading-relaxed"
         />
       );
 
@@ -266,8 +266,8 @@ function Field({
       return (
         <div>
           <div className="flex items-baseline gap-2 mb-4">
-            <span className="font-poppins font-semibold text-4xl text-brand-ink">{set ? val : "—"}</span>
-            <span className="font-inter text-brand-ink/50">{val >= (q.max ?? 40) ? `${q.unit ?? ""}+`.trim() : q.unit}</span>
+            <span className="font-lora font-normal text-4xl text-ink">{set ? val : "—"}</span>
+            <span className="font-inter text-ink/50">{val >= (q.max ?? 40) ? `${q.unit ?? ""}+`.trim() : q.unit}</span>
           </div>
           <input
             type="range"
@@ -278,11 +278,11 @@ function Field({
             onChange={(e) => save(q.id, Number(e.target.value))}
             className="w-full accent-[#670821] h-1.5 cursor-pointer"
           />
-          <div className="flex justify-between font-inter text-xs text-brand-ink/40 mt-2">
+          <div className="flex justify-between font-inter text-xs text-ink/40 mt-2">
             <span>{q.min ?? 0}</span>
             <span>{q.max ?? 40}+</span>
           </div>
-          {!set && <p className="font-inter text-sm text-brand-ink/45 mt-3">Drag to set</p>}
+          {!set && <p className="font-inter text-sm text-ink/45 mt-3">Drag to set</p>}
         </div>
       );
     }
@@ -292,7 +292,7 @@ function Field({
         <select
           value={value || ""}
           onChange={(e) => save(q.id, e.target.value)}
-          className="w-full border-2 border-brand-stone bg-white p-4 font-inter text-base text-brand-ink focus:outline-none focus:border-brand-ink appearance-none cursor-pointer"
+          className="w-full border-2 border-hair bg-white p-4 font-inter text-base text-ink focus:outline-none focus:border-ink appearance-none cursor-pointer"
         >
           <option value="" disabled>Select an industry…</option>
           {(q.options || []).map((o) => (
@@ -362,21 +362,21 @@ function Field({
       return (
         <div className="flex flex-col gap-4">
           {Array.from({ length: slots }).map((_, i) => (
-            <div key={i} className="border-2 border-brand-stone bg-white p-4">
-              <div className="font-poppins text-[11px] font-medium uppercase tracking-[0.14em] text-brand-ink/40 mb-3">
+            <div key={i} className="border-2 border-hair bg-white p-4">
+              <div className="font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-ink/40 mb-3">
                 Person {i + 1}
               </div>
               <input
                 value={arr[i]?.name || ""}
                 onChange={(e) => update(i, "name", e.target.value)}
                 placeholder="Name or @handle"
-                className="w-full border-2 border-brand-stone bg-white p-3 font-inter text-base text-brand-ink placeholder:text-brand-ink/30 focus:outline-none focus:border-brand-ink mb-2"
+                className="w-full border-2 border-hair bg-white p-3 font-inter text-base text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink mb-2"
               />
               <input
                 value={arr[i]?.why || ""}
                 onChange={(e) => update(i, "why", e.target.value)}
                 placeholder="Why they inspire you"
-                className="w-full border-2 border-brand-stone bg-white p-3 font-inter text-base text-brand-ink placeholder:text-brand-ink/30 focus:outline-none focus:border-brand-ink"
+                className="w-full border-2 border-hair bg-white p-3 font-inter text-base text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink"
               />
             </div>
           ))}
@@ -387,15 +387,15 @@ function Field({
     case "matrix": {
       const val = value || {};
       return (
-        <div className="border-2 border-brand-stone">
-          <div className="grid grid-cols-[1fr_64px_64px] items-center bg-brand-white border-b-2 border-brand-stone px-4 py-3 font-poppins text-[11px] font-medium uppercase tracking-[0.1em] text-brand-ink/50">
+        <div className="border-2 border-hair">
+          <div className="grid grid-cols-[1fr_64px_64px] items-center bg-white border-b-2 border-hair px-4 py-3 font-sans text-[11px] font-medium uppercase tracking-[0.1em] text-ink/50">
             <span>{q.matrixHeader}</span>
             <span className="text-center">Today</span>
             <span className="text-center">Future</span>
           </div>
           {(q.matrixRows || []).map((row, i) => (
-            <div key={row} className={`grid grid-cols-[1fr_64px_64px] items-center px-4 py-2.5 ${i % 2 ? "bg-brand-white/50" : ""}`}>
-              <span className="font-inter text-sm text-brand-ink">{row}</span>
+            <div key={row} className={`grid grid-cols-[1fr_64px_64px] items-center px-4 py-2.5 ${i % 2 ? "bg-white/50" : ""}`}>
+              <span className="font-inter text-sm text-ink">{row}</span>
               <MatrixCell active={!!val[`${row}-today`]} mark="✓" onClick={() => toggleMatrix(q.id, row, "today")} />
               <MatrixCell active={!!val[`${row}-future`]} mark="☆" onClick={() => toggleMatrix(q.id, row, "future")} />
             </div>
@@ -425,23 +425,23 @@ function OptionCard({
       disabled={disabled}
       className={[
         "w-full text-left p-4 border-2 bg-white transition-colors flex gap-3",
-        selected ? "border-brand-wine bg-brand-wine/[0.04]" : "border-brand-stone hover:border-brand-ink/40",
-        disabled ? "opacity-35 cursor-not-allowed hover:border-brand-stone" : "",
+        selected ? "border-dred bg-dred/[0.04]" : "border-hair hover:border-ink/40",
+        disabled ? "opacity-35 cursor-not-allowed hover:border-hair" : "",
       ].join(" ")}
     >
       {checkbox && (
         <span
           className={[
             "mt-0.5 shrink-0 w-5 h-5 grid place-items-center text-white text-xs",
-            selected ? "bg-brand-wine" : "border-2 border-brand-stone",
+            selected ? "bg-dred" : "border-2 border-hair",
           ].join(" ")}
         >
           {selected ? "✓" : ""}
         </span>
       )}
       <span className="min-w-0">
-        <span className="block font-poppins font-semibold text-brand-ink leading-snug">{label}</span>
-        {desc && <span className="block font-inter text-sm text-brand-ink/60 leading-relaxed mt-1">{desc}</span>}
+        <span className="block font-sans font-semibold text-ink leading-snug">{label}</span>
+        {desc && <span className="block font-inter text-sm text-ink/60 leading-relaxed mt-1">{desc}</span>}
       </span>
     </button>
   );
@@ -454,7 +454,7 @@ function MatrixCell({ active, mark, onClick }: { active: boolean; mark: string; 
       aria-pressed={active}
       className={[
         "w-10 h-10 mx-auto grid place-items-center text-lg transition-colors",
-        active ? "bg-brand-wine text-white" : "text-brand-ink/25 hover:bg-brand-stone/60",
+        active ? "bg-dred text-white" : "text-ink/25 hover:bg-beige/60",
       ].join(" ")}
     >
       {active ? mark : "○"}
