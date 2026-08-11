@@ -40,20 +40,22 @@ export interface IncomePath {
   the_leap: string;
   time_to_revenue: string;
 }
+// Every tool / resource carries a link. url may be "" — the UI falls back to a
+// search link so nothing is ever un-clickable.
+export interface LinkedItem { name: string; url: string; }
 export interface PlanWeek {
   week: number;
   title: string;
   action: string;
   why: string;
-  tools: string[];
+  tools: LinkedItem[];
   success_metric: string;
 }
-export interface Blocker { name: string; solution: string; quick_win: string; }
-export interface QuickWin { idea: string; time_estimate: string; validation_question: string; }
+export interface Blocker { name: string; solution: string; first_step: string; }
 export interface Dimension { name: string; score: number; label: string; reasoning: string; }
 export interface Playbook { name: string; career_path: string; steal_this: string; researched: boolean; }
 export interface Resources {
-  people: string[]; communities: string[]; courses: string[]; books: string[]; podcasts: string[];
+  people: LinkedItem[]; communities: LinkedItem[]; courses: LinkedItem[]; books: LinkedItem[]; podcasts: LinkedItem[];
 }
 export interface MarqueeMove { feature: string; recommendation: string; }
 export interface BlueprintResult {
@@ -64,7 +66,6 @@ export interface BlueprintResult {
   income_paths: IncomePath[];
   action_plan: PlanWeek[];
   blockers: Blocker[];
-  quick_wins: QuickWin[];
   dimensions: Dimension[];
   playbooks: Playbook[];
   resources: Resources;
@@ -136,12 +137,11 @@ export async function generateBlueprint(answers: Answers): Promise<BlueprintResu
   "portrait": "2-3 sentence narrative portrait grounded in THEIR answers. Specific, no clichés, no 'passionate'/'results-driven'.",
   "superpowers": [{ "name": "short", "evidence": "which answers show this" }],
   "income_paths": [{ "name": "", "pay_range": "realistic ESTIMATE range", "description": "1-2 sentences", "fit_reasoning": "why it fits THEM", "roles": ["3-4"], "where_to_look": ["communities/boards/networks"], "the_leap": "one concrete first step", "time_to_revenue": "e.g. 4-8 weeks" }],
-  "action_plan": [{ "week": 1, "title": "", "action": "specific, not generic", "why": "ties to a blocker/goal", "tools": ["specific tools"], "success_metric": "how they know it worked" }],
-  "blockers": [{ "name": "", "solution": "specific, routes around their constraints", "quick_win": "doable in 48h" }],
-  "quick_wins": [{ "idea": "", "time_estimate": "hours", "validation_question": "" }],
-  "dimensions": [{ "name": "Risk Assessment|Career Clarity|Builder vs Operator|Spotlight|Meaning vs Money|Pace of Change|Network Leverage|Skill Concentration", "score": 0-100, "label": "short", "reasoning": "1 sentence" }],
+  "action_plan": [{ "week": 1, "title": "", "action": "specific, not generic", "why": "ties to a blocker/goal", "tools": [{ "name": "specific tool", "url": "the tool's official URL" }], "success_metric": "how they know it worked" }],
+  "blockers": [{ "name": "", "solution": "specific, routes around their constraints", "first_step": "the first concrete thing to do this week" }],
+  "dimensions": [{ "name": "Risk Appetite|Clarity|Builder vs Operator|Visibility|Meaning vs Money|Readiness to Change|Network Strength|Specialist vs Generalist", "score": 0-100, "label": "short", "reasoning": "1 sentence" }],
   "playbooks": [{ "name": "person", "career_path": "X → Y → Z", "steal_this": "specific move", "researched": true }],
-  "resources": { "people": ["2-3"], "communities": ["2-3"], "courses": ["1-2 SPECIFIC named courses + platform, e.g. 'Write of Passage (Maven)' — never a generic 'take a course'"], "books": ["2-3 title + author"], "podcasts": ["2-3 show + why"] },
+  "resources": { "people": [{ "name": "person", "url": "their site or main profile" }], "communities": [{ "name": "community", "url": "join/site URL" }], "courses": [{ "name": "SPECIFIC named course + platform, e.g. 'Write of Passage (Maven)' — never a generic 'take a course'", "url": "the course page" }], "books": [{ "name": "title — author", "url": "book page" }], "podcasts": [{ "name": "show — why", "url": "listen link" }] },
   "marquee_showcase": [{ "feature": "one of: Work With Me | Book Time | The 4 Actions | Highlights | Media | Experience | Testimonials", "recommendation": "concrete, tied to THEIR answers — e.g. 'Offer a $12K Positioning Sprint under Work With Me' or 'Set your 4 Actions to: Book a coaching call · Read the newsletter · Book a positioning sprint · Listen to <their podcast>'" }]
 }`;
 
@@ -149,13 +149,18 @@ export async function generateBlueprint(answers: Answers): Promise<BlueprintResu
     model: GEN_MODEL,
     max_tokens: 16000,
     system:
-      "You are a sharp, specific career strategist building a personalized Career Blueprint from a professional's 39-question self-assessment. " +
+      "You are a sharp, specific career strategist building a personalized Career Blueprint from a professional's self-assessment. " +
       "Everything you write must be tailored to THEIR actual answers — never generic archetype filler. " +
-      "Rules: Do NOT invent statistics or success rates. Pay ranges are clearly framed as estimates, never as researched fact. " +
+      "VOICE: Write plain, direct, human sentences — a smart, warm expert who says the real thing. NO consultant jargon, NO buzzwords, NO vague abstractions. " +
+      "NEVER use these words/phrases or anything like them: 'foggy', 'wants the mic', 'underleveraged', 'leverage' (as a verb), 'pace of change', 'where you lean', \"what's in your way\", 'legacy', 'lean into', 'unlock', 'double down', 'done when', 'pull', 'clarity of purpose'. " +
+      "Name the specific offer, number, role, or action — never gesture vaguely at it. If a sentence could appear on anyone's blueprint, rewrite it so it could only be on theirs. " +
+      "LINKS: Every tool, course, book, podcast, community, and person you name MUST include a real working URL — the official homepage, the Maven/course page, the book's page (publisher or Amazon), the podcast's listen link, the person's own site. Prefer official sources; if you're unsure of the exact URL, give the best official one you know. " +
+      "CHANNELS: Do NOT default to LinkedIn. Recommend the channels that actually fit THIS person — newsletters/Substack, niche communities, Maven cohorts, podcasts, in-person, wherever their world lives. Only name LinkedIn if it's genuinely the best fit, never as the automatic answer. " +
+      "Do NOT invent statistics or success rates. Pay ranges are clearly framed as estimates, never as researched fact. " +
       "If research on an admired person was unavailable, omit them from playbooks rather than guessing. " +
       "Courses must be SPECIFIC and real (named course + platform), never 'take a marketing course'. " +
       "Marquee is a personal-brand profile platform. In marquee_showcase, give 4-6 concrete recommendations for how THIS person should use Marquee to turn this Blueprint into a profile that converts — map their strengths and income paths to real Marquee features: Work With Me (list their specific offerings + rates), Book Time (let people book a coaching/advisory call directly), The 4 Actions (the top-of-profile CTA row — recommend their exact 4), Highlights (what proof to feature), Media, Experience, Testimonials. Be specific to their answers. " +
-      "Provide 8 dimensions (exactly the names listed), 3-4 income paths, a 4-week plan (weeks 1-4), 2-4 blockers, 4-5 quick wins, 4-6 marquee_showcase moves.",
+      "Provide 8 dimensions (exactly the names listed), 3-4 income paths, a 4-week plan (weeks 1-4), 2-4 blockers, 4-6 marquee_showcase moves.",
     messages: [{
       role: "user",
       content:
