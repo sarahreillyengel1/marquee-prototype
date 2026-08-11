@@ -169,7 +169,7 @@ export default function BlueprintFlow() {
         </h1>
         <p className="font-inter text-ink/70 mt-5 leading-relaxed">
           {forResults
-            ? "Your Blueprint is ready. Add your details and we’ll build it now — and email you the link so it’s always one click away."
+            ? "Your Blueprint is ready. Add your details and we’ll build it right now — it opens on the very next screen (about a minute to generate)."
             : "Enter your details and we’ll save your progress, so you can pick up right where you left off."}
         </p>
         <div className="mt-8 grid grid-cols-2 gap-4">
@@ -200,8 +200,7 @@ export default function BlueprintFlow() {
         <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-dred mb-4">Saved</span>
         <h1 className="font-lora font-normal text-4xl md:text-5xl text-ink leading-[1.08]">You&apos;re saved.</h1>
         <p className="font-inter text-ink/70 mt-5 leading-relaxed">
-          We emailed a link to <b className="text-ink">{lead.email || "your inbox"}</b> so you can finish anytime.
-          Your answers are saved on this device too.
+          You&apos;re on the list, and your answers are saved on this device — pick up right where you left off, anytime.
         </p>
         <button onClick={() => setStage("questions")}
           className="mt-8 bg-ink text-white font-sans font-semibold px-8 py-4 hover:bg-black transition-colors">
