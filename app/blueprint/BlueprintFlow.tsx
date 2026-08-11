@@ -189,9 +189,6 @@ export default function BlueprintFlow() {
           className="block mx-auto mt-5 font-sans text-[12px] text-ink/50 hover:text-dred underline underline-offset-4">
           {forResults ? "← Back to questions" : "← Keep going"}
         </button>
-        <p className="font-inter text-xs text-ink/40 mt-6 text-center">
-          Free. We&apos;ll email your Blueprint and occasional Marquee updates — no spam.
-        </p>
       </div>
     );
   }
