@@ -146,6 +146,9 @@ export interface Profile {
   enabledSections?: string[]
   /** The 4 owner-curated CTAs, shown as a row directly below the hero. */
   actions?: Action[]
+  /** One-time / simplified profile flags. */
+  singlePage?: boolean   // hide sub-page nav + "view all / read full bio" links
+  beta?: boolean         // show a BETA banner + "Sign up for beta" CTA
 
   bioShort: string
   bioLong: string[]

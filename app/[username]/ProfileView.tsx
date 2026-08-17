@@ -182,7 +182,7 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
   );
   return (
     <>
-      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? e.price : "Contact for rate"} onClose={() => setModal(null)} />
+      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? e.price : "Request"} onClose={() => setModal(null)} />
       {back && <button className="ww-back" onClick={back}><Icon name="arrow-left" /> All ways to work</button>}
       <p className="lead">{e.blurb}</p>
       {e.flow === "book" ? (
@@ -267,7 +267,7 @@ function PublicBar() {
   const { goto, profile } = useStore();
   const openWorkWith = useWorkWith();
   const copyLink = useCopyLink();
-  const anchors: [string, PageKey][] = [["Profile", "profile"], ["Experience", "experience"], ["How I Work", "how-i-work"], ["Media", "media"]];
+  const anchors: [string, PageKey][] = profile.singlePage ? [] : [["Profile", "profile"], ["Experience", "experience"], ["How I Work", "how-i-work"], ["Media", "media"]];
   return (
     <header className="pubbar public-only">
       <div className="pubbar-in">
@@ -351,7 +351,7 @@ function Hero() {
     const e = profile.engagements.find((x) => x.key === key);
     const o = profile.openTo.find((x) => x.key === key);
     if (!o) return "";
-    return e && e.rateDisplay === "contact" ? "Contact for rate" : o.note;
+    return e && e.rateDisplay === "contact" ? "Request" : o.note;
   };
   return (
     <section className="card hero">
@@ -364,7 +364,7 @@ function Hero() {
           {!showAllTags && profile.tags.length > 4 && <span className="tag more" style={{ cursor: "pointer" }} onClick={() => setShowAllTags(true)}>+{profile.tags.length - 4} more</span>}
         </div>
         <div className="hero-acts">
-          <button className="btn line" onClick={() => goto("bio")}><Icon name="book" style={{ width: 15, height: 15 }} /> Read full bio</button>
+          {!profile.singlePage && <button className="btn line" onClick={() => goto("bio")}><Icon name="book" style={{ width: 15, height: 15 }} /> Read full bio</button>}
           <button className="btn pur" onClick={openWorkWith}>Work with {first} <Icon name="chevron-down" style={{ width: 15, height: 15 }} /></button>
         </div>
         <div className="socials">
@@ -542,7 +542,7 @@ function ProfilePage() {
         )}
         {on("skills") && has(profile.skills) && (
         <div className="card col">
-          <BlockHead title="Skills" link="View all" onLink={() => goto("how-i-work")} />
+          <BlockHead title="Skills" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
           <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>What I bring to the table</div>
           <Skills />
         </div>
@@ -552,7 +552,7 @@ function ProfilePage() {
 
       {on("media") && s.media && has(profile.media) && (
         <section className="smt">
-          <BlockHead title="Media" link="View all media" onLink={() => goto("media")} />
+          <BlockHead title="Media" link={profile.singlePage ? undefined : "View all media"} onLink={() => goto("media")} />
           <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
             {profile.media.map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
           </div>
@@ -862,6 +862,12 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
         <ModalCtx.Provider value={setModal}>
           <ToastCtx.Provider value={showToast}>
             <div className={"view-" + view}>
+              {profile.beta && (
+                <div style={{ background: "#7C1226", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 600 }}>
+                  <span style={{ letterSpacing: ".16em", fontWeight: 800 }}>BETA</span> · an early Marquee profile ·{" "}
+                  <a href="https://marquee.bio" target="_blank" rel="noopener" style={{ color: "#fff", textDecoration: "underline", fontWeight: 700 }}>Sign up for beta →</a>
+                </div>
+              )}
               {/* Owner-only: preview toggle. Public visitors never see this — their view is fixed by auth. */}
               {initialView === "owner" && (
                 <div className="vswitch">
