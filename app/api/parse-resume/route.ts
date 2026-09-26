@@ -82,36 +82,27 @@ ${resumeText}`;
     const raw = await callClaude(prompt, "haiku");
     const parsed = await parseJSON<ResumeParseResult>(raw);
 
-    // Store in Supabase
-    const supabase = createServerSupabase();
-    await supabase.from("resume_data").upsert(
-      {
-        user_id: userId,
-        raw_text: resumeText,
-        parsed: parsed as unknown as Record<string, unknown>,
-      },
-      { onConflict: "user_id" }
-    );
-
-    // Store work history entries
-    if (parsed.work_history?.length) {
-      // Delete existing
-      await supabase.from("work_history").delete().eq("user_id", userId);
-
-      const workEntries = parsed.work_history.map((w, i) => ({
-        user_id: userId,
-        company: w.company,
-        role_title: w.role_title,
-        start_date: w.start_date,
-        end_date: w.end_date,
-        is_current: w.is_current,
-        sector: w.sector,
-        stage: w.stage,
-        original_bullets: w.bullets,
-        display_order: i,
-      }));
-
-      await supabase.from("work_history").insert(workEntries);
+    // Persist to legacy tables if they exist — NON-FATAL. The rebuilt /build-preview
+    // builder consumes `parsed` directly and stores to builder_drafts, so it must not
+    // depend on the retired ELVISS tables (resume_data / work_history).
+    try {
+      const supabase = createServerSupabase();
+      await supabase.from("resume_data").upsert(
+        { user_id: userId, raw_text: resumeText, parsed: parsed as unknown as Record<string, unknown> },
+        { onConflict: "user_id" }
+      );
+      if (parsed.work_history?.length) {
+        await supabase.from("work_history").delete().eq("user_id", userId);
+        await supabase.from("work_history").insert(
+          parsed.work_history.map((w, i) => ({
+            user_id: userId, company: w.company, role_title: w.role_title,
+            start_date: w.start_date, end_date: w.end_date, is_current: w.is_current,
+            sector: w.sector, stage: w.stage, original_bullets: w.bullets, display_order: i,
+          }))
+        );
+      }
+    } catch (e) {
+      console.warn("[parse-resume] legacy persist skipped:", e);
     }
 
     return NextResponse.json({ parsed });

@@ -132,8 +132,8 @@ const sarah: Profile = {
   ],
   media: [
     { id: 'sm1', type: 'Newsletter', title: 'BeKnown — this week', bg: '#C9DDF7', darkText: true, url: 'https://beknownweekly.substack.com', source: 'Read on Substack' },
-    { id: 'sm2', type: 'Podcast', title: 'Building Marquee in public', bg: '#CBBCF0', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen' },
-    { id: 'sm3', type: 'Press', title: 'The future of professional identity', bg: '#F8C3FF', darkText: true, url: 'https://forbes.com', source: 'Read' },
+    { id: 'sm2', type: 'Podcast', title: 'Building Marquee in public', bg: '#CBD8C0', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen' },
+    { id: 'sm3', type: 'Press', title: 'The future of professional identity', bg: '#F0D3BE', darkText: true, url: 'https://forbes.com', source: 'Read' },
   ],
   portfolio: [],
   education: [{ id: 'se1', short: 'BA', title: 'Boston College', sub: 'Communications' }],
@@ -194,9 +194,9 @@ const rebecca: Profile = {
   superpowers: [],
   skills: [],
   media: [
-    { id: 'rm1', type: 'Podcast', title: 'Superwomen — this week', bg: '#F8C3FF', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen' },
+    { id: 'rm1', type: 'Podcast', title: 'Superwomen — this week', bg: '#F0D3BE', darkText: true, play: true, url: 'https://open.spotify.com', source: 'Listen' },
     { id: 'rm2', type: 'Newsletter', title: 'The FFC newsletter', bg: '#C9DDF7', darkText: true, url: 'https://femalefoundercollective.com', source: 'Read' },
-    { id: 'rm3', type: 'Press', title: 'Forbes: Rebuilding a brand', bg: '#CBBCF0', darkText: true, url: 'https://forbes.com', source: 'Read on Forbes' },
+    { id: 'rm3', type: 'Press', title: 'Forbes: Rebuilding a brand', bg: '#CBD8C0', darkText: true, url: 'https://forbes.com', source: 'Read on Forbes' },
   ],
   portfolio: [],
   education: [{ id: 're1', short: '—', title: 'Self-taught', sub: 'Started her label at 18' }],
@@ -268,7 +268,7 @@ const brendan: Profile = {
   media: [
     { id: 'mm1', type: 'Press', title: 'TYTL.ai launches AI teamwork', bg: '#C9DDF7', darkText: true, url: 'https://techcrunch.com', source: 'TechCrunch' },
     { id: 'mm2', type: 'Portfolio', title: 'The AI Ethics Playbook (book)', bg: '#141210', url: 'https://amazon.com', source: 'Amazon' },
-    { id: 'mm3', type: 'Speaking', title: 'Shipping AI responsibly', bg: '#CBBCF0', darkText: true, play: true, url: 'https://youtube.com', source: 'Watch' },
+    { id: 'mm3', type: 'Speaking', title: 'Shipping AI responsibly', bg: '#CBD8C0', darkText: true, play: true, url: 'https://youtube.com', source: 'Watch' },
   ],
   portfolio: [],
   education: [
@@ -281,29 +281,28 @@ const brendan: Profile = {
 // ── Creator / Coach — Michaela. Podcast + 1:1s + retreats. Media-led, no work history. ──
 const michaela: Profile = {
   name: 'Michaela Reilly',
-  headline: 'Psychedelic Facilitator · Podcast Host · Retreat Leader',
+  headline: 'Psychedelic Facilitator · Educator · Advocate · Podcast Host',
   location: 'Boston, MA',
   available: true,
   availableLabel: 'Booking sessions & retreats',
   verified: true,
-  photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&q=80&auto=format&fit=crop', // PLACEHOLDER — swap for Michaela's real photo
+  photoUrl: '/images/michaela.jpg', // Michaela's real photo (cropped, border removed)
   tagline: 'Discover true freedom.',
   slug: 'michaelareilly',
-  tags: ['Psychedelic Integration', 'Retreats', 'Non-Dual Teaching', 'Breathwork', 'Ceremony', 'Somatics', 'Podcasting'],
+  tags: ['Internal Family Systems', 'Psychedelic Integration', 'Art Therapy', 'Somatics', 'Non Duality', 'Retreats', 'Podcast Host', 'Speaker'],
   types: { primary: 'creator', secondary: 'coach' },
-  enabledSections: ['media', 'skills', 'testimonials', 'education'],
+  enabledSections: ['media', 'testimonials', 'education'],
   actions: [
-    { type: 'Book', label: 'Book a call', destination: 'https://calendly.com/psychedelicmom/consult' },
+    { type: 'Contact', label: 'Get in touch', destination: 'contact' },
     { type: 'Listen', label: 'The Psychedelic Mom', destination: 'https://www.thepsychedelicmom.com/podcast' },
     { type: 'Attend', label: 'Join a retreat', destination: 'https://www.thepsychedelicmom.com/waitlist' },
     { type: 'Explore', label: 'Services', destination: 'https://www.thepsychedelicmom.com/services' },
   ],
   bioShort:
-    'Certified psychedelic facilitator, integration specialist, and host of The Psychedelic Mom podcast. I help people break free from what quietly runs their lives and come home to genuine freedom.',
+    'My own deep journey led me through psychedelics, non-dual pointings, and eventually into supporting others in returning to their true, unconditioned nature.',
   bioLong: [
-    'Psychedelics and earth medicines profoundly changed my life, and sent me on a decade-long mission to destigmatize, educate, advocate, and support others on their own transformations.',
-    'Through my education, apprenticeships, and work with hundreds of people, I created The Luminous Path — a method that synthesizes Eastern philosophy, Western depth psychology, ancient and modern healing practices, psychedelics and earth medicines, and the creative arts.',
-    'From veterans and world leaders to spiritual seekers, families, and corporations, I have supported transformation across every sector, globally.',
+    'I work with individuals, groups, and organizations as a psychedelic facilitator, retreat leader, speaker, and advocate. I hold space for both psychedelic retreats and creative art retreats, using a blend of ceremonial work, parts work, somatic inquiry, non-dual pointings, and art as a path to awakening.',
+    'I\'m also the host of the Psychedelic Mom Podcast, where I explore the journey of deconditioning and discovering uncaused peace.',
   ],
   bookedFor: ['Integration sessions', 'Retreats', 'Speaking', 'Consulting'],
   highlights: [
@@ -313,8 +312,8 @@ const michaela: Profile = {
   ],
   rating: { stars: 5, count: 100, label: 'Top 3% podcast globally' },
   testimonial: {
-    quote: 'PLACEHOLDER — real testimonial to add. Michaela holds space like no one else.',
-    who: 'Retreat guest',
+    quote: 'Through my work facilitating healing with ancient medicines, I have witnessed what was once thought to be unbeatable begin to transform—in Google executives seeking clarity, peace negotiators carrying the weight of conflict, Buddhist monks deepening their practice, and communities left behind. I believe we are in a global mental health crisis that collaboration, personalized support, and earth medicines can heal.',
+    who: 'Michaela Reilly',
   },
   socials: [
     { kind: 'instagram', url: 'https://www.instagram.com/thepsychedelicmom', visible: true },
@@ -333,6 +332,7 @@ const michaela: Profile = {
   ],
   singlePage: true,
   beta: true,
+  inquiryEmail: 'michaelacarlin@thepsychedelicmom.com',
   stats: [],
   activeProjects: [],
   roles: [],
@@ -341,31 +341,31 @@ const michaela: Profile = {
   leadershipBelief: '',
   values: [],
   superpowers: [],
-  skills: [
-    { name: 'Psychedelic Integration', score: 34 },
-    { name: 'Breathwork', score: 26 },
-    { name: 'Somatic Facilitation', score: 24 },
-    { name: 'Group Facilitation', score: 22 },
-    { name: 'Trauma-Informed Care', score: 20 },
-    { name: 'Ceremony Design', score: 16 },
-    { name: 'Community Building', score: 15 },
-  ],
+  skills: [],
   media: [
-    { id: 's1', type: 'Podcast', title: 'The Psychedelic Mom — latest episodes', bg: '#CBBCF0', image: 'https://picsum.photos/seed/psymom1/640/440', darkText: true, play: true, url: 'https://www.thepsychedelicmom.com/podcast', source: 'Listen' },
-    { id: 's2', type: 'Podcast', title: 'A Traditional Mom Tries Non-Traditional Therapies', bg: '#C9DDF7', image: 'https://picsum.photos/seed/psymom2/640/440', darkText: true, play: true, url: 'https://podcasts.apple.com/us/podcast/a-traditional-mom-tries-non-traditional-therapies/id1565522799?i=1000638222404', source: 'Apple Podcasts' },
-    { id: 's3', type: 'Speaking', title: 'On family awakening & healing — The Revelation Project', bg: '#F8C3FF', image: 'https://picsum.photos/seed/psymom3/640/440', darkText: true, play: true, url: 'https://revelationproject.fireside.fm/175', source: 'Listen' },
-    { id: 's4', type: 'Project', title: 'YouTube — talks, practices & teachings', bg: '#141210', url: 'https://www.youtube.com/channel/UCOi4nhUhdZRyAN60V-Gh_OA', source: 'Watch on YouTube' },
+    { id: 's1', type: 'Podcast', title: 'The Psychedelic Mom — latest episodes', bg: '#CBD8C0', image: '/images/mich-media1.jpg', darkText: true, play: true, url: 'https://www.thepsychedelicmom.com/podcast', source: 'Listen' },
+    { id: 's2', type: 'Podcast', title: 'A Traditional Mom Tries Non-Traditional Therapies', bg: '#C9DDF7', image: '/images/mich-media2.jpg', darkText: true, play: true, url: 'https://podcasts.apple.com/us/podcast/a-traditional-mom-tries-non-traditional-therapies/id1565522799?i=1000638222404', source: 'Apple Podcasts' },
+    { id: 's3', type: 'Speaking', title: 'On family awakening & healing — The Revelation Project', bg: '#F0D3BE', image: '/images/mich-media3.jpg', darkText: true, play: true, url: 'https://revelationproject.fireside.fm/175', source: 'Listen' },
+    { id: 's4', type: 'Video', title: 'YouTube — talks, practices & teachings', bg: '#B9CBB2', darkText: true, url: 'https://www.youtube.com/channel/UCOi4nhUhdZRyAN60V-Gh_OA', source: 'Watch on YouTube' },
+    { id: 's5', type: 'Podcast', title: 'Psychedelics: All We’ve Uncovered & Where We’re Headed', bg: '#D9E3EC', darkText: true, play: true, url: 'https://www.thepsychedelicmom.com/podcast/episode119', source: 'Episode 119' },
   ],
   portfolio: [],
   education: [
-    { id: 'me1', short: '✓', title: 'Certified Psychedelic Facilitator & Integration Specialist', sub: 'Apprenticeships + direct practice', verified: true },
-    { id: 'me2', short: 'LP', title: 'Creator — The Luminous Path Method', sub: 'Eastern philosophy · depth psychology · earth medicines' },
-    { id: 'me3', short: 'N', title: 'Mystic Summit · Necker Island', sub: 'One of 20 invited psychedelic leaders' },
+    { id: 'c1', short: 'PF', title: 'Psychedelic Facilitation', sub: 'Synthesis Institute' },
+    { id: 'c2', short: 'MP', title: 'Medicine Painting Facilitator', sub: 'Shiloh Sophia' },
+    { id: 'c3', short: 'IS', title: 'Psychedelic Integration Specialist', sub: 'Being True to You' },
+    { id: 'c4', short: 'SD', title: 'Certificate in Spiritual Direction', sub: 'Still Harbor' },
+    { id: 'c5', short: 'RK', title: 'Reiki Practitioner', sub: '' },
+    { id: 'c6', short: 'BW', title: 'Breathwork Facilitator', sub: '' },
+    { id: 'c7', short: 'TM', title: 'Transcendental Meditation Teacher', sub: '' },
+    { id: 'me4', short: 'BA', title: 'Boston College', sub: 'BA, Communications' },
   ],
   sections: { impact: false, superpowers: false, media: true, education: true, activeProjects: false, portfolio: false },
 }
 
 // Slug → demo profile. app/[username]/page.tsx serves these directly (no DB fetch).
+// NOTE: the `sarah` fixture is intentionally NOT registered — marquee.bio/sarah must never
+// serve a stock-photo stand-in for the real Sarah (her live profile is /sarahreillyengel).
 export const DEMO_PROFILES: Record<string, Profile> = {
-  katie, sarah, rebecca, brendan, michaela, michaelareilly: michaela,
+  katie, rebecca, brendan, michaela, michaelareilly: michaela,
 }

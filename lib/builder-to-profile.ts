@@ -1,0 +1,198 @@
+// ─────────────────────────────────────────────────────────────
+// Fresh mapper: the /build-preview builder's snapshot → the Profile view-model
+// that ProfileView renders. Replaces the retired ELVISS profile-mapper for
+// profiles created in the new builder. Pure function; no DB.
+// ─────────────────────────────────────────────────────────────
+import type {
+  Profile, Role, MediaItem, Skill, Value, Superpower, LeadershipTrait,
+  Credential, Engagement, OpenToItem, Social, EngagementKey, StoreItem, ReachStat,
+} from "./profile-types";
+
+// The shape the builder autosaves (matches snapshot() in app/build-preview/page.tsx).
+export interface BuilderSnapshot {
+  types: string[]; name: string; headline: string; bio: string; photoUrl?: string; city: string; loc: string;
+  openNow: boolean; dob: string;
+  socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string };
+  focus: string;
+  entries: { kind: "role" | "project"; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean }[];
+  arch: string[]; mbti: string; enn: string; disc: string;
+  ledTeam: boolean; yearsLed: string; largestTeam: string; orgs: string; philosophy: string;
+  ftEnabled: boolean; ftRoles: string;
+  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; duration: string; length: string; cadence: string; keywords?: string }[];
+  impacts: { headline: string; context: string; story: string }[];
+  skills: { name: string; level: string; top: boolean }[];
+  industries: string[]; learning: string[];
+  vals: string[]; vFeatured: string[];
+  media: { kind: string; title: string; outlet: string; url: string; featured: boolean; img?: string }[];
+  testis: { quote: string; author: string; role: string; relationship: string; featured: boolean }[];
+  edu: { school: string; degree: string; field: string; year: string }[];
+  certs: string[];
+  products: { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string }[];
+  longBio: string;
+  powers: { statement: string; proof: string; keywords: string[] }[];
+  hidden?: string[];
+  reach?: { key: string; handle: string; followers: string; engagement: string; url: string }[];
+  audAge?: string; audGender?: string; audGeo?: string;
+  calLink?: string;
+}
+
+const LEVEL_SCORE: Record<string, number> = { Foundational: 25, Proficient: 55, Advanced: 80, Expert: 100 };
+const MEDIA_TYPE: Record<string, MediaItem["type"]> = {
+  Press: "Press", Talk: "Speaking", Podcast: "Podcast", Writing: "Newsletter",
+  Portfolio: "Portfolio", Video: "Video", Deck: "Project",
+};
+const MEDIA_BG: Record<string, string> = {
+  Press: "#E6E2D0", Speaking: "#C9DDF7", Podcast: "#CBD8C0", Newsletter: "#F0D3BE",
+  Portfolio: "#B9CBB2", Video: "#141210", Project: "#D9E3EC",
+};
+const OFFER_ENGAGEMENT: Record<string, EngagementKey> = {
+  office: "advisory", coaching: "advisory", advisory: "advisory",
+  fractional: "fractional", project: "project", speaking: "speaking", content: "project",
+};
+const OFFER_ICON: Record<string, string> = {
+  office: "compass", coaching: "compass", advisory: "users",
+  fractional: "briefcase", project: "file", speaking: "play-circle", content: "file",
+};
+const FLOW: Record<string, Engagement["flow"]> = {
+  book: "book", proposal: "proposal", availability: "availability", approval: "availability",
+  request: "message", message: "message",
+};
+const initials = (s: string) => (s.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("") || "•").toUpperCase();
+
+export function builderToProfile(s: BuilderSnapshot, username: string): Profile {
+  const socials: Social[] = ([
+    ["linkedin", s.socials?.linkedin], ["instagram", s.socials?.instagram], ["x", s.socials?.x],
+    ["tiktok", s.socials?.tiktok], ["website", s.socials?.website],
+  ] as const)
+    .filter(([, url]) => url && url.trim())
+    .map(([kind, url]) => ({ kind, url: url as string, visible: true }));
+
+  const roles: Role[] = (s.entries || []).map((e, i) => ({
+    id: `r${i}`, company: e.primary || "", logoLetter: initials(e.primary || "?"),
+    role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "",
+    metrics: e.result ? [{ value: e.result, label: "" }] : [],
+  }));
+
+  const skills: Skill[] = (s.skills || []).map((k) => ({ name: k.name, score: LEVEL_SCORE[k.level] ?? 55, featured: !!k.top }));
+
+  const values: Value[] = (s.vFeatured?.length ? s.vFeatured : s.vals || [])
+    .map((v) => ({ name: v, blurb: "", color: "#EAF1E6", icon: "check" }));
+
+  const superpowers: Superpower[] = (s.powers || [])
+    .filter((p) => p.statement?.trim())
+    .map((p) => ({ title: p.statement, blurb: p.proof || "", icon: "bolt" }));
+
+  const leadership: LeadershipTrait[] = (s.arch || []).map((a) => ({ title: a, blurb: "", icon: "compass" }));
+
+  const media: MediaItem[] = (s.media || []).filter((m) => m.title?.trim()).map((m, i) => {
+    const type = MEDIA_TYPE[m.kind] ?? "Press";
+    return { id: `m${i}`, type, title: m.title, bg: MEDIA_BG[type] ?? "#E6E2D0", image: m.img || undefined, darkText: type !== "Video", url: m.url || undefined, source: m.outlet || undefined };
+  });
+
+  const education: Credential[] = [
+    ...(s.edu || []).filter((e) => e.school?.trim()).map((e, i) => ({
+      id: `e${i}`, short: initials(e.school), title: e.school,
+      sub: [e.degree, e.field, e.year].filter(Boolean).join(" · "),
+    })),
+    ...(s.certs || []).filter((c) => c.trim()).map((c, i) => ({ id: `c${i}`, short: "✓", title: c, sub: "Certification" })),
+  ];
+
+  const impact = (s.impacts || []).filter((im) => im.headline?.trim()).map((im) => ({
+    value: "", label: im.headline, sub: [im.context, im.story].filter(Boolean).join(" — "),
+  }));
+
+  const addedOffers = (s.offers || []).filter((o) => o.added);
+  // "book" only works with a real scheduling link; otherwise fall back to the request form
+  // (never the placeholder time-slot UI).
+  const cal = (s.calLink || "").trim();
+  const flowFor = (booking: string): Engagement["flow"] => { const f = FLOW[booking] ?? "message"; return f === "book" && !cal ? "message" : f; };
+  const engagements: Engagement[] = addedOffers.map((o) => ({
+    key: OFFER_ENGAGEMENT[o.key] ?? "project",
+    icon: OFFER_ICON[o.key] ?? "file",
+    title: o.title,
+    price: o.showRate && o.rate ? `$${o.rate} ${o.unit}`.trim() : "Request",
+    rateDisplay: o.showRate && o.rate ? "show" : "contact",
+    blurb: o.desc || o.blurb || "",
+    visible: true,
+    flow: flowFor(o.booking),
+  }));
+  const openTo: OpenToItem[] = addedOffers.map((o) => ({
+    key: OFFER_ENGAGEMENT[o.key] ?? "project", label: o.title,
+    note: [o.duration || o.length || o.cadence].filter(Boolean).join(""), visible: true,
+  }));
+
+  const featuredTesti = (s.testis || []).find((t) => t.featured && t.quote?.trim()) || (s.testis || []).find((t) => t.quote?.trim());
+
+  const bioLong = (s.longBio || "").split("\n").map((p) => p.trim()).filter(Boolean);
+
+  const hide = new Set(s.hidden || []);
+
+  const store: StoreItem[] = (s.products || []).filter((p) => p.title?.trim()).map((p, i) => ({
+    id: `pr${i}`, kind: p.kind || "Product", title: p.title,
+    blurb: p.blurb || undefined, price: p.price || undefined, url: p.url || undefined,
+  }));
+
+  const reach: ReachStat[] = (s.reach || []).filter((p) => (p.followers || "").trim() || (p.handle || "").trim()).map((p) => ({
+    platform: p.key, handle: p.handle || undefined, followers: p.followers || "",
+    engagement: p.engagement || undefined, url: p.url || undefined,
+  }));
+  const audience = (s.audAge || s.audGender || s.audGeo)
+    ? { age: s.audAge || undefined, gender: s.audGender || undefined, geo: s.audGeo || undefined }
+    : undefined;
+
+  const searchTags = Array.from(new Set([
+    ...addedOffers.flatMap((o) => (o.keywords || "").split(",").map((t) => t.trim())),
+    ...(s.industries || []),
+    ...(s.skills || []).map((k) => k.name),
+    ...(s.vals || []),
+  ].filter(Boolean)));
+
+  return {
+    name: s.name || "",
+    headline: s.headline || "",
+    location: [s.city, s.loc].filter(Boolean).join(" · "),
+    available: !!s.openNow,
+    availableLabel: s.openNow ? "Open to opportunities" : "",
+    verified: false,
+    photoUrl: s.photoUrl || "",
+    tagline: s.focus || "",
+    slug: username,
+    tags: (s.skills || []).filter((k) => k.top).map((k) => k.name).slice(0, 6),
+    searchTags,
+    types: undefined,
+    enabledSections: undefined,
+    actions: [],
+    bioShort: s.bio || "",
+    bioLong,
+    bookedFor: [],
+    highlights: [],
+    testimonial: !hide.has("testimonials") && featuredTesti ? { quote: featuredTesti.quote, who: [featuredTesti.author, featuredTesti.role].filter(Boolean).join(", ") } : undefined,
+    socials,
+    openTo: hide.has("workwith") ? [] : openTo,
+    engagements: hide.has("workwith") ? [] : engagements,
+    stats: [],
+    activeProjects: [],
+    roles: hide.has("experience") ? [] : roles,
+    impact: hide.has("impact") ? [] : impact,
+    leadership: hide.has("leadership") ? [] : leadership,
+    leadershipBelief: s.philosophy || "",
+    values: hide.has("values") ? [] : values,
+    superpowers: hide.has("superpowers") ? [] : superpowers,
+    skills: hide.has("skills") ? [] : skills,
+    media: hide.has("media") ? [] : media,
+    portfolio: [],
+    store: hide.has("store") ? [] : store,
+    reach: hide.has("reach") ? [] : reach,
+    audience: hide.has("reach") ? undefined : audience,
+    calLink: cal || undefined,
+    education: hide.has("education") ? [] : education,
+    sections: {
+      impact: !hide.has("impact") && impact.length > 0,
+      superpowers: !hide.has("superpowers") && superpowers.length > 0,
+      media: !hide.has("media") && media.length > 0,
+      education: !hide.has("education") && education.length > 0,
+      activeProjects: false,
+      portfolio: false,
+    },
+  };
+}

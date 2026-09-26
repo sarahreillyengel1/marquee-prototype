@@ -78,7 +78,7 @@ export default function SignupPage() {
         return;
       }
 
-      router.push("/onboard/resume");
+      router.push("/build-preview");
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -166,7 +166,7 @@ export default function SignupPage() {
                 : "text-ink/70 hover:text-ink"
             }`}
           >
-            $99/year
+            $29/mo · $299/yr
           </button>
         </div>
 
@@ -204,7 +204,7 @@ export default function SignupPage() {
           <p className="text-ink/60 text-sm mb-6">
             {mode === "beta"
               ? "Enter your beta invite code to get started."
-              : "$99/year. Cancel anytime."}
+              : "$29/month, or $299/year paid upfront. Cancel anytime."}
           </p>
 
           <form

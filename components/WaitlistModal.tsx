@@ -84,7 +84,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
               <p className="text-sm text-brand-ink/70 leading-relaxed">
                 Our limited beta is opening soon. We&apos;re inviting a small group of professionals to help shape Marquee from the beginning. Apply below to request an invitation.
               </p>
-              <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-dred mt-3">Beta officially starts 9/1</p>
+              <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-dred mt-3">Beta officially starts 10/1</p>
             </div>
 
             <form onSubmit={submit} className="space-y-4">

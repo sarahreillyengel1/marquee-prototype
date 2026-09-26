@@ -29,22 +29,31 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes - redirect to signup if not authenticated
-  const protectedPaths = ["/onboard", "/dashboard"];
+  // Protected routes - send unauthenticated users to LOGIN (existing users),
+  // preserving where they were headed so login can return them there.
+  const protectedPaths = ["/onboard", "/dashboard", "/build-preview"];
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/signup";
+    url.pathname = "/login";
+    url.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users away from signup
+  // Retire the old ELVISS onboarding — send logged-in users to the new builder.
+  if (user && request.nextUrl.pathname.startsWith("/onboard")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/build-preview";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect logged-in users away from signup, into the builder.
   if (user && request.nextUrl.pathname === "/signup") {
     const url = request.nextUrl.clone();
-    url.pathname = "/onboard/resume";
+    url.pathname = "/build-preview";
     return NextResponse.redirect(url);
   }
 
@@ -52,5 +61,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/onboard/:path*", "/dashboard/:path*", "/signup"],
+  matcher: ["/onboard/:path*", "/dashboard/:path*", "/build-preview/:path*", "/signup"],
 };

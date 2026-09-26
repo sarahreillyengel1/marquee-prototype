@@ -30,16 +30,10 @@ export default function LoginPage() {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from("generated_profiles")
-      .select("username")
-      .single();
-
-    if (profile?.username) {
-      router.push(`/${profile.username}`);
-    } else {
-      router.push("/onboard/resume");
-    }
+    // Return the user to where they were headed (e.g. /build-preview), else the builder.
+    const next = new URLSearchParams(window.location.search).get("next");
+    const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/build-preview";
+    router.push(dest);
   }
 
   return (

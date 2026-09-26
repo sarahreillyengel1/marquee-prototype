@@ -345,16 +345,16 @@ export default function DashboardPage() {
         {/* Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href={`/${username}`}
+            href="/build-preview"
             className="bg-white rounded-2xl p-5 border border-brand-stone hover:border-brand-ink transition-colors text-center font-medium text-brand-ink"
           >
             Edit your profile →
           </Link>
           <Link
-            href="/onboard/elviis"
+            href={`/${username}`}
             className="bg-white rounded-2xl p-5 border border-brand-stone hover:border-brand-ink transition-colors text-center font-medium text-brand-ink/70 hover:text-brand-ink"
           >
-            Retake questionnaire
+            View your live profile →
           </Link>
         </div>
       </main>

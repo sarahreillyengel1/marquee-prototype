@@ -11,14 +11,14 @@
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const FROM = process.env.WAITLIST_FROM_EMAIL || "Marquee <hello@marquee.bio>";
 
-async function sendEmail(to: string, subject: string, html: string) {
+async function sendEmail(to: string, subject: string, html: string, replyTo?: string) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { skipped: true as const }; // not configured yet
   try {
     const res = await fetch(RESEND_ENDPOINT, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to, subject, html }),
+      body: JSON.stringify({ from: FROM, to, subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
     if (!res.ok) {
       console.error("Resend send failed:", res.status, await res.text());
@@ -68,4 +68,36 @@ export async function sendWaitlistNotification(applicant: {
     <p>Review in Supabase → waitlist (status = pending).</p>
   </div>`;
   return sendEmail(to, `New Marquee application: ${fullName}`, html);
+}
+
+// "Work with me" inquiry from a public profile → emailed to the profile owner.
+// reply_to is set to the sender so the owner can just hit reply.
+export async function sendContactNotification(to: string, opts: {
+  profileName: string;
+  username: string;
+  senderName: string;
+  senderEmail: string;
+  intent?: string | null;
+  message: string;
+}) {
+  const { profileName, username, senderName, senderEmail, intent, message } = opts;
+  const esc = (s: string) => s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = `
+  <div style="margin:0;padding:0;background:#F7F6F2;">
+    <div style="max-width:520px;margin:0 auto;padding:40px 28px;font-family:Helvetica,Arial,sans-serif;color:#111111;">
+      <div style="font-size:15px;font-weight:600;letter-spacing:0.25em;color:#111111;margin-bottom:28px;">MARQUEE</div>
+      <p style="font-size:16px;line-height:1.5;margin:0 0 16px;">Hi ${esc(profileName.split(" ")[0] || profileName)},</p>
+      <p style="font-size:16px;line-height:1.5;margin:0 0 20px;"><strong>${esc(senderName)}</strong> sent an inquiry through your Marquee profile${intent ? ` about <strong>${esc(intent)}</strong>` : ""}.</p>
+      <div style="background:#FFFFFF;border:1px solid #E9E6DF;padding:18px 20px;margin:0 0 20px;">
+        <p style="font-size:14px;line-height:1.6;margin:0 0 10px;color:#6E6A62;">From</p>
+        <p style="font-size:15px;line-height:1.5;margin:0 0 14px;">${esc(senderName)} · <a href="mailto:${esc(senderEmail)}" style="color:#111111;">${esc(senderEmail)}</a></p>
+        <p style="font-size:14px;line-height:1.6;margin:0 0 10px;color:#6E6A62;">Message</p>
+        <p style="font-size:15px;line-height:1.6;margin:0;white-space:pre-wrap;">${esc(message)}</p>
+      </div>
+      <p style="font-size:15px;line-height:1.5;margin:0 0 24px;">Just reply to this email to respond to ${esc(senderName)} directly.</p>
+      <hr style="border:none;border-top:1px solid #E9E6DF;margin:0 0 16px;" />
+      <p style="font-size:12px;line-height:1.5;color:#7d7a74;margin:0;">Sent from your profile at <a href="https://marquee.bio/${esc(username)}" style="color:#7d7a74;">marquee.bio/${esc(username)}</a></p>
+    </div>
+  </div>`;
+  return sendEmail(to, `New inquiry from ${senderName} · your Marquee profile`, html, senderEmail);
 }

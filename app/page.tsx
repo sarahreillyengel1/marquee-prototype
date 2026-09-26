@@ -113,7 +113,7 @@ export default function HomePage() {
               <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
               <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
-            <p className="text-[13px] font-semibold text-dred mt-4">Beta opens September 1 — request early access to claim your spot.</p>
+            <p className="text-[13px] font-semibold text-dred mt-4">Beta opens October 1 — request early access to claim your spot.</p>
           </div>
           <div className="hidden md:flex justify-center">
             <PhonePreview />
@@ -408,24 +408,10 @@ function PhonePreview() {
       {src ? (
         <iframe src={src} title="Marquee profile preview" loading="lazy" tabIndex={-1} className="w-full h-full border-0 block" />
       ) : (
-        <div className="h-full overflow-y-auto overscroll-contain bg-white px-5 pt-12 pb-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="w-[60px] h-[60px] rounded-full bg-beige border border-beigeLine mb-3" />
-          <div className="font-lora text-[24px] leading-[1.05]">Lauren Ellis</div>
-          <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-dred mt-2">Marketing &amp; Operations Leader</div>
-          <div className="text-[12px] leading-[1.5] mt-2 text-ink/80">I help companies build what&apos;s next — from positioning to growth systems.</div>
-          <div className="flex flex-wrap gap-[5px] mt-3">
-            {["Go-to-Market", "Brand", "Growth"].map((t) => <span key={t} className="text-[10.5px] border border-beigeLine px-2 py-[3px]">{t}</span>)}
-          </div>
-          <button className="w-full mt-3 bg-red text-white text-[12.5px] font-semibold py-[9px] rounded-full">Work with Lauren</button>
-          <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-2">Featured</div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="aspect-video bg-blue" /><div className="aspect-video bg-purple" />
-            <div className="aspect-video bg-beige" /><div className="aspect-video bg-blue/60" />
-          </div>
-          <div className="text-[9.5px] font-bold tracking-[0.1em] uppercase text-dred mt-5 mb-1">Open to</div>
-          {[["Advisory", "$300 / hr"], ["Fractional", "$8k / mo"], ["Speaking", "From $5k"]].map(([a, b]) => (
-            <div key={a} className="flex justify-between items-center border-b border-beigeLine py-[9px] text-[12px]"><span className="font-medium">{a}</span><span className="text-dred">{b}</span></div>
-          ))}
+        <div className="h-full flex flex-col items-center justify-center bg-beige px-7 text-center">
+          <div className="font-lora text-[27px] leading-[1.12] text-ink">Claim your<br />Marquee.</div>
+          <div className="mt-5 w-full rounded-full bg-white border border-beigeLine px-4 py-[10px] text-[12.5px] text-gray">marquee.bio/<span className="font-bold text-ink">yourname</span></div>
+          <button className="mt-3 w-full rounded-full bg-dred text-white text-[13px] font-semibold py-[11px]">Claim yours</button>
         </div>
       )}
     </div>

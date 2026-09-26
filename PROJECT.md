@@ -14,7 +14,7 @@ Personal brand platform for professionals — a dynamic, AI-generated profile th
 | **Live URL** | https://marquee.bio |
 | **Demo profile** | https://marquee.bio/demo |
 | **Stage** | Beta (invite-only) |
-| **Pricing** | $46/year |
+| **Pricing** | **$29/mo, or $299/yr paid upfront** (confirmed by Sarah 2026-09-26) |
 
 ## Tech stack
 
@@ -45,9 +45,20 @@ npm run dev   # runs on port 3001 (3000 is reserved for Club Lucky)
 app/
   page.tsx                       — landing
   signup/  login/                — auth
-  onboard/                       — resume upload → basics → ELVISS questionnaire → AI generation
-  [username]/                    — public profile (the main thing)
-  dashboard/                     — owner dashboard + contact inbox
+  build-preview/                 — ★ THE PROFILE BUILDER (CURRENT + FUNCTIONAL). Step-by-step: Resume →
+                                   About You · Experience · Leadership · Impact · Skills · Superpowers ·
+                                   Values · Testimonials · Education · Work With Me · Media · Store · Long Bio.
+                                   Auth-gated · autosaves to `builder_drafts` (jsonb) · Resume step calls
+                                   /api/parse-resume · Publish maps snapshot → `published_profiles` (jsonb)
+                                   via lib/builder-to-profile.ts → renders at /username through ProfileView.
+                                   Brand: Canela + DM Sans + sage. This REPLACED /onboard.
+  onboard/                       — RETIRED old ELVISS flow. middleware.ts redirects logged-in users to
+                                   /build-preview. Do not use.
+  [username]/                    — public profile renderer: ProfileView.tsx + profile-design.css
+                                   (scoped .mq-root). Serves hardcoded lib/demo-profiles.ts
+                                   (OVERRIDE the DB) + real Supabase generated_profiles.
+  dashboard/                     — owner dashboard + contact inbox (NOTE: still links to old
+                                   /onboard/elviis "Retake questionnaire" — stale, needs updating)
   api/                           — server routes (parse-resume, generate-profile, etc.)
 components/
   ContactModal.tsx               — "Get in touch" form

@@ -3,16 +3,23 @@
 // PREVIEW of the rebuilt questionnaire — public route (no auth) so Sarah can eyeball it live.
 // Step-by-step build. Once approved, moves into /onboard with real state + persistence, reusing existing editors.
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Logo } from "@/components/Logo";
+import { createBrowserSupabase } from "@/lib/supabase";
+import type { ResumeParseResult } from "@/types";
+import { builderToProfile } from "@/lib/builder-to-profile";
+import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-library";
 
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["Work With Me", "Media", "Store", "Long Bio"] },
+  { label: "Build your brand", steps: ["Work With Me", "Media", "Reach", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Work With Me", "Media", "Store", "Long Bio"]);
+const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Work With Me", "Media", "Reach", "Store", "Long Bio"]);
+// Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
+const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Store: "store" };
+const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack", "X", "Podcast", "Facebook"];
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
 // same left-nav sections (profile first, then brand). The real editors stay in place; the
 // guide just advances the active section + narrates. Skippable at any point.
@@ -38,7 +45,7 @@ const MEDIA_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video"
 const MEDIA_FEATURED = 4;
 // Branded fallback colors when a media item has no cover image (never gray).
 const MEDIA_COLORS: Record<string, string> = {
-  Press: "#E6E2D0", Talk: "#C0DDFB", Podcast: "#C7B5EE", Writing: "#D6E27B",
+  Press: "#E6E2D0", Talk: "#C0DDFB", Podcast: "#A9C89A", Writing: "#D6E27B",
   Portfolio: "#B9E3A5", Video: "#FF5436", Deck: "#DBCDC4",
 };
 const VALUES = ["Integrity", "Directness", "Curiosity", "Craft", "Ownership", "Empathy", "Ambition", "Candor", "Autonomy", "Impact", "Growth", "Transparency", "Resilience", "Kindness", "Rigor", "Creativity", "Collaboration", "Humility", "Optimism", "Pragmatism", "Trust", "Courage", "Discipline", "Generosity", "Focus", "Adaptability", "Accountability", "Vision", "Inclusion", "Balance", "Independence", "Boldness", "Patience", "Gratitude", "Fairness", "Simplicity", "Authenticity", "Service"];
@@ -66,7 +73,8 @@ const SKILL_META: Record<string, { cat: string; type: "hard" | "soft" }> = {
   "SQL": { cat: "Technical", type: "hard" },
   "Financial Modeling": { cat: "Finance", type: "hard" },
 };
-const catOf = (n: string) => SKILL_META[n]?.cat ?? "Other";
+const LIB_CAT: Record<string, string> = Object.fromEntries(SKILLS_LIBRARY.map((s) => [s.name.toLowerCase(), s.category]));
+const catOf = (n: string) => LIB_CAT[n.trim().toLowerCase()] ?? "Other";
 const typeOf = (n: string): "hard" | "soft" => SKILL_META[n]?.type ?? "hard";
 
 // Lightweight keyword suggester for the Superpowers step (preview only — the real product
@@ -92,29 +100,60 @@ type Offer = { key: string; title: string; blurb: string; added: boolean; kind: 
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
 const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Public"];
 const BOOKING_OPTS: Record<string, { v: string; label: string }[]> = {
-  office: [{ v: "book", label: "Book instantly" }, { v: "approval", label: "Request Approval" }],
-  coaching: [{ v: "book", label: "Book instantly" }, { v: "message", label: "Send message" }, { v: "request", label: "Request" }],
-  fractional: [{ v: "message", label: "Send message" }, { v: "proposal", label: "Request a proposal" }],
-  project: [{ v: "message", label: "Send message" }, { v: "proposal", label: "Request a proposal" }],
-  speaking: [{ v: "message", label: "Send message" }, { v: "proposal", label: "Request a proposal" }],
-  advisory: [{ v: "message", label: "Send message" }, { v: "request", label: "Request" }],
-  content: [{ v: "message", label: "Send message" }, { v: "request", label: "Request" }],
+  office: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }],
+  coaching: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }],
+  fractional: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
+  project: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
+  speaking: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
+  advisory: [{ v: "request", label: "Send request" }],
+  content: [{ v: "request", label: "Send request" }],
 };
 const KEYWORD_LABEL: Record<string, string> = { office: "Things I can advise on", coaching: "What I coach on", fractional: "Roles you're open to", project: "Types of projects", speaking: "Topics", advisory: "Types of companies you advise", content: "Content types" };
-const bookLabel = (b: string) => (b === "book" ? "Book time" : b === "approval" ? "Request approval" : b === "proposal" ? "Request a proposal" : b === "request" ? "Request" : "Send message");
+const bookLabel = (b: string) => (b === "book" ? "Book time" : b === "proposal" ? "Request a proposal" : "Send request");
+
+// Blank canvas for a new user (no draft yet) — the 7 offering types available but none added.
+const BLANK_OFFERS: Offer[] = [
+  { key: "office", title: "Office Hours", blurb: "Focused 1:1 sessions.", added: false, kind: "", length: "60 minutes", duration: "", rate: "", unit: "per session", hoursPerMonth: "", showRate: true, keywords: "", date: "", cadence: "", booking: "book", desc: "" },
+  { key: "fractional", title: "Fractional Role", blurb: "Join a company part-time.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per month", hoursPerMonth: "", showRate: true, keywords: "", date: "", cadence: "", booking: "proposal", desc: "" },
+  { key: "project", title: "Project Work", blurb: "Fixed-scope engagements.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per project", hoursPerMonth: "", showRate: false, keywords: "", date: "", cadence: "", booking: "proposal", desc: "" },
+  { key: "speaking", title: "Speaking", blurb: "Events, podcasts & workshops.", added: false, kind: "Event", length: "", duration: "", rate: "", unit: "per event", hoursPerMonth: "", showRate: false, keywords: "", date: "", cadence: "", booking: "proposal", desc: "" },
+  { key: "advisory", title: "Advisory Board", blurb: "Board & advisory roles.", added: false, kind: "", length: "", duration: "", rate: "", unit: "", hoursPerMonth: "", showRate: false, keywords: "", date: "", cadence: "", booking: "request", desc: "" },
+  { key: "coaching", title: "Coaching", blurb: "1:1 coaching.", added: false, kind: "", length: "45 minutes", duration: "", rate: "", unit: "per session", hoursPerMonth: "", showRate: true, keywords: "", date: "", cadence: "", booking: "book", desc: "" },
+  { key: "content", title: "Content Partnership", blurb: "Creator & sponsored work.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per post", hoursPerMonth: "", showRate: false, keywords: "", date: "", cadence: "", booking: "request", desc: "" },
+];
+const BLANK = {
+  types: [] as string[], name: "", headline: "", bio: "", photoUrl: "", city: "", loc: "Remote", openNow: true, dob: "",
+  socials: { website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "" },
+  focus: "", entries: [] as Entry[], arch: [] as string[], mbti: "", enn: "", disc: "",
+  ledTeam: false, yearsLed: "", largestTeam: "", orgs: "", philosophy: "",
+  ftEnabled: false, ftRoles: "", offers: BLANK_OFFERS,
+  impacts: [] as { headline: string; context: string; story: string }[],
+  skills: [] as { name: string; level: string; top: boolean }[],
+  industries: [] as string[], learning: [] as string[],
+  vals: [] as string[], vFeatured: [] as string[],
+  media: [] as { kind: string; title: string; outlet: string; url: string; featured: boolean; img?: string }[],
+  testis: [] as { quote: string; author: string; role: string; relationship: string; featured: boolean }[],
+  edu: [] as { school: string; degree: string; field: string; year: string }[],
+  certs: [] as string[],
+  products: [] as { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string }[],
+  longBio: "", powers: [] as { statement: string; proof: string; keywords: string[] }[],
+  hidden: [] as string[],
+  reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
+  audAge: "", audGender: "", audGeo: "", calLink: "",
+};
 
 const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
 const WORK_LOC = ["Remote", "Hybrid", "In-Person"];
 const PROJECT_TYPES = ["Product Launch", "Campaign", "Fundraising", "Acquisition", "Redesign", "Product Development"];
 const ARCHETYPES = [
-  { name: "The Strategist", desc: "You provide vision, strategic direction, and outside-the-box thinking, like a chess player." },
-  { name: "The Change Catalyst", desc: "You thrive in messy situations you can fix, but get bored when things are calm." },
-  { name: "The Transactor", desc: "You thrive on negotiations and deal-making, skilled at spotting and tackling new opportunities." },
-  { name: "The Builder", desc: "You dream of creating something and have the talent and determination to make your dreams come true." },
-  { name: "The Innovator", desc: "You are a creative idea generator with a great capacity to solve extremely difficult problems." },
-  { name: "The Processor", desc: "You like organizations to run smoothly, like a well-oiled machine, and set up structures and systems." },
-  { name: "The Coach", desc: "You know how to get the best out of people and create a high-performance culture." },
-  { name: "The Communicator", desc: "You are a great influence and significantly impact people and your surroundings." },
+  { name: "The Builder", desc: "0→1, creation under ambiguity." },
+  { name: "The Fixer", desc: "Diagnose, stabilize, turn around." },
+  { name: "The Scaler", desc: "Takes what works and multiplies it." },
+  { name: "The Operator", desc: "Systems, process, execution excellence." },
+  { name: "The Strategist", desc: "Big picture, long arc, systems thinker." },
+  { name: "The Coach", desc: "Grows people, builds culture, develops talent." },
+  { name: "The Connector", desc: "Networks, partnerships, bridges worlds." },
+  { name: "The Visionary", desc: "Sees what others don't, pulls people forward." },
 ];
 const MBTI = ["INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP", "I don't know"];
 const ENNEAGRAM = ["1 · Reformer", "2 · Helper", "3 · Achiever", "4 · Individualist", "5 · Investigator", "6 · Loyalist", "7 · Enthusiast", "8 · Challenger", "9 · Peacemaker", "I don't know"];
@@ -125,6 +164,8 @@ type Entry = { kind: "role" | "project"; logo?: string; primary: string; seconda
 
 export default function BuildPreview() {
   const [active, setActive] = useState("Media");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   // Onboarding guide state: "welcome" intro → 0..12 walking the sections → "done" → null (dismissed)
   const [tour, setTour] = useState<"welcome" | number | "done" | null>("welcome");
   const tourGroup = (i: number) => (i < 9 ? "Build your profile" : "Build your brand");
@@ -185,6 +226,10 @@ export default function BuildPreview() {
     { key: "content", title: "Content Partnership", blurb: "Creator & sponsored work.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per post", hoursPerMonth: "", showRate: false, keywords: "UGC, Sponsored", date: "", cadence: "", booking: "request", desc: "" },
   ]);
   const upOffer = (k: string, patch: Partial<Offer>) => setOffers((o) => o.map((x) => (x.key === k ? { ...x, ...patch } : x)));
+  const [tagDraft, setTagDraft] = useState("");
+  const offerTags = (kw: string) => (kw || "").split(",").map((t) => t.trim()).filter(Boolean);
+  const addOfferTag = (key: string, kw: string, tag: string) => { const t = tag.trim(); if (t && !offerTags(kw).some((x) => x.toLowerCase() === t.toLowerCase())) upOffer(key, { keywords: [...offerTags(kw), t].join(", ") }); setTagDraft(""); };
+  const rmOfferTag = (key: string, kw: string, tag: string) => upOffer(key, { keywords: offerTags(kw).filter((x) => x !== tag).join(", ") });
 
   // Impact
   const [impacts, setImpacts] = useState<{ headline: string; context: string; story: string }[]>([
@@ -225,6 +270,14 @@ export default function BuildPreview() {
   const toggleTop = (i: number) => setSkills((s) => s.map((x, j) => { if (j !== i) return x; if (!x.top && s.filter((y) => y.top).length >= 5) return x; return { ...x, top: !x.top }; }));
   const addLearn = () => { const v = learnDraft.trim(); if (v && !learning.includes(v)) setLearning((c) => [...c, v]); setLearnDraft(""); };
   const rmLearn = (k: string) => setLearning((c) => c.filter((x) => x !== k));
+  const [skillQuery, setSkillQuery] = useState("");
+  const addSkill = (name: string) => { const v = name.trim(); if (!v) return; if (!skills.some((s) => s.name.toLowerCase() === v.toLowerCase())) setSkills((s) => [...s, { name: v, level: "Proficient", top: false }]); setSkillQuery(""); };
+  const IND_MAX = 12;
+  const [indDraft, setIndDraft] = useState("");
+  const toggleIndustry = (t: string) => setIndustries((c) => (c.includes(t) ? c.filter((x) => x !== t) : c.length >= IND_MAX ? c : [...c, t]));
+  const addIndustry = () => { const v = indDraft.trim(); if (v && !industries.some((x) => x.toLowerCase() === v.toLowerCase()) && industries.length < IND_MAX) setIndustries((c) => [...c, v]); setIndDraft(""); };
+  const [hidden, setHidden] = useState<string[]>([]);
+  const toggleHidden = (k: string) => setHidden((h) => (h.includes(k) ? h.filter((x) => x !== k) : [...h, k]));
 
   // Values — choose up to 12; feature up to 4 that lead the profile, the rest live in the bio.
   const [vals, setVals] = useState<string[]>(["Directness", "Curiosity", "Craft", "Ownership", "Candor", "Growth", "Empathy", "Ambition"]);
@@ -236,7 +289,7 @@ export default function BuildPreview() {
   const toggleVFeatured = (v: string) => setVFeatured((c) => (c.includes(v) ? c.filter((x) => x !== v) : c.length < VAL_FEATURED ? [...c, v] : c));
 
   // Media — press, talks, writing, podcasts, portfolio. Star to feature in the profile gallery; rest in bio.
-  type Media = { kind: string; title: string; outlet: string; url: string; featured: boolean };
+  type Media = { kind: string; title: string; outlet: string; url: string; featured: boolean; img?: string };
   const [media, setMedia] = useState<Media[]>([
     { kind: "Press", title: "The operators rebuilding personal branding", outlet: "TechCrunch", url: "", featured: true },
     { kind: "Talk", title: "Category creation in a crowded market", outlet: "SaaStr 2024", url: "", featured: true },
@@ -276,7 +329,7 @@ export default function BuildPreview() {
   const rmCert = (i: number) => setCerts((c) => c.filter((_, j) => j !== i));
 
   // Store — productized offerings you sell.
-  type Product = { kind: string; title: string; blurb: string; price: string; featured: boolean };
+  type Product = { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string };
   const [products, setProducts] = useState<Product[]>([
     { kind: "Template", title: "The GTM Launch Kit", blurb: "Notion templates + checklists to launch a category.", price: "48", featured: true },
     { kind: "Guide", title: "Positioning Playbook", blurb: "My step-by-step framework for category creation.", price: "29", featured: true },
@@ -284,6 +337,15 @@ export default function BuildPreview() {
   ]);
   const upProduct = (i: number, patch: Partial<Product>) => setProducts((m) => m.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const addProduct = () => setProducts((m) => [...m, { kind: "Template", title: "", blurb: "", price: "", featured: false }]);
+  type ReachP = { key: string; handle: string; followers: string; engagement: string; url: string };
+  const [reach, setReach] = useState<ReachP[]>([]);
+  const [audAge, setAudAge] = useState("");
+  const [audGender, setAudGender] = useState("");
+  const [audGeo, setAudGeo] = useState("");
+  const addReach = (key: string) => setReach((r) => (r.some((x) => x.key === key) ? r : [...r, { key, handle: "", followers: "", engagement: "", url: "" }]));
+  const upReach = (key: string, patch: Partial<ReachP>) => setReach((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+  const rmReach = (key: string) => setReach((r) => r.filter((x) => x.key !== key));
+  const [calLink, setCalLink] = useState("");
   const rmProduct = (i: number) => setProducts((m) => m.filter((_, j) => j !== i));
   const toggleProductFeatured = (i: number) => setProducts((m) => m.map((x, j) => { if (j !== i) return x; if (!x.featured && m.filter((y) => y.featured).length >= 3) return x; return { ...x, featured: !x.featured }; }));
 
@@ -307,59 +369,223 @@ export default function BuildPreview() {
   const addKw = (i: number) => { const v = (kwDraft[i] || "").trim(); if (v && !powers[i].keywords.includes(v)) upPower(i, { keywords: [...powers[i].keywords, v] }); setKwDraft((d) => ({ ...d, [i]: "" })); };
   const rmKw = (i: number, k: string) => upPower(i, { keywords: powers[i].keywords.filter((x) => x !== k) });
 
+  // ── Persistence (Milestone 1): auth'd autosave to a fresh builder_drafts row (no ELVISS). ──
+  const supabase = useMemo(() => createBrowserSupabase(), []);
+  const [loaded, setLoaded] = useState(false);
+  const [loadErr, setLoadErr] = useState("");
+  // Resume step (Milestone 2)
+  const [resumeMode, setResumeMode] = useState<"file" | "text">("file");
+  const [resumeText, setResumeText] = useState("");
+  const [parsing, setParsing] = useState(false);
+  const [parseErr, setParseErr] = useState("");
+  const applyParsed = (p: ResumeParseResult) => {
+    if (p.full_name) setName(p.full_name);
+    if (p.current_title) setHeadline(p.current_title);
+    if (p.location) setCity(p.location);
+    if (p.linkedin_url) setSocials((s) => ({ ...s, linkedin: p.linkedin_url as string }));
+    if (p.work_history?.length) setEntries(p.work_history.map((w, i) => ({
+      kind: "role" as const, primary: w.company || "", secondary: w.role_title || "",
+      dates: [w.start_date, w.end_date].filter(Boolean).join(" – "),
+      desc: Array.isArray(w.bullets) ? w.bullets.join(" ") : "", result: "", featured: i === 0,
+    })));
+    if (p.skills_extracted?.length) setSkills(p.skills_extracted.slice(0, 20).map((n, i) => ({ name: n, level: "Proficient", top: i < 5 })));
+    if (p.education?.length) setEdu(p.education.map((e) => ({ school: e.institution || "", degree: e.degree || "", field: "", year: e.graduation_year ? String(e.graduation_year) : "" })));
+  };
+  const parseResume = async (file?: File) => {
+    setParseErr(""); setParsing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setParseErr("Please log in first."); setParsing(false); return; }
+      const fd = new FormData();
+      if (file) fd.append("file", file); else fd.append("text", resumeText);
+      fd.append("userId", user.id);
+      const res = await fetch("/api/parse-resume", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) { setParseErr(json.error || "Couldn't read that — try pasting the text instead."); setParsing(false); return; }
+      applyParsed(json.parsed as ResumeParseResult);
+      setActive("About You");
+    } catch { setParseErr("Something went wrong. Try again."); }
+    setParsing(false);
+  };
+  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink });
+  const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/${prefix}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (error) { console.error("upload failed", error); alert("Upload failed — " + error.message); return null; }
+      return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+    } finally { setUploading(false); }
+  };
+  const hydrate = (d: Partial<typeof BLANK>) => {
+    setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
+    setCity(d.city ?? ""); setLoc(d.loc ?? "Remote"); setOpenNow(d.openNow ?? true); setDob(d.dob ?? "");
+    setSocials(d.socials ?? BLANK.socials); setFocus(d.focus ?? ""); setEntries(d.entries ?? []);
+    setArch(d.arch ?? []); setMbti(d.mbti ?? ""); setEnn(d.enn ?? ""); setDisc(d.disc ?? "");
+    setLedTeam(d.ledTeam ?? false); setYearsLed(d.yearsLed ?? ""); setLargestTeam(d.largestTeam ?? ""); setOrgs(d.orgs ?? ""); setPhilosophy(d.philosophy ?? "");
+    setFtEnabled(d.ftEnabled ?? false); setFtRoles(d.ftRoles ?? ""); setOffers(d.offers ?? BLANK_OFFERS);
+    setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
+    setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
+    setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
+    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? "");
+  };
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { if (!cancelled) setLoaded(true); return; }
+      const { data, error } = await supabase.from("builder_drafts").select("data").eq("user_id", user.id).maybeSingle();
+      if (cancelled) return;
+      // On a load failure, STOP: never hydrate BLANK (autosave would then overwrite the real draft).
+      if (error) { setLoadErr("Couldn't load your saved draft. Refresh to try again — nothing has been changed."); return; }
+      const saved = data?.data as Partial<typeof BLANK> | undefined;
+      hydrate(saved && Object.keys(saved).length ? saved : BLANK);
+      const { data: pub } = await supabase.from("published_profiles").select("username").eq("user_id", user.id).maybeSingle();
+      if (!cancelled && pub?.username) { setPubUsername(pub.username); setClaimed(true); }
+      setLoaded(true);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!loaded) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() });
+    }, 800);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink]);
+
+  // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
+  const [showPublish, setShowPublish] = useState(false);
+  const [pubUsername, setPubUsername] = useState("");
+  const [claimed, setClaimed] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [pubResult, setPubResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const publish = async () => {
+    const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+    if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
+    setPublishing(true); setPubResult(null);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setPubResult({ ok: false, msg: "Please log in first." }); setPublishing(false); return; }
+      // inquiryEmail powers the "Send request" form on the public profile — without it every inquiry errors.
+      const profile = { ...builderToProfile(snapshot(), u), inquiryEmail: user.email || undefined };
+      const { error } = await supabase.from("published_profiles").upsert({ username: u, user_id: user.id, profile, published_at: new Date().toISOString() });
+      if (error) setPubResult({ ok: false, msg: "That username may be taken — try another." });
+      else { setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); }
+    } catch { setPubResult({ ok: false, msg: "Couldn't publish — try again." }); }
+    setPublishing(false);
+  };
+
   const stepNo = ALL_STEPS.indexOf(active);
 
+  if (loadErr) return <div className="font-inter bg-brand-paper min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center"><div className="font-sans text-[15px] text-brand-ink max-w-[46ch]">{loadErr}</div><button onClick={() => window.location.reload()} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[10px] px-5">Refresh</button></div>;
+  if (!loaded) return <div className="font-inter bg-brand-paper min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#73926A] border-t-transparent rounded-full animate-spin" /></div>;
+
   return (
-    <div className="font-inter text-brand-ink bg-brand-paper min-h-screen grid" style={{ gridTemplateColumns: "248px 1fr 340px" }}>
+    <div className="font-inter text-brand-ink bg-brand-paper min-h-screen grid" style={{ gridTemplateColumns: "248px 1fr" }}>
       {/* ── RAIL ── */}
       <aside className="border-r border-[#ECEAE4] p-[26px_18px] sticky top-0 h-screen overflow-y-auto flex flex-col gap-[3px] bg-white">
         <div className="mb-7 pl-2 text-[18px]"><Logo /></div>
         {RAIL.map((phase, pi) => (
           <div key={pi}>
-            {phase.label && <div className="font-poppins text-[10px] font-semibold uppercase tracking-[0.13em] text-[#7d7a74] mt-4 mb-2 ml-2">{phase.label}</div>}
+            {phase.label && <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.13em] text-[#7d7a74] mt-4 mb-2 ml-2">{phase.label}</div>}
             {phase.steps.map((s) => {
               const isActive = s === active, done = s === "Resume" || (BUILT.has(s) && s !== active);
               const n = s === "Resume" ? "✓" : ALL_STEPS.indexOf(s);
               return (
-                <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#F2EEFF]" : "hover:bg-[#faf9fc]"}`}>
-                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#6B4BD6] border-[#6B4BD6] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
-                  <span className={`font-poppins text-[13px] leading-tight ${isActive ? "text-[#6B4BD6] font-semibold" : "text-[#3a352f]"}`}>{s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Imported</span> : null}</span>
+                <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EAF1E6]" : "hover:bg-[#faf9fc]"}`}>
+                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#73926A] border-[#73926A] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
+                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#73926A] font-semibold" : "text-[#3a352f]"}`}>{s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Imported</span> : null}</span>
                 </div>
               );
             })}
           </div>
         ))}
-        <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-poppins text-[14px] font-semibold">Almost there</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">You're in the final stretch.</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#6B4BD6]" style={{ width: "38%" }} /></div></div></div>
+        <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">Almost there</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">You're in the final stretch.</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#73926A]" style={{ width: "38%" }} /></div></div></div>
       </aside>
 
       {/* ── MAIN ── */}
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
-          <span className="font-poppins text-[13px] text-[#7d7a74] cursor-pointer">Save and exit</span>
-          <button className="font-poppins bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">Continue →</button>
+          <span className="font-sans text-[13px] text-[#7d7a74] cursor-pointer">Save and exit</span>
+          <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
+          <button onClick={() => setShowPublish(true)} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">{claimed ? "Update →" : "Publish →"}</button>
         </div>
 
         <main className="p-[40px_48px] flex-1 max-w-[820px]">
-          <span className="font-poppins inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#6B4BD6] bg-[#F2EEFF] py-[5px] px-[11px] mb-4">Step {stepNo} of 13 · {active}</span>
+          <div className="flex items-center justify-between mb-4 max-w-[720px] gap-3 flex-wrap">
+            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#73926A] bg-[#EAF1E6] py-[5px] px-[11px]">Step {stepNo} of {ALL_STEPS.length - 1} · {active}</span>
+            {HIDEABLE[active] && (
+              <button onClick={() => toggleHidden(HIDEABLE[active])} className="inline-flex items-center gap-2 font-sans text-[12px] text-[#57524c] hover:text-brand-ink">
+                <span className={`w-[34px] h-[19px] rounded-full relative transition-colors ${hidden.includes(HIDEABLE[active]) ? "bg-[#d8d4cc]" : "bg-[#73926A]"}`}><span className={`absolute top-[2px] w-[15px] h-[15px] bg-white rounded-full transition-all ${hidden.includes(HIDEABLE[active]) ? "left-[2px]" : "left-[17px]"}`} /></span>
+                {hidden.includes(HIDEABLE[active]) ? "Hidden from your profile" : "Showing on your profile"}
+              </button>
+            )}
+          </div>
+
+          {active === "Resume" && (
+            <>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Start with your resume.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Upload it and we&apos;ll pre-fill your experience, skills, education and links — you can edit everything after. Or skip and build from scratch.</p>
+              <div className="inline-flex gap-1 bg-[#F4F2EF] p-1 mb-5">
+                <button onClick={() => setResumeMode("file")} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === "file" ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>Upload a file</button>
+                <button onClick={() => setResumeMode("text")} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === "text" ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>Paste text</button>
+              </div>
+              {resumeMode === "file" ? (
+                <label className={`block max-w-[560px] border-[1.5px] border-dashed p-[40px] text-center cursor-pointer ${parsing ? "border-[#73926A] bg-[#EAF1E6]" : "border-[#E1DED7] hover:border-brand-ink"}`}>
+                  <input type="file" accept=".pdf,.txt,.md,.doc,.docx" disabled={parsing} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) parseResume(f); }} />
+                  <div className="w-[44px] h-[44px] rounded-full bg-[#EAF6E4] mx-auto mb-3 flex items-center justify-center text-[18px] text-[#4f7a43]">⭱</div>
+                  <div className="font-sans text-[15px] font-semibold">{parsing ? "Reading your resume…" : "Drop your resume here, or click to browse"}</div>
+                  <div className="text-[12.5px] text-[#7d7a74] mt-1">PDF or text file</div>
+                </label>
+              ) : (
+                <div className="max-w-[560px]">
+                  <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={10} placeholder="Paste your resume text here…" className="w-full font-inter text-[13.5px] py-[12px] px-[14px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
+                  <button onClick={() => parseResume()} disabled={parsing || !resumeText.trim()} className="mt-3 font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 disabled:opacity-40">{parsing ? "Reading…" : "Read my resume →"}</button>
+                </div>
+              )}
+              {parseErr && <div className="text-[13px] text-brand-orange mt-3 max-w-[560px]">{parseErr}</div>}
+              <button onClick={() => setActive("About You")} className="block mt-6 font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip — I&apos;ll build from scratch →</button>
+            </>
+          )}
 
           {active === "About You" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Let's start with you.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Let's start with you.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">The basics that anchor your profile. You can change any of this later.</p>
               <div className="mb-7">
-                <label className="font-poppins text-[13px] font-semibold block mb-1">What kind of professional are you?</label>
+                <label className="font-sans text-[13px] font-semibold block mb-1">What kind of professional are you?</label>
                 <p className="text-[13px] text-[#7d7a74] mb-3">Pick up to 3. This shapes how your profile is laid out.</p>
                 <div className="flex flex-wrap gap-[10px]">
-                  {TYPES.map((t) => { const on = types.includes(t); return <button key={t} onClick={() => toggleType(t)} className={`font-poppins text-[14px] font-medium py-[11px] px-[18px] border-[1.5px] ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#3a352f]"}`}>{t}</button>; })}
+                  {TYPES.map((t) => { const on = types.includes(t); return <button key={t} onClick={() => toggleType(t)} className={`font-sans text-[14px] font-medium py-[11px] px-[18px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#3a352f]"}`}>{t}</button>; })}
                 </div>
               </div>
-              <div className="mb-6"><label className="font-poppins text-[13px] font-semibold block mb-2">Photo</label><div className="w-[88px] h-[88px] border-[1.5px] border-dashed border-[#E1DED7] flex items-center justify-center text-[12px] text-[#7d7a74] cursor-pointer text-center leading-tight">Add<br />photo</div></div>
+              <div className="mb-6">
+                <label className="font-sans text-[13px] font-semibold block mb-2">Photo</label>
+                <div className="flex items-center gap-3">
+                  <label className="w-[88px] h-[88px] rounded-full border-[1.5px] border-dashed border-[#E1DED7] flex items-center justify-center text-[12px] text-[#7d7a74] cursor-pointer text-center leading-tight overflow-hidden hover:border-brand-ink shrink-0">
+                    {photoUrl ? <img src={photoUrl} alt="" className="w-full h-full object-cover" /> : <span>Add<br />photo</span>}
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, "avatar"); if (url) setPhotoUrl(url); } e.currentTarget.value = ""; }} />
+                  </label>
+                  {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
+                  {uploading && <span className="font-sans text-[12px] text-[#73926A]">Uploading…</span>}
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-[18px] max-w-[600px]"><Field label="Name" value={name} onChange={setName} /><Field label="City / State" value={city} onChange={setCity} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="About" value={bio} onChange={setBio} max={200} textarea /></div>
-              <div className="mt-6"><label className="font-poppins text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-poppins text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
-              <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-poppins text-[14px]">Open to opportunities now</span></label>
-              <div className="mt-6 max-w-[600px]"><label className="font-poppins text-[13px] font-semibold block mb-2">Links</label><div className="grid grid-cols-2 gap-[12px]">
+              <div className="mt-6"><label className="font-sans text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-sans text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
+              <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-sans text-[14px]">Open to opportunities now</span></label>
+              <div className="mt-6 max-w-[600px]"><label className="font-sans text-[13px] font-semibold block mb-2">Links</label><div className="grid grid-cols-2 gap-[12px]">
                 <SocialField label="Website" v={socials.website} on={(x) => setSocials((s) => ({ ...s, website: x }))} ph="yoursite.com" />
                 <SocialField label="LinkedIn" v={socials.linkedin} on={(x) => setSocials((s) => ({ ...s, linkedin: x }))} ph="linkedin.com/in/you" />
                 <SocialField label="Instagram" v={socials.instagram} on={(x) => setSocials((s) => ({ ...s, instagram: x }))} ph="instagram.com/you" />
@@ -368,32 +594,32 @@ export default function BuildPreview() {
                 <SocialField label="YouTube" v={socials.youtube} on={(x) => setSocials((s) => ({ ...s, youtube: x }))} ph="youtube.com/@you" />
                 <SocialField label="Substack" v={socials.substack} on={(x) => setSocials((s) => ({ ...s, substack: x }))} ph="you.substack.com" />
               </div></div>
-              <div className="mt-6 max-w-[280px]"><label className="font-poppins text-[13px] font-semibold block mb-2">Date of birth <span className="font-normal text-[#7d7a74]">· private, never shown</span></label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /></div>
+              <div className="mt-6 max-w-[280px]"><label className="font-sans text-[13px] font-semibold block mb-2">Date of birth <span className="font-normal text-[#7d7a74]">· private, never shown</span></label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /></div>
             </>
           )}
 
           {active === "Experience" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your experience.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your experience.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">We pulled your roles from your resume. Confirm them, add projects, and feature your best work.</p>
 
               <div className="max-w-[620px] mb-8"><Field label="Current focus" value={focus} onChange={setFocus} max={160} textarea /></div>
 
-              <div className="font-poppins text-[13px] font-semibold mb-1">Timeline</div>
+              <div className="font-sans text-[13px] font-semibold mb-1">Timeline</div>
               <p className="text-[12.5px] text-[#7d7a74] mb-3">Add your roles (full-time jobs) and your projects (consulting or client engagements). Both sit on your timeline. Star the ones to feature.</p>
               <div className="space-y-4 max-w-[720px]">
                 {entries.map((e, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[18px]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`font-poppins text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#F2EEFF] text-[#6B4BD6]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.kind === "role" ? "Role" : "Project"}</span>
-                      <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-poppins text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
+                      <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#EAF1E6] text-[#73926A]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.kind === "role" ? "Role" : "Project"}</span>
+                      <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-[46px] h-[46px] flex-none border-[1.5px] border-dashed border-[#E1DED7] flex items-center justify-center cursor-pointer text-center" title={e.kind === "role" ? "Upload company logo" : "Upload a logo or image"}>
-                        {e.primary ? <span className="font-poppins font-semibold text-[16px] text-[#254B18]">{e.primary[0].toUpperCase()}</span> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
+                        {e.primary ? <span className="font-sans font-semibold text-[16px] text-[#254B18]">{e.primary[0].toUpperCase()}</span> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-[12px]">
-                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-poppins font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                         <input value={e.dates} placeholder="2020 – 2023" onChange={(ev) => upEntry(i, { dates: ev.target.value })} className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       </div>
                     </div>
@@ -402,12 +628,12 @@ export default function BuildPreview() {
                     {e.kind === "project" && (
                       <input value={e.result} placeholder="Result (optional), e.g. 1.5M members" onChange={(ev) => upEntry(i, { result: ev.target.value })} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
                     )}
-                    <div className="text-right mt-2"><button onClick={() => rmEntry(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <div className="text-right mt-2"><button onClick={() => rmEntry(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
                   </div>
                 ))}
                 <div className="flex gap-3">
-                  <button onClick={() => addEntry("role")} className="flex-1 font-poppins text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a role</button>
-                  <button onClick={() => addEntry("project")} className="flex-1 font-poppins text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a project</button>
+                  <button onClick={() => addEntry("role")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a role</button>
+                  <button onClick={() => addEntry("project")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a project</button>
                 </div>
               </div>
             </>
@@ -415,16 +641,16 @@ export default function BuildPreview() {
 
           {active === "Leadership" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">How you lead.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">How you lead.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Share how you lead teams, make decisions, and collaborate.</p>
 
               <div className="mb-8">
-                <label className="font-poppins text-[13px] font-semibold block mb-1">Your archetype</label>
+                <label className="font-sans text-[13px] font-semibold block mb-1">Your archetype</label>
                 <p className="text-[12.5px] text-[#7d7a74] mb-3">Pick up to 4.</p>
                 <div className="grid grid-cols-2 gap-[10px] max-w-[620px]">
                   {ARCHETYPES.map((a) => { const on = arch.includes(a.name); return (
-                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#6B4BD6] bg-[#F2EEFF]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
-                      <div className="font-poppins text-[15px] font-semibold">{a.name}</div>
+                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
+                      <div className="font-sans text-[15px] font-semibold">{a.name}</div>
                       <div className="text-[12px] text-[#7d7a74] mt-0.5">{a.desc}</div>
                     </button>
                   ); })}
@@ -432,18 +658,18 @@ export default function BuildPreview() {
               </div>
 
               <div className="grid grid-cols-3 gap-[14px] max-w-[620px] mb-8">
-                <div><label className="font-poppins text-[13px] font-semibold block mb-2">MBTI <span className="font-normal text-[#7d7a74]">· optional</span></label>
+                <div><label className="font-sans text-[13px] font-semibold block mb-2">MBTI <span className="font-normal text-[#7d7a74]">· optional</span></label>
                   <select value={mbti} onChange={(e) => setMbti(e.target.value)} className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink"><option value="">Select</option>{MBTI.map((m) => <option key={m}>{m}</option>)}</select></div>
-                <div><label className="font-poppins text-[13px] font-semibold block mb-2">Enneagram <span className="font-normal text-[#7d7a74]">· optional</span></label>
+                <div><label className="font-sans text-[13px] font-semibold block mb-2">Enneagram <span className="font-normal text-[#7d7a74]">· optional</span></label>
                   <select value={enn} onChange={(e) => setEnn(e.target.value)} className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink"><option value="">Select</option>{ENNEAGRAM.map((m) => <option key={m}>{m}</option>)}</select></div>
-                <div><label className="font-poppins text-[13px] font-semibold block mb-2">DISC <span className="font-normal text-[#7d7a74]">· optional</span></label>
+                <div><label className="font-sans text-[13px] font-semibold block mb-2">DISC <span className="font-normal text-[#7d7a74]">· optional</span></label>
                   <input value={disc} onChange={(e) => setDisc(e.target.value)} placeholder="e.g. DI, SC" className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /></div>
               </div>
 
               <div>
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Have you led a team?</label>
+                <label className="font-sans text-[13px] font-semibold block mb-2">Have you led a team?</label>
                 <div className="flex gap-[10px] mb-4">
-                  {[true, false].map((v) => <button key={String(v)} onClick={() => setLedTeam(v)} className={`font-poppins text-[13px] py-[9px] px-[20px] border-[1.5px] ${ledTeam === v ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{v ? "Yes" : "No"}</button>)}
+                  {[true, false].map((v) => <button key={String(v)} onClick={() => setLedTeam(v)} className={`font-sans text-[13px] py-[9px] px-[20px] border-[1.5px] ${ledTeam === v ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{v ? "Yes" : "No"}</button>)}
                 </div>
                 {ledTeam && (
                   <div className="border border-[#E1DED7] p-[18px] max-w-[500px]">
@@ -453,7 +679,7 @@ export default function BuildPreview() {
                       <MiniStat label="Organizations" value={orgs} onChange={setOrgs} />
                     </div>
                     <div className="text-[11px] text-[#a8a29a] mb-4">These are searchable, they power recruiter filters.</div>
-                    <div className="flex items-baseline justify-between mb-2"><label className="font-poppins text-[13px] font-semibold">Leadership philosophy</label><span className="text-[11px] text-[#7d7a74]">{philosophy.length} / 280</span></div>
+                    <div className="flex items-baseline justify-between mb-2"><label className="font-sans text-[13px] font-semibold">Leadership philosophy</label><span className="text-[11px] text-[#7d7a74]">{philosophy.length} / 280</span></div>
                     <textarea value={philosophy} maxLength={280} onChange={(e) => setPhilosophy(e.target.value)} rows={3} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                   </div>
                 )}
@@ -463,41 +689,46 @@ export default function BuildPreview() {
 
           {active === "Work With Me" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Work With Me</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Work With Me</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Select one or more ways people can work with you. Add details for each option you select.</p>
+
+              <div className="border border-[#E1DED7] p-[16px] mb-4 max-w-[720px] bg-[#FBFAF8]">
+                <label className="font-sans text-[13px] font-semibold block mb-1">📅 Cal.com link <span className="font-normal text-[#a8a29a]">· powers &ldquo;Book instantly&rdquo; for Office Hours &amp; Coaching</span></label>
+                <input value={calLink} onChange={(e) => setCalLink(e.target.value)} placeholder="https://cal.com/yourname" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+              </div>
 
               {/* Full-time */}
               <div className="border border-[#E1DED7] p-[18px] mb-4 max-w-[720px]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${ftEnabled ? "bg-[#6B4BD6] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{ftEnabled ? "✓" : "+"}</span>
-                    <div><div className="font-poppins text-[15px] font-semibold">Full-time</div><div className="text-[12.5px] text-[#7d7a74]">Open to the right full-time role.</div></div>
+                    <span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${ftEnabled ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{ftEnabled ? "✓" : "+"}</span>
+                    <div><div className="font-sans text-[15px] font-semibold">Full-time</div><div className="text-[12.5px] text-[#7d7a74]">Open to the right full-time role.</div></div>
                   </div>
-                  <label className="flex items-center gap-[7px] text-[12.5px] font-poppins cursor-pointer"><input type="checkbox" checked={ftEnabled} onChange={() => setFtEnabled(!ftEnabled)} /> Open</label>
+                  <label className="flex items-center gap-[7px] text-[12.5px] font-sans cursor-pointer"><input type="checkbox" checked={ftEnabled} onChange={() => setFtEnabled(!ftEnabled)} /> Open</label>
                 </div>
-                {ftEnabled && <div className="mt-3"><label className="font-poppins text-[12px] text-[#7d7a74] block mb-1">Role titles you're open to <span className="text-[#a8a29a]">· add one or more, searchable</span></label><input value={ftRoles} onChange={(e) => setFtRoles(e.target.value)} placeholder="VP Marketing, CMO, Head of Growth" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /></div>}
+                {ftEnabled && <div className="mt-3"><label className="font-sans text-[12px] text-[#7d7a74] block mb-1">Role titles you're open to <span className="text-[#a8a29a]">· add one or more, searchable</span></label><input value={ftRoles} onChange={(e) => setFtRoles(e.target.value)} placeholder="VP Marketing, CMO, Head of Growth" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /></div>}
               </div>
 
               {/* Offerings grid */}
               <div className="grid grid-cols-2 gap-3 max-w-[720px]">
                 {offers.map((o) => {
-                  const isOpen = expanded === o.key && o.added;
+                  const isOpen = expanded === o.key;
                   if (isOpen) {
                     const opts = BOOKING_OPTS[o.key] || [];
                     const instant = o.booking === "book";
                     const showRate = o.key === "office" ? true : o.showRate;
                     const inp = "w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink";
-                    const lab = "font-poppins text-[12px] text-[#7d7a74] block mb-1";
+                    const lab = "font-sans text-[12px] text-[#7d7a74] block mb-1";
                     const rateCell = o.key === "advisory" ? null : (
                       <div>
-                        <div className="flex items-center justify-between mb-1"><label className="font-poppins text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <button onClick={() => upOffer(o.key, { showRate: !o.showRate })} className="font-poppins text-[11px] text-[#6B4BD6]">{o.showRate ? "Hide, take requests" : "Set a rate"}</button>}</div>
+                        <div className="flex items-center justify-between mb-1"><label className="font-sans text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <button onClick={() => upOffer(o.key, { showRate: !o.showRate })} className="font-sans text-[11px] text-[#73926A]">{o.showRate ? "Hide, take requests" : "Set a rate"}</button>}</div>
                         {showRate ? <div className="flex items-center gap-2"><input value={o.rate} onChange={(e) => upOffer(o.key, { rate: e.target.value })} placeholder="Amount" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /><select value={o.unit} onChange={(e) => upOffer(o.key, { unit: e.target.value })} className="w-[128px] font-inter text-[12.5px] py-[9px] px-[8px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{UNITS.map((u) => <option key={u}>{u}</option>)}</select></div> : <div className="text-[12.5px] text-[#7d7a74] py-[9px]">People request, you quote later.</div>}
                       </div>
                     );
                     return (
                     <div key={o.key} className="col-span-2 border border-[#E1DED7] p-[20px] shadow-[0_4px_22px_rgba(30,26,20,0.07)]">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3"><span className="w-[24px] h-[24px] rounded-full bg-[#6B4BD6] text-white flex items-center justify-center text-[13px]">✓</span><div><div className="font-poppins text-[15px] font-semibold">{o.title}</div><div className="text-[12.5px] text-[#7d7a74]">{o.blurb}</div></div></div>
+                        <div className="flex items-center gap-3"><span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${o.added ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span><div><div className="font-sans text-[15px] font-semibold">{o.title}</div><div className="text-[12.5px] text-[#7d7a74]">{o.blurb}</div></div></div>
                         <button onClick={() => setExpanded("")} className="text-[#7d7a74] text-[16px]">⌃</button>
                       </div>
 
@@ -523,16 +754,10 @@ export default function BuildPreview() {
                         </div>
                       )}
                       {o.key === "speaking" && (
-                        <>
-                          <div className="grid grid-cols-2 gap-[14px]">
-                            <div><label className={lab}>Type</label><select value={o.kind} onChange={(e) => upOffer(o.key, { kind: e.target.value })} className={inp}>{["Event", "Podcast", "Workshop"].map((t) => <option key={t}>{t}</option>)}</select></div>
-                            <div><label className={lab}>Length</label><input value={o.length} onChange={(e) => upOffer(o.key, { length: e.target.value })} placeholder="e.g. 45 min keynote" className={inp} /></div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-[14px] mt-[14px]">
-                            {rateCell}
-                            <div><label className={lab}>Available date</label><input value={o.date} onChange={(e) => upOffer(o.key, { date: e.target.value })} placeholder="Type an available date" className={inp} /></div>
-                          </div>
-                        </>
+                        <div className="grid grid-cols-2 gap-[14px]">
+                          <div><label className={lab}>Type</label><select value={o.kind} onChange={(e) => upOffer(o.key, { kind: e.target.value })} className={inp}>{["Event", "Podcast", "Workshop"].map((t) => <option key={t}>{t}</option>)}</select></div>
+                          {rateCell}
+                        </div>
                       )}
                       {o.key === "advisory" && (
                         <>
@@ -542,29 +767,41 @@ export default function BuildPreview() {
                           </div>
                           <div className="mt-[14px]"><label className={lab}>Company stage <span className="text-[#a8a29a]">· select any</span></label>
                             <div className="flex flex-wrap gap-[8px]">
-                              {STAGES.map((s) => { const sel = (o.stage || "").split(", ").filter(Boolean); const on = sel.includes(s); return <button key={s} onClick={() => upOffer(o.key, { stage: (on ? sel.filter((x) => x !== s) : [...sel, s]).join(", ") })} className={`font-poppins text-[12.5px] py-[7px] px-[13px] border-[1.5px] ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{s}</button>; })}
+                              {STAGES.map((s) => { const sel = (o.stage || "").split(", ").filter(Boolean); const on = sel.includes(s); return <button key={s} onClick={() => upOffer(o.key, { stage: (on ? sel.filter((x) => x !== s) : [...sel, s]).join(", ") })} className={`font-sans text-[12.5px] py-[7px] px-[13px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{s}</button>; })}
                             </div>
                           </div>
                         </>
                       )}
                       {o.key === "content" && (
-                        <div className="text-[12.5px] text-[#3a352f] bg-[#F4F2EF] p-[12px]">This opens your <b>media kit</b>, a rate card with your platforms, audience, deliverables and prices. <span className="text-[#6B4BD6] font-medium cursor-pointer">Build media kit →</span></div>
+                        <div className="text-[12.5px] text-[#3a352f] bg-[#F4F2EF] p-[12px]">This opens your <b>media kit</b>, a rate card with your platforms, audience, deliverables and prices. <button onClick={() => setActive("Reach")} className="text-[#73926A] font-medium cursor-pointer">Build media kit →</button></div>
                       )}
 
-                      <div className="mt-[14px]"><label className={lab}>{KEYWORD_LABEL[o.key]} <span className="text-[#a8a29a]">· searchable, helps people find you</span></label><input value={o.keywords} onChange={(e) => upOffer(o.key, { keywords: e.target.value })} placeholder="Add keywords, separated by commas" className={inp} /></div>
+                      <div className="mt-[14px]">
+                        <label className={lab}>{KEYWORD_LABEL[o.key]} <span className="text-[#a8a29a]">· searchable tags, help people find you</span></label>
+                        <div className="flex flex-wrap gap-[6px] items-center border border-[#E1DED7] py-[7px] px-[9px] bg-white">
+                          {offerTags(o.keywords).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF1E6] text-[#4f7a43]">{t}<button onClick={() => rmOfferTag(o.key, o.keywords, t)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
+                          <input value={tagDraft} onChange={(e) => setTagDraft(e.target.value)} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === ",") && tagDraft.trim()) { e.preventDefault(); addOfferTag(o.key, o.keywords, tagDraft); } }} placeholder={offerTags(o.keywords).length ? "add another…" : "Type a tag, press Enter"} className="flex-1 min-w-[130px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
+                        </div>
+                      </div>
 
                       <div className="mt-[14px]"><label className={lab}>Description (optional)</label><textarea value={o.desc} onChange={(e) => upOffer(o.key, { desc: e.target.value })} rows={2} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" /></div>
 
                       <div className="mt-[16px] pt-[14px] border-t border-[#ECEAE4]"><label className={lab}>How they reach you</label><select value={o.booking} onChange={(e) => upOffer(o.key, { booking: e.target.value })} className="max-w-[240px] font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{opts.map((op) => <option key={op.v} value={op.v}>{op.label}</option>)}</select></div>
-                      {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#F2EEFF] p-[11px]">Book instantly connects <b>Calendly / Cal.com</b> for scheduling and takes payment through <b>Stripe Checkout</b>. <span className="text-[#6B4BD6] font-medium cursor-pointer">Connect Calendly →</span></div>}
-                      <div className="flex items-center justify-between mt-4"><button onClick={() => upOffer(o.key, { added: false })} className="font-poppins text-[12px] text-brand-orange">Delete</button><button onClick={() => setExpanded("")} className="font-poppins border border-[#E1DED7] text-brand-ink text-[12.5px] font-medium py-[8px] px-[16px] hover:border-brand-ink">Done</button></div>
+                      {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#EAF1E6] p-[11px]">Book instantly connects <b>Calendly / Cal.com</b> for scheduling and takes payment through <b>Stripe Checkout</b>. <span className="text-[#73926A] font-medium cursor-pointer">Connect Calendly →</span></div>}
+                      <div className="flex items-center justify-between mt-4">
+                        <button onClick={() => upOffer(o.key, { added: !o.added })} className="flex items-center gap-2 font-sans text-[12.5px] font-medium text-brand-ink">
+                          <span className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center text-[11px] ${o.added ? "bg-[#73926A] border-[#73926A] text-white" : "border-[#C7C2B8] text-transparent"}`}>✓</span>
+                          {o.added ? "Showing on your profile" : "Show on my profile"}
+                        </button>
+                        <button onClick={() => setExpanded("")} className="font-sans border border-[#E1DED7] text-brand-ink text-[12.5px] font-medium py-[8px] px-[16px] hover:border-brand-ink">Done</button>
+                      </div>
                     </div>
                     );
                   }
                   return (
-                    <div key={o.key} onClick={() => (o.added ? setExpanded(o.key) : (upOffer(o.key, { added: true }), setExpanded(o.key)))} className="border border-[#E1DED7] p-[16px] flex items-center gap-3 cursor-pointer hover:border-[#3a352f]">
-                      <span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${o.added ? "bg-[#6B4BD6] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span>
-                      <div className="flex-1"><div className="font-poppins text-[14px] font-semibold">{o.title}</div><div className="text-[12px] text-[#7d7a74]">{o.blurb}</div></div>
+                    <div key={o.key} onClick={() => setExpanded(o.key)} className="border border-[#E1DED7] p-[16px] flex items-center gap-3 cursor-pointer hover:border-[#3a352f]">
+                      <span onClick={(e) => { e.stopPropagation(); upOffer(o.key, { added: !o.added }); }} title={o.added ? "Showing on your profile — click to hide" : "Show on my profile"} className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] cursor-pointer ${o.added ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span>
+                      <div className="flex-1"><div className="font-sans text-[14px] font-semibold">{o.title}</div><div className="text-[12px] text-[#7d7a74]">{o.blurb}</div></div>
                       <span className="text-[#7d7a74] text-[15px]">{o.added ? "⌄" : "›"}</span>
                     </div>
                   );
@@ -577,47 +814,65 @@ export default function BuildPreview() {
 
           {active === "Impact" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your impact.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your impact.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Add up to 4 career highlights. Not job duties, the moments something measurably changed because you were there.</p>
               <div className="space-y-4 max-w-[720px]">
                 {impacts.map((im, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[18px]">
-                    <div className="flex justify-between items-center mb-3"><span className="font-poppins text-[12px] font-semibold text-[#7d7a74]">Highlight {i + 1}</span><button onClick={() => rmImpact(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
-                    <input value={im.headline} onChange={(e) => upImpact(i, { headline: e.target.value })} placeholder="Headline, e.g. Scaled pipeline 3× in 9 months" className="w-full font-poppins font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <div className="flex justify-between items-center mb-3"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Highlight {i + 1}</span><button onClick={() => rmImpact(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <input value={im.headline} onChange={(e) => upImpact(i, { headline: e.target.value })} placeholder="Headline, e.g. Scaled pipeline 3× in 9 months" className="w-full font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <input value={im.context} onChange={(e) => upImpact(i, { context: e.target.value })} placeholder="Company / context, e.g. Meridian · 2024" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <textarea value={im.story} onChange={(e) => upImpact(i, { story: e.target.value })} rows={2} placeholder="What you did, what changed, why it mattered." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                   </div>
                 ))}
-                {impacts.length < 4 && <button onClick={addImpact} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a highlight</button>}
+                {impacts.length < 4 && <button onClick={addImpact} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a highlight</button>}
               </div>
             </>
           )}
 
           {active === "Skills" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your skills.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your skills.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Your skills, how deep they run, and what you&apos;re growing into. Star up to 5 to lead your profile, then slide to set how deep each one runs. We sort them into categories for you.</p>
 
               <div className="mb-8 max-w-[680px]">
                 <div className="flex items-center gap-3 mb-4">
-                  <input placeholder="Search to add a skill…" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                  <div className="relative flex-1">
+                    <input value={skillQuery} onChange={(e) => setSkillQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && skillQuery.trim()) { e.preventDefault(); addSkill(skillQuery); } }} placeholder="Search to add a skill…" className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    {skillQuery.trim().length >= 1 && (() => {
+                      const q = skillQuery.trim().toLowerCase();
+                      const matches = SKILLS_LIBRARY.filter((s) => s.name.toLowerCase().includes(q) && !skills.some((k) => k.name.toLowerCase() === s.name.toLowerCase())).slice(0, 8);
+                      const exists = SKILLS_LIBRARY.some((s) => s.name.toLowerCase() === q) || skills.some((k) => k.name.toLowerCase() === q);
+                      return (
+                        <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-[#E1DED7] shadow-[0_8px_24px_rgba(30,26,20,0.1)] max-h-[280px] overflow-y-auto">
+                          {matches.map((s) => (
+                            <button key={s.name} onClick={() => addSkill(s.name)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EAF1E6] flex items-center justify-between gap-3">
+                              <span>{s.name}</span><span className="text-[10.5px] text-[#a8a29a] shrink-0">{s.category}</span>
+                            </button>
+                          ))}
+                          {!exists && <button onClick={() => addSkill(skillQuery)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EAF1E6] text-[#73926A] font-medium">+ Add &ldquo;{skillQuery.trim()}&rdquo;</button>}
+                          {matches.length === 0 && exists && <div className="font-inter text-[12.5px] py-[8px] px-[11px] text-[#a8a29a]">Already in your list.</div>}
+                        </div>
+                      );
+                    })()}
+                  </div>
                   <span className="text-[11px] text-[#7d7a74] shrink-0 whitespace-nowrap">★ {topCount}/5 top · {skills.length} skills</span>
                 </div>
                 <div className="space-y-5">
-                  {SKILL_CATEGORIES.map((cat) => {
+                  {LIB_CATS.map((cat) => {
                     const rows = skills.map((s, i) => ({ s, i })).filter((x) => catOf(x.s.name) === cat);
                     if (!rows.length) return null;
                     return (
                       <div key={cat}>
-                        <div className="font-poppins text-[11px] font-semibold text-[#7d7a74] uppercase tracking-[0.08em] mb-2">{cat} <span className="font-normal text-[#a8a29a] normal-case tracking-normal">· {rows.length}</span></div>
+                        <div className="font-sans text-[11px] font-semibold text-[#7d7a74] uppercase tracking-[0.08em] mb-2">{cat} <span className="font-normal text-[#a8a29a] normal-case tracking-normal">· {rows.length}</span></div>
                         <div className="space-y-2">
                           {rows.map(({ s, i }) => (
                             <div key={i} className="flex items-center gap-3 border border-[#E1DED7] py-[7px] px-[10px]">
-                              <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#6B4BD6]" : "text-[#d8d4cc] hover:text-[#6B4BD6]"}`}>★</button>
+                              <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
                               <input value={s.name} onChange={(e) => upSkillField(i, { name: e.target.value })} className="flex-1 min-w-0 font-inter text-[13.5px] py-[4px] focus:outline-none" />
                               <div className="w-[150px] shrink-0">
-                                <input type="range" min={1} max={4} step={1} value={SKILL_LEVELS.indexOf(s.level) + 1} onChange={(e) => upSkillField(i, { level: SKILL_LEVELS[+e.target.value - 1] })} className="w-full accent-[#6B4BD6] cursor-pointer" />
-                                <div className="font-poppins text-[10px] text-[#7d7a74] text-right -mt-[2px]">{s.level}</div>
+                                <input type="range" min={1} max={4} step={1} value={SKILL_LEVELS.indexOf(s.level) + 1} onChange={(e) => upSkillField(i, { level: SKILL_LEVELS[+e.target.value - 1] })} className="w-full accent-[#73926A] cursor-pointer" />
+                                <div className="font-sans text-[10px] text-[#7d7a74] text-right -mt-[2px]">{s.level}</div>
                               </div>
                               <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-brand-orange text-[15px] shrink-0">×</button>
                             </div>
@@ -630,75 +885,82 @@ export default function BuildPreview() {
               </div>
 
               <div className="mb-8 max-w-[560px]">
-                <label className="font-poppins text-[13px] font-semibold block mb-1">Currently learning <span className="font-normal text-[#a8a29a]">· the top skills you&apos;re building right now</span></label>
+                <label className="font-sans text-[13px] font-semibold block mb-1">Currently learning <span className="font-normal text-[#a8a29a]">· the top skills you&apos;re building right now</span></label>
                 <div className="flex flex-wrap gap-[6px] items-center border border-[#E1DED7] py-[7px] px-[9px]">
-                  {learning.map((k) => <span key={k} className="inline-flex items-center gap-1 font-poppins text-[12px] py-[4px] px-[9px] bg-[#EAF6E4] text-[#4f7a43]">{k}<button onClick={() => rmLearn(k)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
+                  {learning.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF6E4] text-[#4f7a43]">{k}<button onClick={() => rmLearn(k)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
                   <input value={learnDraft} onChange={(e) => setLearnDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLearn())} placeholder="add a skill…" className="flex-1 min-w-[100px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
                 </div>
               </div>
 
               <div className="max-w-[680px]">
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Industries <span className="font-normal text-[#a8a29a]">· where you&apos;ve worked · powers search</span></label>
-                <div className="flex flex-wrap gap-[8px]">
-                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); return <button key={t} onClick={() => setIndustries((c) => (c.includes(t) ? c.filter((x) => x !== t) : [...c, t]))} className={`font-poppins text-[13px] py-[7px] px-[13px] border ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className="font-sans text-[13px] font-semibold">Industries <span className="font-normal text-[#a8a29a]">· where you&apos;ve worked · powers search</span></label>
+                  <span className="text-[11px] text-[#7d7a74]">{industries.length}/{IND_MAX}</span>
                 </div>
+                <div className="flex flex-wrap gap-[8px] mb-3">
+                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); const full = !on && industries.length >= IND_MAX; return <button key={t} disabled={full} onClick={() => toggleIndustry(t)} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
+                  {industries.filter((t) => !SKILL_INDUSTRIES.includes(t)).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[13px] py-[7px] px-[13px] border border-[#73926A] bg-[#EAF1E6] text-[#73926A]">{t}<button onClick={() => toggleIndustry(t)} className="text-[#73926A]/60 hover:text-[#73926A]">×</button></span>)}
+                </div>
+                {industries.length < IND_MAX && (
+                  <input value={indDraft} onChange={(e) => setIndDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addIndustry())} placeholder="Add your own industry…" className="max-w-[280px] w-full font-inter text-[12.5px] py-[8px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                )}
               </div>
             </>
           )}
 
           {active === "Superpowers" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your superpowers.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your superpowers.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">The things you&apos;re uniquely great at — in your own words. Write it like you&apos;d say it out loud. Your profile showcases your top {SP_SHOWCASE}; the rest live in your bio. We pull the keywords that make you findable.</p>
               <div className="space-y-4 max-w-[720px]">
                 {powers.map((p, i) => (
                   <div key={i} className={`p-[18px] border ${i < SP_SHOWCASE ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="font-poppins text-[12px] font-semibold text-[#6B4BD6]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
-                      <button onClick={() => rmPower(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                      <span className="font-sans text-[12px] font-semibold text-[#73926A]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
+                      <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
                     </div>
-                    <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-poppins font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
+                    <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-sans font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                     <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Proof — one example (optional). What was the situation, what you did, what changed." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-poppins text-[11.5px] font-semibold text-[#7d7a74]">Search keywords <span className="font-normal text-[#a8a29a]">· helps people find you · never shown on your profile</span></span>
-                        <button onClick={() => suggestKw(i)} className="font-poppins text-[11px] text-[#6B4BD6] hover:underline">↻ Suggest from text</button>
+                        <span className="font-sans text-[11.5px] font-semibold text-[#7d7a74]">Search keywords <span className="font-normal text-[#a8a29a]">· helps people find you · never shown on your profile</span></span>
+                        <button onClick={() => suggestKw(i)} className="font-sans text-[11px] text-[#73926A] hover:underline">↻ Suggest from text</button>
                       </div>
                       <div className="flex flex-wrap gap-[6px] items-center">
-                        {p.keywords.map((k) => <span key={k} className="inline-flex items-center gap-1 font-poppins text-[12px] py-[4px] px-[9px] bg-[#F2EEFF] text-[#6B4BD6]">{k}<button onClick={() => rmKw(i, k)} className="text-[#6B4BD6]/50 hover:text-[#6B4BD6]">×</button></span>)}
+                        {p.keywords.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF1E6] text-[#73926A]">{k}<button onClick={() => rmKw(i, k)} className="text-[#73926A]/50 hover:text-[#73926A]">×</button></span>)}
                         <input value={kwDraft[i] || ""} onChange={(e) => setKwDraft((d) => ({ ...d, [i]: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addKw(i))} placeholder="add…" className="font-inter text-[12px] py-[4px] px-[8px] border border-[#E1DED7] w-[80px] focus:outline-none focus:border-brand-ink" />
                       </div>
                     </div>
                   </div>
                 ))}
-                {powers.length < SP_MAX && <button onClick={addPower} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a superpower <span className="text-[#a8a29a]">({powers.length}/{SP_MAX})</span></button>}
+                {powers.length < SP_MAX && <button onClick={addPower} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a superpower <span className="text-[#a8a29a]">({powers.length}/{SP_MAX})</span></button>}
               </div>
             </>
           )}
 
           {active === "Values" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your values.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your values.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to 12, then feature the 4 that matter most — they lead your profile; the rest live in your bio.</p>
 
               <div className="mb-8 max-w-[720px]">
                 <div className="flex items-baseline justify-between mb-2">
-                  <label className="font-poppins text-[13px] font-semibold">Your values</label>
+                  <label className="font-sans text-[13px] font-semibold">Your values</label>
                   <span className="text-[11px] text-[#7d7a74]">{vals.length}/{VAL_MAX}</span>
                 </div>
                 <div className="flex flex-wrap gap-[8px]">
-                  {VALUES.map((v) => { const on = vals.includes(v); const full = !on && vals.length >= VAL_MAX; return <button key={v} disabled={full} onClick={() => toggleVal(v)} className={`font-poppins text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{v}</button>; })}
+                  {VALUES.map((v) => { const on = vals.includes(v); const full = !on && vals.length >= VAL_MAX; return <button key={v} disabled={full} onClick={() => toggleVal(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{v}</button>; })}
                 </div>
               </div>
 
               {vals.length > 0 && (
                 <div className="max-w-[720px]">
                   <div className="flex items-baseline justify-between mb-2">
-                    <label className="font-poppins text-[13px] font-semibold">Feature on your profile <span className="font-normal text-[#a8a29a]">· star the {VAL_FEATURED} that matter most</span></label>
+                    <label className="font-sans text-[13px] font-semibold">Feature on your profile <span className="font-normal text-[#a8a29a]">· star the {VAL_FEATURED} that matter most</span></label>
                     <span className="text-[11px] text-[#7d7a74]">★ {vFeatured.length}/{VAL_FEATURED}</span>
                   </div>
                   <div className="flex flex-wrap gap-[8px]">
-                    {vals.map((v) => { const on = vFeatured.includes(v); const full = !on && vFeatured.length >= VAL_FEATURED; return <button key={v} disabled={full} onClick={() => toggleVFeatured(v)} className={`font-poppins text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#6B4BD6] bg-[#6B4BD6] text-white" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "★ " : ""}{v}</button>; })}
+                    {vals.map((v) => { const on = vFeatured.includes(v); const full = !on && vFeatured.length >= VAL_FEATURED; return <button key={v} disabled={full} onClick={() => toggleVFeatured(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#73926A] bg-[#73926A] text-white" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "★ " : ""}{v}</button>; })}
                   </div>
                 </div>
               )}
@@ -707,69 +969,73 @@ export default function BuildPreview() {
 
           {active === "Media" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your media.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your media.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Press, talks, writing, podcasts, portfolio — the work that shows what you do. Star up to {MEDIA_FEATURED} to feature in your gallery; the rest live in your bio.</p>
               <div className="space-y-4 max-w-[720px]">
                 {media.map((m, i) => (
                   <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex flex-wrap gap-[6px]">
-                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-poppins text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => toggleMediaFeatured(i)} title="Feature in gallery" className={`text-[16px] leading-none ${m.featured ? "text-[#6B4BD6]" : "text-[#d8d4cc] hover:text-[#6B4BD6]"}`}>★</button>
-                        <button onClick={() => rmMedia(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                        <button onClick={() => toggleMediaFeatured(i)} title="Feature in gallery" className={`text-[16px] leading-none ${m.featured ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
+                        <button onClick={() => rmMedia(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
                       </div>
                     </div>
-                    <input value={m.title} onChange={(e) => upMedia(i, { title: e.target.value })} placeholder="Title, e.g. The operators rebuilding personal branding" className="w-full font-poppins font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <input value={m.title} onChange={(e) => upMedia(i, { title: e.target.value })} placeholder="Title, e.g. The operators rebuilding personal branding" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <div className="flex gap-2 mb-2">
                       <input value={m.outlet} onChange={(e) => upMedia(i, { outlet: e.target.value })} placeholder="Source / outlet" className="flex-1 min-w-0 font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       <input value={m.url} onChange={(e) => upMedia(i, { url: e.target.value })} placeholder="Link (optional)" className="flex-1 min-w-0 font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                     </div>
-                    <button className="w-full font-poppins text-[12px] text-[#7d7a74] py-[10px] border border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Upload cover image (optional)</button>
+                    <label className="w-full font-sans text-[12px] text-[#7d7a74] py-[10px] border border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink flex items-center justify-center cursor-pointer">
+                      {m.img ? "Replace cover image" : "+ Upload cover image (optional)"}
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, `media-${i}`); if (url) upMedia(i, { img: url }); } e.currentTarget.value = ""; }} />
+                    </label>
+                    {m.img && <div className="mt-2 flex items-center gap-2"><img src={m.img} alt="" className="w-[72px] h-[46px] object-cover border border-[#E1DED7]" /><button onClick={() => upMedia(i, { img: "" })} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove cover</button></div>}
                   </div>
                 ))}
-                <button onClick={addMedia} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add media</button>
+                <button onClick={addMedia} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add media</button>
               </div>
             </>
           )}
 
           {active === "Testimonials" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Testimonials.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Testimonials.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">Words from people you&apos;ve worked with. Star up to 2 to feature on your profile; the rest live in your bio.</p>
-              <button className="mb-5 font-poppins text-[13px] py-[8px] px-[14px] border border-[#6B4BD6] text-[#6B4BD6] hover:bg-[#F2EEFF]">+ Request a testimonial <span className="text-[#a8a29a] font-normal">· we&apos;ll send them a link</span></button>
+              <button className="mb-5 font-sans text-[13px] py-[8px] px-[14px] border border-[#73926A] text-[#73926A] hover:bg-[#EAF1E6]">+ Request a testimonial <span className="text-[#a8a29a] font-normal">· we&apos;ll send them a link</span></button>
               <div className="space-y-4 max-w-[720px]">
                 {testis.map((t, i) => (
                   <div key={i} className={`p-[18px] border ${t.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
                     <div className="flex justify-between items-center mb-3">
-                      <button onClick={() => toggleTestiFeatured(i)} className={`flex items-center gap-1.5 font-poppins text-[12px] font-semibold ${t.featured ? "text-[#6B4BD6]" : "text-[#a8a29a] hover:text-[#6B4BD6]"}`}><span className="text-[15px] leading-none">★</span>{t.featured ? "Featured" : "Feature"}</button>
-                      <button onClick={() => rmTesti(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                      <button onClick={() => toggleTestiFeatured(i)} className={`flex items-center gap-1.5 font-sans text-[12px] font-semibold ${t.featured ? "text-[#73926A]" : "text-[#a8a29a] hover:text-[#73926A]"}`}><span className="text-[15px] leading-none">★</span>{t.featured ? "Featured" : "Feature"}</button>
+                      <button onClick={() => rmTesti(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
                     </div>
                     <textarea value={t.quote} onChange={(e) => upTesti(i, { quote: e.target.value })} rows={2} placeholder="What they said about working with you." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 resize-none focus:outline-none focus:border-brand-ink" />
                     <div className="flex gap-2">
                       <input value={t.author} onChange={(e) => upTesti(i, { author: e.target.value })} placeholder="Name" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       <input value={t.role} onChange={(e) => upTesti(i, { role: e.target.value })} placeholder="Role, Company" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-                      <select value={t.relationship} onChange={(e) => upTesti(i, { relationship: e.target.value })} className="shrink-0 font-poppins text-[12px] py-[8px] px-[7px] border border-[#E1DED7] bg-white focus:outline-none">
+                      <select value={t.relationship} onChange={(e) => upTesti(i, { relationship: e.target.value })} className="shrink-0 font-sans text-[12px] py-[8px] px-[7px] border border-[#E1DED7] bg-white focus:outline-none">
                         {RELATIONSHIPS.map((r) => <option key={r}>{r}</option>)}
                       </select>
                     </div>
                   </div>
                 ))}
-                <button onClick={addTesti} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a testimonial</button>
+                <button onClick={addTesti} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a testimonial</button>
               </div>
             </>
           )}
 
           {active === "Education" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Education.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Education.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Schools, degrees, and the certifications that back up your expertise.</p>
               <div className="space-y-3 max-w-[720px]">
                 {edu.map((e, i) => (
                   <div key={i} className="p-[16px] border border-[#E1DED7]">
-                    <div className="flex justify-between items-center mb-2"><span className="font-poppins text-[12px] font-semibold text-[#7d7a74]">Education {i + 1}</span><button onClick={() => rmEdu(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
-                    <input value={e.school} onChange={(ev) => upEdu(i, { school: ev.target.value })} placeholder="School / institution" className="w-full font-poppins font-semibold text-[14px] py-[8px] px-[10px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <div className="flex justify-between items-center mb-2"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Education {i + 1}</span><button onClick={() => rmEdu(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <input value={e.school} onChange={(ev) => upEdu(i, { school: ev.target.value })} placeholder="School / institution" className="w-full font-sans font-semibold text-[14px] py-[8px] px-[10px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <div className="flex gap-2">
                       <input value={e.degree} onChange={(ev) => upEdu(i, { degree: ev.target.value })} placeholder="Degree" className="w-[110px] shrink-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       <input value={e.field} onChange={(ev) => upEdu(i, { field: ev.target.value })} placeholder="Field of study" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
@@ -777,55 +1043,98 @@ export default function BuildPreview() {
                     </div>
                   </div>
                 ))}
-                <button onClick={addEdu} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add education</button>
+                <button onClick={addEdu} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add education</button>
               </div>
               <div className="mt-6 max-w-[720px]">
-                <label className="font-poppins text-[13px] font-semibold block mb-2">Certifications <span className="font-normal text-[#a8a29a]">· add one at a time</span></label>
+                <label className="font-sans text-[13px] font-semibold block mb-2">Certifications <span className="font-normal text-[#a8a29a]">· add one at a time</span></label>
                 <div className="space-y-2">
                   {certs.map((c, i) => (
                     <div key={i} className="flex gap-2">
                       <input value={c} onChange={(ev) => upCert(i, ev.target.value)} placeholder="e.g. Google Analytics IQ" className="flex-1 min-w-0 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-                      <button onClick={() => rmCert(i)} aria-label="Remove certification" className="shrink-0 w-[38px] font-poppins text-[15px] text-[#a8a29a] border border-[#E1DED7] hover:border-brand-orange hover:text-brand-orange">×</button>
+                      <button onClick={() => rmCert(i)} aria-label="Remove certification" className="shrink-0 w-[38px] font-sans text-[15px] text-[#a8a29a] border border-[#E1DED7] hover:border-brand-orange hover:text-brand-orange">×</button>
                     </div>
                   ))}
                 </div>
-                <button onClick={addCert} className="mt-2 font-poppins text-[13px] text-[#6B4BD6] font-medium hover:underline">+ Add certification</button>
+                <button onClick={addCert} className="mt-2 font-sans text-[13px] text-[#73926A] font-medium hover:underline">+ Add certification</button>
               </div>
             </>
           )}
 
+          {active === "Reach" && (() => {
+            const ri = "w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink";
+            return (
+            <>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your reach.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">For creators &amp; public figures — your audience across platforms. This powers your media kit. Leave it empty and it won&apos;t show on your profile.</p>
+
+              <div className="mb-6 max-w-[720px]">
+                <label className="font-sans text-[13px] font-semibold block mb-2">Platforms <span className="font-normal text-[#a8a29a]">· pick the ones you&apos;re on</span></label>
+                <div className="flex flex-wrap gap-[8px]">
+                  {REACH_PLATFORMS.map((p) => { const on = reach.some((x) => x.key === p); return <button key={p} onClick={() => (on ? rmReach(p) : addReach(p))} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "✓ " : "+ "}{p}</button>; })}
+                </div>
+              </div>
+
+              {reach.length > 0 && (
+                <div className="space-y-3 max-w-[720px] mb-8">
+                  {reach.map((p) => (
+                    <div key={p.key} className="border border-[#E1DED7] p-[14px]">
+                      <div className="flex items-center justify-between mb-2"><span className="font-sans text-[14px] font-semibold">{p.key}</span><button onClick={() => rmReach(p.key)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                      <div className="grid grid-cols-2 gap-[10px]">
+                        <input value={p.handle} onChange={(e) => upReach(p.key, { handle: e.target.value })} placeholder="@handle" className={ri} />
+                        <input value={p.followers} onChange={(e) => upReach(p.key, { followers: e.target.value })} placeholder="Followers (e.g. 128K)" className={ri} />
+                        <input value={p.engagement} onChange={(e) => upReach(p.key, { engagement: e.target.value })} placeholder="Engagement rate (e.g. 4.2%)" className={ri} />
+                        <input value={p.url} onChange={(e) => upReach(p.key, { url: e.target.value })} placeholder="Profile link (optional)" className={ri} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="max-w-[720px]">
+                <label className="font-sans text-[13px] font-semibold block mb-2">Audience demographics <span className="font-normal text-[#a8a29a]">· optional, great for brand deals</span></label>
+                <div className="grid grid-cols-3 gap-[10px]">
+                  <input value={audAge} onChange={(e) => setAudAge(e.target.value)} placeholder="Top age (e.g. 25–40)" className={ri} />
+                  <input value={audGender} onChange={(e) => setAudGender(e.target.value)} placeholder="Gender (e.g. 72% women)" className={ri} />
+                  <input value={audGeo} onChange={(e) => setAudGeo(e.target.value)} placeholder="Top geos (e.g. US, UK, CA)" className={ri} />
+                </div>
+              </div>
+            </>
+            );
+          })()}
+
           {active === "Store" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your store.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your store.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Star up to 3 to feature; the rest live in your store.</p>
               <div className="space-y-4 max-w-[720px]">
                 {products.map((p, i) => (
                   <div key={i} className={`p-[18px] border ${p.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
                     <div className="flex justify-between items-start gap-3 mb-3">
                       <div className="flex flex-wrap gap-[6px]">
-                        {STORE_KINDS.map((k) => <button key={k} onClick={() => upProduct(i, { kind: k })} className={`font-poppins text-[11.5px] py-[4px] px-[10px] border ${p.kind === k ? "border-[#6B4BD6] bg-[#F2EEFF] text-[#6B4BD6]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                        {STORE_KINDS.map((k) => <button key={k} onClick={() => upProduct(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${p.kind === k ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => toggleProductFeatured(i)} title="Feature" className={`text-[16px] leading-none ${p.featured ? "text-[#6B4BD6]" : "text-[#d8d4cc] hover:text-[#6B4BD6]"}`}>★</button>
-                        <button onClick={() => rmProduct(i)} className="font-poppins text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                        <button onClick={() => toggleProductFeatured(i)} title="Feature" className={`text-[16px] leading-none ${p.featured ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
+                        <button onClick={() => rmProduct(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
                       </div>
                     </div>
-                    <input value={p.title} onChange={(e) => upProduct(i, { title: e.target.value })} placeholder="Title, e.g. The GTM Launch Kit" className="w-full font-poppins font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
+                    <input value={p.title} onChange={(e) => upProduct(i, { title: e.target.value })} placeholder="Title, e.g. The GTM Launch Kit" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <input value={p.blurb} onChange={(e) => upProduct(i, { blurb: e.target.value })} placeholder="One line on what it is" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
-                    <div className="flex items-center gap-2">
-                      <span className="font-poppins text-[14px] text-[#7d7a74]">$</span>
-                      <input value={p.price} onChange={(e) => upProduct(i, { price: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0 = free" inputMode="numeric" className="w-[110px] font-poppins text-[14px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-sans text-[14px] text-[#7d7a74]">$</span>
+                      <input value={p.price} onChange={(e) => upProduct(i, { price: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0 = free" inputMode="numeric" className="w-[110px] font-sans text-[14px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                     </div>
+                    <input value={p.url || ""} onChange={(e) => upProduct(i, { url: e.target.value })} placeholder="Link — where people buy it (Amazon, Gumroad, your site…)" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                   </div>
                 ))}
-                <button onClick={addProduct} className="w-full font-poppins text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a product</button>
+                <button onClick={addProduct} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a product</button>
               </div>
             </>
           )}
 
           {active === "Long Bio" && (
             <>
-              <h1 className="font-poppins text-[32px] font-semibold tracking-[-0.02em] leading-[1.05] mb-[10px]">Your long bio.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your long bio.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The full narrative, in your own words. This is also where the &ldquo;see all&rdquo; overflow from Superpowers, Values, and Media lives.</p>
               <div className="max-w-[720px]">
                 <textarea value={longBio} onChange={(e) => setLongBio(e.target.value)} rows={12} className="w-full font-inter text-[14.5px] leading-[1.6] py-[14px] px-[16px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
@@ -837,329 +1146,25 @@ export default function BuildPreview() {
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
+          <div className="flex items-center justify-between mt-14 pt-6 border-t border-[#ECEAE4] max-w-[720px]">
+            <button onClick={() => { const i = ALL_STEPS.indexOf(active); if (i > 0) setActive(ALL_STEPS[i - 1]); window.scrollTo(0, 0); }} disabled={ALL_STEPS.indexOf(active) <= 0} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink disabled:opacity-30 disabled:cursor-default">← Back</button>
+            {ALL_STEPS.indexOf(active) < ALL_STEPS.length - 1
+              ? <button onClick={() => { const i = ALL_STEPS.indexOf(active); setActive(ALL_STEPS[i + 1]); window.scrollTo(0, 0); }} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-6">Next →</button>
+              : <button onClick={() => setShowPublish(true)} className="font-sans bg-[#73926A] text-white text-[13px] font-medium py-[11px] px-6">{claimed ? "Update my profile →" : "Publish my profile →"}</button>}
+          </div>
         </main>
       </div>
 
-      {/* ── PREVIEW ── */}
-      <aside className="border-l border-[#ECEAE4] p-[26px_22px] sticky top-0 h-screen overflow-y-auto bg-white">
-        <div className="text-center mb-[18px]"><div className="font-poppins text-[15px] font-semibold">Profile preview</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5">Updates as you edit</div></div>
-
-        {active === "About You" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="w-[54px] h-[54px] rounded-full bg-[#E6E2D0] mb-[14px]" />
-            <div className="font-poppins text-[20px] font-semibold leading-tight">{name || "Your name"}</div>
-            <div className="font-poppins text-[12px] font-medium text-[#6B4BD6] mt-1">{headline || "Your headline"}</div>
-            <div className="text-[12.5px] text-[#3a352f] mt-2 leading-snug">{bio}</div>
-            <div className="flex flex-wrap gap-[6px] mt-3">{types.map((t) => <span key={t} className="font-poppins text-[10.5px] font-medium py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
-            <div className="text-[11.5px] text-[#7d7a74] mt-3">{city} · {loc}{openNow ? " · Open now" : ""}</div>
-          </div>
-        )}
-
-        {active === "Experience" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Featured Experience</div>
-            {featured ? (
-              <>
-                <span className={`font-poppins text-[9.5px] font-semibold uppercase tracking-[0.1em] py-[2px] px-[7px] ${featured.kind === "role" ? "bg-[#F2EEFF] text-[#6B4BD6]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{featured.kind === "role" ? "Role" : "Project"}</span>
-                <div className="font-poppins text-[16px] font-semibold mt-2">{featured.primary || "Untitled"}</div>
-                <div className="font-poppins text-[12.5px] text-[#6B4BD6] mt-0.5">{[featured.secondary, featured.dates].filter(Boolean).join(" · ")}</div>
-                <div className="text-[12.5px] text-[#3a352f] mt-2 leading-snug">{featured.desc}</div>
-                {featured.result && <div className="inline-block font-poppins text-[11px] py-[3px] px-[8px] bg-[#F4F2EF] mt-3">{featured.result}</div>}
-              </>
-            ) : <div className="text-[12.5px] text-[#7d7a74]">Star a role or project to feature it here.</div>}
-            <div className="text-[11.5px] text-[#7d7a74] mt-4 pt-3 border-t border-[#ECEAE4]">Timeline: {entries.filter((e) => e.kind === "role").length} roles · {entries.filter((e) => e.kind === "project").length} projects</div>
-          </div>
-        )}
-
-        {active === "Leadership" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">How I Work</div>
-            <div className="space-y-[6px]">{arch.map((a) => <div key={a} className="font-poppins text-[13px] font-medium">{a}</div>)}</div>
-            {ledTeam && (
-              <>
-                <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3 mt-5 pt-4 border-t border-[#ECEAE4]">Leadership Snapshot</div>
-                <div className="grid grid-cols-3 gap-3">
-                  <PvStat v={yearsLed} l="Leading" /><PvStat v={largestTeam} l="Largest team" /><PvStat v={orgs} l="Orgs" />
-                </div>
-                <div className="text-[12px] text-[#3a352f] mt-3 italic leading-snug">&ldquo;{philosophy}&rdquo;</div>
-              </>
-            )}
-          </div>
-        )}
-
-        {active === "Work With Me" && (
-          <div className="space-y-3">
-            {ftEnabled && (
-              <div className="bg-white border border-[#ECEAE4] p-4">
-                <div className="font-poppins text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[#3a352f] mb-1">Full-time</div>
-                <div className="font-poppins text-[15px] font-semibold">Open to full-time</div>
-                <div className="text-[12px] text-[#7d7a74] mt-0.5">{ftRoles}</div>
-                <button className="w-full mt-3 bg-brand-ink text-white font-poppins text-[12.5px] font-medium py-[9px]">Get in touch</button>
-              </div>
-            )}
-            {offers.filter((o) => o.added).map((o) => (
-              <div key={o.key} className="bg-white border border-[#ECEAE4] p-4">
-                <div className="font-poppins text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[#6B4BD6] mb-1">{o.booking === "book" ? "Book instantly" : o.booking === "proposal" ? "Send proposal" : "Message"}</div>
-                <div className="font-poppins text-[15px] font-semibold">{o.title}</div>
-                <div className="text-[12px] text-[#3a352f] mt-0.5">{[o.length || o.duration || o.cadence, o.key === "advisory" ? "" : (o.showRate || o.key === "office") && o.rate ? `$${o.rate} ${o.unit}` : "Contact for rate"].filter(Boolean).join(" · ")}</div>
-                {o.desc && <div className="text-[12px] text-[#7d7a74] mt-2 leading-snug">{o.desc}</div>}
-                <button className="w-full mt-3 bg-brand-ink text-white font-poppins text-[12.5px] font-medium py-[9px]">{bookLabel(o.booking)}</button>
-              </div>
-            ))}
-            {offers.some((o) => !o.added) && (
-              <div className="pt-2">
-                <div className="font-poppins text-[11px] font-semibold mb-2">More ways to work together</div>
-                {offers.filter((o) => !o.added).map((o) => (
-                  <div key={o.key} className="flex items-center justify-between py-[6px] text-[12.5px]"><span>{o.title}</span><span className="text-[#6B4BD6] font-medium cursor-pointer">+ Add</span></div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {active === "Skills" && (() => {
-          const top5 = skills.filter((s) => s.top).slice(0, 5);
-          const lvl = (l: string) => SKILL_LEVELS.indexOf(l) + 1;
-          const PER_CAT = 3;
-          return (
-            <div className="bg-white border border-[#ECEAE4] p-5">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2">Top Skills</div>
-              <div className="flex flex-wrap gap-[6px] mb-4">
-                {top5.length ? top5.map((s) => <span key={s.name} className="font-poppins text-[12px] font-medium py-[4px] px-[10px] bg-brand-ink text-white">{s.name}</span>) : <span className="text-[12px] text-[#7d7a74]">Star up to 5.</span>}
-              </div>
-
-              <div className="flex items-baseline justify-between mb-2 pt-3 border-t border-[#ECEAE4]">
-                <span className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74]">Skill Map</span>
-                <span className="text-[9.5px] text-[#a8a29a]">by category</span>
-              </div>
-              <div className="space-y-3">
-                {SKILL_CATEGORIES.map((cat) => {
-                  const inCat = skills.filter((s) => catOf(s.name) === cat).sort((a, b) => lvl(b.level) - lvl(a.level));
-                  if (!inCat.length) return null;
-                  const show = inCat.slice(0, PER_CAT);
-                  const more = inCat.length - show.length;
-                  return (
-                    <div key={cat}>
-                      <div className="flex justify-between items-baseline mb-1.5"><span className="font-poppins text-[10.5px] font-semibold text-[#3a352f]">{cat}</span><span className="text-[9.5px] text-[#a8a29a]">{inCat.length}</span></div>
-                      {show.map((s) => (
-                        <div key={s.name} className="mb-[6px]">
-                          <div className="flex justify-between items-baseline mb-[2px]"><span className="font-poppins text-[11px]">{s.name}</span><span className="text-[9px] text-[#a8a29a]">{s.level}</span></div>
-                          <div className="relative h-[7px]">
-                            <div className="absolute inset-0 flex">{[0, 1, 2, 3].map((c) => <div key={c} className={`flex-1 bg-[#F6F4F0] ${c < 3 ? "border-r border-[#EAE7DF]" : ""}`} />)}</div>
-                            <div className="absolute top-0 left-0 h-full" style={{ width: `${lvl(s.level) * 25}%`, background: typeOf(s.name) === "hard" ? "linear-gradient(90deg,#C7B5EE,#6B4BD6)" : "repeating-linear-gradient(45deg,#CDBFEF,#CDBFEF 3px,#E7DFF9 3px,#E7DFF9 6px)" }} />
-                          </div>
-                        </div>
-                      ))}
-                      {more > 0 && <div className="font-poppins text-[10px] text-[#6B4BD6] cursor-pointer mt-0.5">+{more} more</div>}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex gap-3 mt-3 pt-2 text-[10px] text-[#7d7a74]">
-                <span className="inline-flex items-center gap-1"><span className="w-[10px] h-[8px] inline-block" style={{ background: "linear-gradient(90deg,#C7B5EE,#6B4BD6)" }} /> Hard</span>
-                <span className="inline-flex items-center gap-1"><span className="w-[10px] h-[8px] inline-block" style={{ background: "repeating-linear-gradient(45deg,#CDBFEF,#CDBFEF 3px,#E7DFF9 3px,#E7DFF9 6px)" }} /> Soft</span>
-                <span className="text-[#a8a29a]">· auto-sorted</span>
-              </div>
-
-              {learning.length > 0 && (
-                <>
-                  <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-4 pt-3 border-t border-[#ECEAE4]">Currently Learning</div>
-                  <div className="flex flex-wrap gap-[6px]">{learning.map((k) => <span key={k} className="font-poppins text-[11px] py-[2px] px-[8px] bg-[#EAF6E4] text-[#4f7a43]">↗ {k}</span>)}</div>
-                </>
-              )}
-
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-2 mt-4 pt-3 border-t border-[#ECEAE4]">Industries</div>
-              <div className="flex flex-wrap gap-[6px]">{industries.map((t) => <span key={t} className="font-poppins text-[11.5px] py-[3px] px-[8px] bg-[#F4F2EF]">{t}</span>)}</div>
-            </div>
-          );
-        })()}
-
-        {active === "Media" && (() => {
-          const feat = media.filter((m) => m.featured);
-          const rest = media.length - feat.length;
-          return (
-            <div className="bg-white border border-[#ECEAE4] p-5">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Media</div>
-              {feat.length ? (
-                <>
-                  <div className="space-y-3">
-                    {feat.map((m, i) => (
-                      <div key={i} className="border border-[#ECEAE4]">
-                        <div className="aspect-video relative flex items-center justify-center" style={{ background: MEDIA_COLORS[m.kind] || "#F4F2EF" }}>
-                          <span className="font-poppins text-[12px] font-semibold uppercase tracking-[0.12em] text-[#111111]/45">{m.kind}</span>
-                          <span className="absolute top-2 left-2 font-poppins text-[9.5px] font-semibold py-[2px] px-[6px] bg-white/85 text-[#3a352f]">{m.kind}</span>
-                        </div>
-                        <div className="p-2.5 flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="font-poppins text-[12.5px] font-semibold leading-snug">{m.title || "Untitled"}</div>
-                            {m.outlet && <div className="font-poppins text-[11px] text-[#7d7a74] mt-0.5">{m.outlet}</div>}
-                          </div>
-                          <span className="text-[#a8a29a] text-[12px] shrink-0 mt-0.5">↗</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {rest > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {media.length} in bio →</span></div>
-                  )}
-                </>
-              ) : <div className="text-[12.5px] text-[#7d7a74]">Star media to feature it in your gallery.</div>}
-            </div>
-          );
-        })()}
-
-        {active === "Values" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Values</div>
-            {vFeatured.length ? (
-              <>
-                <div className="flex flex-wrap gap-[7px]">
-                  {vFeatured.map((v) => <span key={v} className="font-poppins text-[13px] font-medium py-[6px] px-[12px] bg-[#F2EEFF] text-[#6B4BD6]">{v}</span>)}
-                </div>
-                {vals.length > vFeatured.length && (
-                  <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {vals.length} values →</span><div className="text-[10.5px] text-[#a8a29a] mt-0.5">Opens the Values section in your bio</div></div>
-                )}
-              </>
-            ) : <div className="text-[12.5px] text-[#7d7a74]">Star up to 4 to feature here.</div>}
-          </div>
-        )}
-
-        {active === "Impact" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Impact</div>
-            {impacts.map((im, i) => (
-              <div key={i} className="py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
-                <div className="font-poppins text-[14px] font-semibold leading-snug">{im.headline || "Your highlight"}</div>
-                <div className="font-poppins text-[11.5px] text-[#6B4BD6] mt-0.5">{im.context}</div>
-                <div className="text-[12px] text-[#7d7a74] mt-1 leading-snug">{im.story}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {active === "Superpowers" && (() => {
-          const filled = powers.filter((p) => p.statement.trim());
-          return (
-            <div className="bg-white border border-[#ECEAE4] p-5">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Superpowers</div>
-              {filled.length ? (
-                <>
-                  {filled.slice(0, SP_SHOWCASE).map((p, i) => (
-                    <div key={i} className="flex gap-2.5 py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
-                      <span className="font-poppins text-[13px] font-semibold text-[#6B4BD6] tabular-nums shrink-0">{String(i + 1).padStart(2, "0")}</span>
-                      <div className="min-w-0">
-                        <div className="font-poppins text-[13.5px] font-semibold leading-snug">{p.statement}</div>
-                        {p.proof && <div className="text-[12px] text-[#7d7a74] mt-1 leading-snug">{p.proof}</div>}
-                      </div>
-                    </div>
-                  ))}
-                  {filled.length > SP_SHOWCASE && (
-                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {filled.length} superpowers →</span><div className="text-[10.5px] text-[#a8a29a] mt-0.5">Opens the Superpowers section in your bio</div></div>
-                  )}
-                </>
-              ) : <div className="text-[12.5px] text-[#7d7a74]">Write the thing you&apos;re uniquely great at.</div>}
-            </div>
-          );
-        })()}
-
-        {active === "Testimonials" && (() => {
-          const feat = testis.filter((t) => t.featured);
-          return (
-            <div className="bg-white border border-[#ECEAE4] p-5">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Testimonials</div>
-              {feat.length ? (
-                <>
-                  <div className="space-y-3">
-                    {feat.map((t, i) => (
-                      <div key={i} className="py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
-                        <div className="text-[13.5px] leading-snug text-[#2a2620]">&ldquo;{t.quote || "Their words about you."}&rdquo;</div>
-                        <div className="font-poppins text-[12px] font-semibold mt-2">{t.author || "Name"}</div>
-                        <div className="font-poppins text-[11px] text-[#7d7a74]">{t.role}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {testis.length > feat.length && (
-                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {testis.length} in bio →</span></div>
-                  )}
-                </>
-              ) : <div className="text-[12.5px] text-[#7d7a74]">Star up to 2 testimonials to feature here.</div>}
-            </div>
-          );
-        })()}
-
-        {active === "Education" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Education</div>
-            {edu.map((e, i) => (
-              <div key={i} className="py-3 border-t border-[#ECEAE4] first:border-t-0 first:pt-0">
-                <div className="font-poppins text-[13.5px] font-semibold leading-snug">{e.school || "School"}</div>
-                <div className="font-poppins text-[12px] text-[#3a352f] mt-0.5">{[e.degree, e.field].filter(Boolean).join(", ")}</div>
-                {e.year && <div className="font-poppins text-[11px] text-[#7d7a74] mt-0.5">{e.year}</div>}
-              </div>
-            ))}
-            {certs.some((c) => c.trim()) && (
-              <div className="mt-3 pt-3 border-t border-[#ECEAE4]">
-                <div className="font-poppins text-[10px] font-semibold uppercase tracking-[0.1em] text-[#a8a29a] mb-2">Certifications</div>
-                <div className="flex flex-wrap gap-[6px]">
-                  {certs.filter((c) => c.trim()).map((c, i) => (
-                    <span key={i} className="font-poppins text-[11.5px] py-[4px] px-[9px] bg-[#F4F2EF] text-[#3a352f]">{c}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {active === "Store" && (() => {
-          const feat = products.filter((p) => p.featured);
-          return (
-            <div className="bg-white border border-[#ECEAE4] p-5">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Store</div>
-              {feat.length ? (
-                <>
-                  <div className="space-y-3">
-                    {feat.map((p, i) => (
-                      <div key={i} className="border border-[#ECEAE4] p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-poppins text-[9.5px] font-semibold uppercase tracking-[0.1em] py-[2px] px-[7px] bg-[#F2EEFF] text-[#6B4BD6]">{p.kind}</span>
-                          <span className="font-poppins text-[13px] font-semibold">{p.price ? `$${p.price}` : "Free"}</span>
-                        </div>
-                        <div className="font-poppins text-[13.5px] font-semibold leading-snug mt-2">{p.title || "Product title"}</div>
-                        {p.blurb && <div className="text-[12px] text-[#7d7a74] mt-0.5 leading-snug">{p.blurb}</div>}
-                        <button className="mt-2.5 w-full font-poppins text-[12px] font-semibold py-[7px] bg-[#111111] text-white">Buy</button>
-                      </div>
-                    ))}
-                  </div>
-                  {products.length > feat.length && (
-                    <div className="mt-3 pt-3 border-t border-[#ECEAE4]"><span className="font-poppins text-[12px] font-medium text-[#6B4BD6] cursor-pointer">See all {products.length} in store →</span></div>
-                  )}
-                </>
-              ) : <div className="text-[12.5px] text-[#7d7a74]">Star up to 3 products to feature here.</div>}
-            </div>
-          );
-        })()}
-
-        {active === "Long Bio" && (
-          <div className="bg-white border border-[#ECEAE4] p-5">
-            <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-3">Bio</div>
-            <div className="space-y-2.5">
-              {longBio.split("\n").filter((para) => para.trim()).map((para, i) => (
-                <p key={i} className="text-[13px] leading-[1.55] text-[#2a2620]">{para}</p>
-              ))}
-            </div>
-          </div>
-        )}
-      </aside>
 
       {/* ── ONBOARDING GUIDE (rides on top of the dashboard) ── */}
       {tour === "welcome" && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white max-w-[440px] w-full p-8 text-center">
-            <div className="font-poppins text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B4BD6] mb-3">Welcome</div>
-            <h2 className="font-poppins text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Let’s build your Marquee.</h2>
+            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">Welcome</div>
+            <h2 className="font-sans text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Let’s build your Marquee.</h2>
             <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">We’ll walk through it together — your profile first, then your brand. Everything stays editable, and you can skip anything and come back.</p>
-            <button onClick={startTour} className="w-full font-poppins bg-[#6B4BD6] text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-[#5a3ec4]">Start building →</button>
-            <button onClick={() => setTour(null)} className="w-full font-poppins text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">I’ll explore on my own</button>
+            <button onClick={startTour} className="w-full font-sans bg-[#73926A] text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-[#5f8257]">Start building →</button>
+            <button onClick={() => setTour(null)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">I’ll explore on my own</button>
           </div>
         </div>
       )}
@@ -1168,18 +1173,18 @@ export default function BuildPreview() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[55] w-[min(560px,92vw)] bg-white border border-[#E1DED7] shadow-[0_18px_44px_rgba(20,10,60,0.18)] p-[18px_20px]">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="font-poppins text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#6B4BD6]">{tourGroup(tour)} · {tour + 1} of 13</div>
-              <div className="font-poppins text-[15px] font-semibold mt-0.5">{TOUR_STEPS[tour]}</div>
+              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#73926A]">{tourGroup(tour)} · {tour + 1} of 13</div>
+              <div className="font-sans text-[15px] font-semibold mt-0.5">{TOUR_STEPS[tour]}</div>
               <div className="text-[12.5px] text-[#7d7a74] mt-0.5 leading-snug">{TOUR_HINTS[TOUR_STEPS[tour]]}</div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              {tour > 0 && <button onClick={() => tourGo(tour - 1)} className="font-poppins text-[13px] text-[#7d7a74] px-3 py-2 hover:text-brand-ink">Back</button>}
-              <button onClick={() => tourGo(tour + 1)} className="font-poppins bg-[#6B4BD6] text-white text-[13px] font-semibold px-5 py-[10px] hover:bg-[#5a3ec4]">{tour === TOUR_STEPS.length - 1 ? "Finish →" : "Next →"}</button>
+              {tour > 0 && <button onClick={() => tourGo(tour - 1)} className="font-sans text-[13px] text-[#7d7a74] px-3 py-2 hover:text-brand-ink">Back</button>}
+              <button onClick={() => tourGo(tour + 1)} className="font-sans bg-[#73926A] text-white text-[13px] font-semibold px-5 py-[10px] hover:bg-[#5f8257]">{tour === TOUR_STEPS.length - 1 ? "Finish →" : "Next →"}</button>
             </div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#6B4BD6] transition-all" style={{ width: `${((tour + 1) / 13) * 100}%` }} /></div>
-            <button onClick={() => setTour(null)} className="font-poppins text-[12px] text-[#a8a29a] hover:text-[#7d7a74] shrink-0">Skip tour</button>
+            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#73926A] transition-all" style={{ width: `${((tour + 1) / 13) * 100}%` }} /></div>
+            <button onClick={() => setTour(null)} className="font-sans text-[12px] text-[#a8a29a] hover:text-[#7d7a74] shrink-0">Skip tour</button>
           </div>
         </div>
       )}
@@ -1187,11 +1192,47 @@ export default function BuildPreview() {
       {tour === "done" && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white max-w-[440px] w-full p-8 text-center">
-            <div className="font-poppins text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6B4BD6] mb-3">That’s your Marquee</div>
-            <h2 className="font-poppins text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Looking good.</h2>
+            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">That’s your Marquee</div>
+            <h2 className="font-sans text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Looking good.</h2>
             <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">Edit any section from the left rail anytime. Ready to publish your profile?</p>
-            <button onClick={() => setTour(null)} className="w-full font-poppins bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-black">Generate my profile →</button>
-            <button onClick={() => setTour(null)} className="w-full font-poppins text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Keep editing</button>
+            <button onClick={() => { setTour(null); setShowPublish(true); }} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-black">Generate my profile →</button>
+            <button onClick={() => setTour(null)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Keep editing</button>
+          </div>
+        </div>
+      )}
+
+      {showPublish && (
+        <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white max-w-[440px] w-full p-8">
+            {pubResult?.ok ? (
+              <div className="text-center">
+                <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">{claimed ? "Updated" : "Published"}</div>
+                <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">You&apos;re live.</h2>
+                <a href={`/${pubResult.msg}`} target="_blank" rel="noopener" className="block font-sans text-[15px] font-semibold text-[#73926A] mb-6 hover:underline">marquee.bio/{pubResult.msg} ↗</a>
+                <button onClick={() => setShowPublish(false)} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px]">Done</button>
+              </div>
+            ) : claimed ? (
+              <>
+                <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">Publish your updates</h2>
+                <p className="text-[14px] text-[#57524c] leading-[1.55] mb-4">Your changes will go live at your profile — same link as always.</p>
+                <div className="font-sans text-[15px] font-semibold text-[#73926A] mb-5">marquee.bio/{pubUsername}</div>
+                {pubResult && !pubResult.ok && <div className="text-[13px] text-brand-orange mb-3">{pubResult.msg}</div>}
+                <button onClick={publish} disabled={publishing} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 disabled:opacity-40">{publishing ? "Publishing…" : "Update my profile →"}</button>
+                <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Cancel</button>
+              </>
+            ) : (
+              <>
+                <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">Claim your link &amp; publish</h2>
+                <p className="text-[14px] text-[#57524c] leading-[1.55] mb-4">Pick your username — this is your public profile URL. You can re-publish anytime.</p>
+                <div className="flex items-center border border-[#E1DED7] mb-3">
+                  <span className="text-[13px] text-[#7d7a74] pl-3 shrink-0">marquee.bio/</span>
+                  <input value={pubUsername} onChange={(e) => setPubUsername(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="yourname" className="flex-1 min-w-0 font-sans text-[14px] py-[11px] px-1 focus:outline-none" />
+                </div>
+                {pubResult && !pubResult.ok && <div className="text-[13px] text-brand-orange mb-3">{pubResult.msg}</div>}
+                <button onClick={publish} disabled={publishing || !pubUsername.trim()} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 disabled:opacity-40">{publishing ? "Publishing…" : "Publish my profile →"}</button>
+                <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Cancel</button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -1203,7 +1244,7 @@ function Field({ label, value, onChange, max, textarea }: { label: string; value
   return (
     <div>
       <div className="flex items-baseline justify-between mb-2">
-        <label className="font-poppins text-[13px] font-semibold">{label}</label>
+        <label className="font-sans text-[13px] font-semibold">{label}</label>
         {max ? <span className="text-[11px] text-[#7d7a74]">{value.length} / {max}</span> : null}
       </div>
       {textarea ? (
@@ -1218,7 +1259,7 @@ function Field({ label, value, onChange, max, textarea }: { label: string; value
 function SocialField({ label, v, on, ph }: { label: string; v: string; on: (x: string) => void; ph: string }) {
   return (
     <div>
-      <label className="font-poppins text-[12px] text-[#7d7a74] block mb-1">{label}</label>
+      <label className="font-sans text-[12px] text-[#7d7a74] block mb-1">{label}</label>
       <input value={v} onChange={(e) => on(e.target.value)} placeholder={ph} className="w-full font-inter text-[13.5px] py-[9px] px-[12px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
     </div>
   );
@@ -1227,12 +1268,12 @@ function SocialField({ label, v, on, ph }: { label: string; v: string; on: (x: s
 function MiniStat({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <input value={value} inputMode="numeric" onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, ""))} className="w-full font-poppins text-[20px] font-semibold py-[6px] px-[8px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+      <input value={value} inputMode="numeric" onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, ""))} className="w-full font-sans text-[20px] font-semibold py-[6px] px-[8px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
       <div className="text-[11px] text-[#7d7a74] mt-1">{label}</div>
     </div>
   );
 }
 
 function PvStat({ v, l }: { v: string; l: string }) {
-  return <div><div className="font-poppins text-[18px] font-semibold">{v}</div><div className="text-[10.5px] text-[#7d7a74]">{l}</div></div>;
+  return <div><div className="font-sans text-[18px] font-semibold">{v}</div><div className="text-[10.5px] text-[#7d7a74]">{l}</div></div>;
 }

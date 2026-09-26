@@ -1,4 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase";
+import { DEMO_PROFILES } from "@/lib/demo-profiles";
+import { sendContactNotification } from "@/lib/email";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -32,6 +34,30 @@ export async function POST(request: Request) {
       { error: "Message too long" },
       { status: 400 }
     );
+  }
+
+  // Hardcoded demo/beta profiles (e.g. Michaela) aren't in the DB — email the
+  // owner directly at the profile's inquiryEmail instead of the DB lookup.
+  const demo = DEMO_PROFILES[username as string];
+  if (demo) {
+    if (!demo.inquiryEmail) {
+      return NextResponse.json({ error: "This profile isn’t accepting inquiries yet." }, { status: 503 });
+    }
+    const sent = await sendContactNotification(demo.inquiryEmail, {
+      profileName: demo.name,
+      username,
+      senderName: sender_name,
+      senderEmail: sender_email,
+      intent,
+      message,
+    });
+    if ("skipped" in sent) {
+      return NextResponse.json({ error: "Inquiries aren’t configured yet." }, { status: 503 });
+    }
+    if (!("ok" in sent) || !sent.ok) {
+      return NextResponse.json({ error: "Failed to send. Please try again." }, { status: 502 });
+    }
+    return NextResponse.json({ success: true, recipient: demo.name });
   }
 
   const supabase = createServerSupabase();

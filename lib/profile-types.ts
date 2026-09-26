@@ -94,9 +94,26 @@ export interface ActiveProject {
   highlights?: string[]
 }
 
+export interface StoreItem {
+  id: string
+  kind: string
+  title: string
+  blurb?: string
+  price?: string
+  url?: string
+}
+
+export interface ReachStat {
+  platform: string
+  handle?: string
+  followers: string
+  engagement?: string
+  url?: string
+}
+
 export interface MediaItem {
   id: string
-  type: 'Project' | 'Podcast' | 'Newsletter' | 'Press' | 'Speaking' | 'Board' | 'Portfolio'
+  type: 'Project' | 'Podcast' | 'Newsletter' | 'Press' | 'Speaking' | 'Board' | 'Portfolio' | 'Video'
   title: string
   sub?: string
   bg: string
@@ -110,7 +127,7 @@ export interface MediaItem {
   source?: string
 }
 
-export interface Skill { name: string; score: number }
+export interface Skill { name: string; score: number; featured?: boolean }
 export interface Value { name: string; blurb: string; color: string; icon: string }
 export interface LeadershipTrait { title: string; blurb: string; icon: string }
 export interface Superpower { title: string; blurb: string; icon: string }
@@ -137,6 +154,8 @@ export interface Profile {
   tagline: string
   slug: string
   tags: string[]
+  /** Aggregated searchable tags (offer keywords + industries + skills + values). Not rendered; powers directory search. */
+  searchTags?: string[]
 
   /** BACKGROUND ONLY — never rendered. Primary leads; secondary optional (Professional
    *  can be solo). Used to pre-check recommended sections in onboarding. */
@@ -149,6 +168,7 @@ export interface Profile {
   /** One-time / simplified profile flags. */
   singlePage?: boolean   // hide sub-page nav + "view all / read full bio" links
   beta?: boolean         // show a BETA banner + "Sign up for beta" CTA
+  inquiryEmail?: string  // where "Work with me" inquiries are emailed (demo/beta profiles)
 
   bioShort: string
   bioLong: string[]
@@ -172,6 +192,11 @@ export interface Profile {
   skills: Skill[]
   media: MediaItem[]
   portfolio: ProjectCase[]
+  store?: StoreItem[]
+  reach?: ReachStat[]
+  audience?: { age?: string; gender?: string; geo?: string }
+  /** Cal.com scheduling link — powers the "Book instantly" flow */
+  calLink?: string
   education: Credential[]
 
   sections: SectionVisibility

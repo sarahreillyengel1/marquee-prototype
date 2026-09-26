@@ -135,7 +135,8 @@ const useToast = () => useContext(ToastCtx);
 function useCopyLink() {
   const toast = useToast();
   const { profile } = useStore();
-  const slug = (profile.name.split(" ")[0] || "").toLowerCase();
+  // Always the profile's real slug — never derive from the first name (that pointed at a demo).
+  const slug = profile.slug || (profile.name.split(" ")[0] || "").toLowerCase();
   return () => {
     const url = `https://marquee.bio/${slug}`;
     if (navigator.clipboard?.writeText) {
@@ -169,14 +170,28 @@ const SLOTS = [["Thu Jul 17", "10:00"], ["Thu Jul 17", "2:30"], ["Fri Jul 18", "
 
 function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () => void }) {
   const setModal = useModal();
+  const { profile } = useStore();
   const [slot, setSlot] = useState<number | null>(null);
   const [done, setDone] = useState(false);
+  const [f, setF] = useState({ name: "", email: "", message: "" });
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState("");
+  const submit = () => {
+    setErr(""); setSending(false);
+    if (!f.name.trim() || !f.email.trim() || !f.message.trim()) { setErr("Please add your name, email, and a message."); return; }
+    const to = profile.inquiryEmail;
+    if (!to) { setErr("Couldn’t send just now — please reach out via the links above."); return; }
+    const subject = encodeURIComponent(`Inquiry from ${f.name} — ${e.title}`);
+    const body = encodeURIComponent(`From: ${f.name} (${f.email})\n\n${f.message}`);
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    setDone(true);
+  };
   if (done) return (
     <div className="done2"><div className="ic2"><Icon name="check" /></div>
-      <div className="t">{e.flow === "book" ? "Session requested" : "Message sent"}</div>
+      <div className="t">{e.flow === "book" ? "Session requested" : "Opening your email…"}</div>
       <div className="p">{e.flow === "book"
         ? `${name} will confirm your session shortly — check your inbox for the invite.`
-        : `This goes straight to ${name}. You’ll hear back within a couple of business days.`}</div>
+        : `Your message to ${name} is ready in your email app — just hit send to reach them.`}</div>
       <button className="msub" style={{ marginTop: 22 }} onClick={() => setModal(null)}>Done</button>
     </div>
   );
@@ -186,6 +201,12 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
       {back && <button className="ww-back" onClick={back}><Icon name="arrow-left" /> All ways to work</button>}
       <p className="lead">{e.blurb}</p>
       {e.flow === "book" ? (
+        profile.calLink ? (
+          <>
+            <p className="lead">Pick a time that works — you&apos;ll book straight on {name}&apos;s calendar.</p>
+            <a className="msub" href={profile.calLink} target="_blank" rel="noopener" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>Book a time →</a>
+          </>
+        ) : (
         <>
           <span className="flbl">Choose a time (ET)</span>
           <div className="slots">
@@ -201,14 +222,16 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
             {e.rateDisplay === "show" ? `Confirm & pay ${e.price.replace("/ hr", "").trim()}` : "Request session"}
           </button>
         </>
+        )
       ) : (
         <>
-          <span className="flbl">Your name</span><input className="fin" placeholder="Full name" />
-          <span className="flbl">Email</span><input className="fin" placeholder="you@company.com" />
+          <span className="flbl">Your name</span><input className="fin" placeholder="Full name" value={f.name} onChange={(ev) => setF({ ...f, name: ev.target.value })} />
+          <span className="flbl">Email</span><input className="fin" type="email" placeholder="you@email.com" value={f.email} onChange={(ev) => setF({ ...f, email: ev.target.value })} />
           <span className="flbl">A little context</span>
-          <textarea className="fta" placeholder="Company, stage, and what you need…" />
-          <button className="msub" onClick={() => setDone(true)}>
-            {e.flow === "proposal" ? "Send request" : e.flow === "availability" ? "Check availability" : "Send message"}
+          <textarea className="fta" placeholder="A little about you and what you’re looking for…" value={f.message} onChange={(ev) => setF({ ...f, message: ev.target.value })} />
+          {err && <div style={{ color: "#B4232A", fontSize: 13, margin: "6px 0 0" }}>{err}</div>}
+          <button className="msub" onClick={submit} disabled={sending}>
+            {sending ? "Sending…" : e.flow === "availability" ? "Check availability" : "Send request"}
           </button>
         </>
       )}
@@ -239,7 +262,23 @@ function useWorkWith() {
       </>
     ),
   });
-  return openGrid;
+  const openBeta = () => setModal({
+    node: (
+      <>
+        <ModalHead icon="message" title={`Get in touch with ${first}`} sub="Marquee is in early beta" onClose={() => setModal(null)} />
+        <p className="lead" style={{ marginBottom: 18 }}>Email {first} directly — this opens your mail app, pre-addressed to her.</p>
+        <a
+          className="msub"
+          style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+          href={`mailto:${profile.inquiryEmail}?subject=${encodeURIComponent("Inquiry via your Marquee profile")}`}
+          onClick={() => setTimeout(() => setModal(null), 400)}
+        >
+          Email {first}
+        </a>
+      </>
+    ),
+  });
+  return profile.beta && profile.inquiryEmail ? openBeta : openGrid;
 }
 
 /* ─────────────── chrome ─────────────── */
@@ -251,10 +290,10 @@ function OwnerTopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     <header className="topbar owner-only">
       <div className="topbar-in">
         <div className="hamb" style={{ cursor: "pointer" }} onClick={onToggleSidebar} title="Collapse menu"><Icon name="panel-left" /></div>
-        <div className="brand">MARQUEE <span className="spk"><Icon name="sparkle" /></span></div>
+        <div className="brand">MARQUEE</div>
         <div className="search" style={{ cursor: "pointer" }} onClick={() => toast("Search is coming soon")}><Icon name="search" style={{ width: 15, height: 15 }} /> Search people, companies, skills… <span className="kbd">⌘K</span></div>
         <div className="top-r">
-          <button className="btn pur" style={{ padding: "9px 16px", fontSize: 13 }} onClick={() => setEditing(true)}>Edit profile</button>
+          <button className="btn pur" style={{ padding: "9px 16px", fontSize: 13 }} onClick={() => { window.location.href = "/build-preview"; }}>Edit profile</button>
           <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("You’re all caught up — no new notifications")}><Icon name="bell" /><span className="bdg" /></span>
           <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("No new messages")}><Icon name="message" /></span>
           <div className="tava" style={{ cursor: "pointer" }} onClick={() => toast("Account settings coming soon")}><div className="a">{initials}</div><Icon name="chevron-down" style={{ width: 15, height: 15, color: "var(--gray)" }} /></div>
@@ -271,10 +310,10 @@ function PublicBar() {
   return (
     <header className="pubbar public-only">
       <div className="pubbar-in">
-        <div className="brand">MARQUEE <span className="spk"><Icon name="sparkle" /></span></div>
+        <div className="brand">MARQUEE</div>
         <nav className="anchors">{anchors.map(([l, p]) => <a key={p} style={{ cursor: "pointer" }} onClick={() => goto(p)}>{l}</a>)}</nav>
         <button className="pub-share" onClick={copyLink}><Icon name="link" style={{ width: 14, height: 14 }} /> Share</button>
-        <button className="pub-cta" onClick={openWorkWith}>Work with {profile.name.split(" ")[0] || profile.name} <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></button>
+        <button className="pub-cta" onClick={openWorkWith}>Work with {profile.name.split(" ")[0] || profile.name}</button>
       </div>
     </header>
   );
@@ -302,7 +341,7 @@ function Sidebar() {
         <div key={label} className="nav-item" style={{ cursor: "pointer" }} onClick={() => p && goto(p)}><Icon name={ic} />{label}</div>
       ))}
       <div className="nav-lbl">Settings</div>
-      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => setEditing(true)}><Icon name="settings" />Profile settings</div>
+      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/build-preview"; }}><Icon name="settings" />Profile settings</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => toast("Privacy controls coming soon")}><Icon name="lock" />Privacy</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => toast("Analytics coming soon")}><Icon name="chart" />Analytics</div>
       <div className="strength">
@@ -311,7 +350,7 @@ function Sidebar() {
           <div className="num">{pct}%</div>
         </div>
         <p>{pct >= 100 ? "Your profile looks complete. Keep it fresh." : "Fill in more sections to strengthen your profile."}</p>
-        <span className="improve" style={{ cursor: "pointer" }} onClick={() => setEditing(true)}>Improve profile <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></span>
+        <span className="improve" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/build-preview"; }}>Improve profile <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></span>
       </div>
       <button className="sbtn primary" onClick={openWorkWith}><Icon name="calendar" style={{ width: 15, height: 15 }} /> Work with {profile.name.split(" ")[0] || profile.name}</button>
       <div className="sbtn soft" style={{ cursor: "pointer" }} onClick={() => toast("Recruiters can now reach you through your profile")}><span className="lead"><Icon name="send" style={{ width: 15, height: 15, color: "var(--pur)" }} /> Recruiter outreach</span><span className="sub">I&apos;m open to opportunities</span></div>
@@ -329,11 +368,14 @@ function BlockHead({ title, sub, link, onLink }: { title: string; sub?: string; 
     </div>
   );
 }
-function Skills() {
+function Skills({ featured }: { featured?: boolean } = {}) {
   const { profile } = useStore();
-  if (profile.skills.length === 0) return null;
-  const max = Math.max(...profile.skills.map((s) => s.score));
-  return <div className="skfull">{profile.skills.map((s) => (
+  const all = profile.skills;
+  if (all.length === 0) return null;
+  const base = all.some((s) => s.featured) ? all.filter((s) => s.featured) : [...all].sort((a, b) => b.score - a.score);
+  const list = featured ? base.slice(0, 8) : all;
+  const max = Math.max(...all.map((s) => s.score));
+  return <div className="skfull">{list.map((s) => (
     <div key={s.name} className="skl"><div className="sklt"><b>{s.name}</b><span>{s.score}</span></div>
       <div className="sklbar"><div className="sklf" style={{ width: `${Math.round((s.score / max) * 100)}%` }} /></div></div>
   ))}</div>;
@@ -358,6 +400,7 @@ function Hero() {
       <div className="hero-l">
         <h1 className="name">{n1}<br />{rest.join(" ")}</h1>
         <div className="role">{profile.headline}</div>
+        {profile.tagline && <p className="focus">{profile.tagline}</p>}
         <p className="bio">{profile.bioShort}</p>
         <div className="tags">
           {(showAllTags ? profile.tags : profile.tags.slice(0, 4)).map((t) => <span key={t} className="tag">{t}</span>)}
@@ -365,7 +408,7 @@ function Hero() {
         </div>
         <div className="hero-acts">
           {!profile.singlePage && <button className="btn line" onClick={() => goto("bio")}><Icon name="book" style={{ width: 15, height: 15 }} /> Read full bio</button>}
-          <button className="btn pur" onClick={openWorkWith}>Work with {first} <Icon name="chevron-down" style={{ width: 15, height: 15 }} /></button>
+          <button className="btn pur" onClick={openWorkWith}>Work with {first}</button>
         </div>
         <div className="socials">
           {profile.socials.filter((s) => s.visible).map((s) => (
@@ -396,7 +439,7 @@ function Hero() {
             </div>
           );
         })}
-        <span className="otv" onClick={openWorkWith}>Work with {first} <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></span>
+        <span className="otv" onClick={openWorkWith}>Work with {first}</span>
       </div>
     </section>
   );
@@ -405,6 +448,7 @@ function Hero() {
 // The 4 owner-curated CTAs — a row directly below the hero, on every profile.
 function Actions() {
   const { profile, goto } = useStore();
+  const openWorkWith = useWorkWith();
   const acts = (profile.actions || []).slice(0, 4);
   if (!acts.length) return null;
   return (
@@ -417,7 +461,9 @@ function Actions() {
             <span className="act-arw"><Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></span>
           </>
         );
-        return a.internal
+        return a.destination === "contact"
+          ? <div key={i} className="actcard" style={{ cursor: "pointer" }} onClick={openWorkWith}>{inner}</div>
+          : a.internal
           ? <div key={i} className="actcard" onClick={() => goto(a.destination as PageKey)}>{inner}</div>
           : <a key={i} className="actcard" href={a.destination} target="_blank" rel="noopener">{inner}</a>;
       })}
@@ -456,6 +502,9 @@ function HeroMedia() {
     </section>
   );
 }
+
+const parseFollowers = (s: string) => { const m = (s || "").trim().replace(/,/g, "").match(/([\d.]+)\s*([KkMm]?)/); if (!m) return 0; const mult = m[2].toLowerCase() === "m" ? 1e6 : m[2].toLowerCase() === "k" ? 1e3 : 1; return parseFloat(m[1]) * mult; };
+const fmtFollowers = (n: number) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n)));
 
 function ProfilePage() {
   const { profile, goto } = useStore();
@@ -498,7 +547,7 @@ function ProfilePage() {
                 <div className="fctop"><LogoTile cls="fclogo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="fcco">{r.company.toUpperCase()}</div><div className="fcrole">{r.role}</div></div></div>
                 <div className="fbadges"><span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
                 <p>{r.blurb}</p>
-                <div className="fres"><span className="m"><Icon name="trending-up" />{r.metrics?.[0]?.value} <span className="u">{r.metrics?.[0]?.label.toLowerCase()}</span></span><span className="go"><Icon name="arrow-up-right" style={{ width: 16, height: 16 }} /></span></div>
+                <div className="fres">{r.metrics?.[0]?.value ? <span className="m"><Icon name="trending-up" />{r.metrics[0].value} <span className="u">{(r.metrics[0].label || "").toLowerCase()}</span></span> : <span />}<span className="go"><Icon name="arrow-up-right" style={{ width: 16, height: 16 }} /></span></div>
               </div>
             ))}
           </div>
@@ -543,11 +592,19 @@ function ProfilePage() {
         {on("skills") && has(profile.skills) && (
         <div className="card col">
           <BlockHead title="Skills" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
-          <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>What I bring to the table</div>
-          <Skills />
+          <Skills featured />
         </div>
         )}
       </section>
+      )}
+
+      {profile.singlePage && has(profile.bioLong) && (
+        <section className="smt">
+          <div className="card col">
+            <BlockHead title="About" />
+            <div className="aboutbio">{profile.bioLong.map((p, i) => <p key={i}>{p}</p>)}</div>
+          </div>
+        </section>
       )}
 
       {on("media") && s.media && has(profile.media) && (
@@ -559,12 +616,39 @@ function ProfilePage() {
         </section>
       )}
 
+      {has(profile.reach) && (() => {
+        const total = fmtFollowers((profile.reach || []).reduce((a, p) => a + parseFollowers(p.followers), 0));
+        const aud = profile.audience;
+        return (
+          <section className="smt">
+            <BlockHead title="Reach" sub="Audience & platforms" />
+            <div className="card reach-card">
+              <div className="reach-total"><span className="reach-num">{total}</span><span className="reach-lbl">total followers</span></div>
+              <div className="reach-grid">
+                {profile.reach!.map((p) => {
+                  const inner = <><div className="reach-plat">{p.platform}</div><div className="reach-f">{p.followers}</div>{p.handle && <div className="reach-h">{p.handle}</div>}{p.engagement && <div className="reach-eng">{p.engagement} eng.</div>}</>;
+                  return p.url ? <a key={p.platform} className="reach-tile" href={p.url} target="_blank" rel="noopener">{inner}</a> : <div key={p.platform} className="reach-tile">{inner}</div>;
+                })}
+              </div>
+              {aud && (aud.age || aud.gender || aud.geo) && (
+                <div className="reach-aud">
+                  {aud.age && <div><span className="reach-aud-l">Top age</span><span className="reach-aud-v">{aud.age}</span></div>}
+                  {aud.gender && <div><span className="reach-aud-l">Audience</span><span className="reach-aud-v">{aud.gender}</span></div>}
+                  {aud.geo && <div><span className="reach-aud-l">Top geos</span><span className="reach-aud-v">{aud.geo}</span></div>}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
       {on("testimonials") && profile.testimonial && (
         <section className="smt">
-          <BlockHead title="Testimonials" />
-          <div className="card" style={{ padding: 22 }}>
-            <p style={{ fontSize: 16, lineHeight: 1.55, color: "var(--ink)", margin: "2px 0 12px", maxWidth: 720 }}>&ldquo;{profile.testimonial.quote}&rdquo;</p>
-            <div style={{ fontSize: 13, color: "var(--gray)" }}>{profile.testimonial.who}</div>
+          <BlockHead title={profile.testimonial.who === profile.name ? "Quote" : "Testimonials"} />
+          <div className="card" style={{ padding: "34px 30px 30px", textAlign: "center" }}>
+            <div aria-hidden style={{ fontFamily: "var(--font-canela), var(--font-lora), Georgia, serif", fontSize: 48, lineHeight: 0.6, color: "#73926A" }}>&ldquo;</div>
+            <p style={{ fontFamily: "var(--font-canela), var(--font-lora), Georgia, serif", fontSize: 20, lineHeight: 1.55, color: "var(--ink)", margin: "12px auto 20px", maxWidth: 720 }}>{profile.testimonial.quote}</p>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gray2)" }}>{profile.testimonial.who}</div>
           </div>
         </section>
       )}
@@ -576,6 +660,28 @@ function ProfilePage() {
             {profile.education.map((c) => (
               <div key={c.id} className="card edu"><div className="edul">{c.short}</div><div className="edut">{c.title} {c.verified && <span className="vchk" style={{ width: 16, height: 16 }}><Icon name="check" /></span>}</div><div className="edus">{c.sub}</div></div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {has(profile.store) && (
+        <section className="smt">
+          <BlockHead title="Store" sub="Work you can buy" />
+          <div className="store-grid">
+            {profile.store!.map((p) => {
+              const priceLabel = p.price ? (p.price === "0" ? "Free" : `$${p.price}`) : "";
+              const inner = (
+                <>
+                  <div className="store-kind">{p.kind}</div>
+                  <div className="store-title">{p.title}</div>
+                  {p.blurb && <p className="store-blurb">{p.blurb}</p>}
+                  <div className="store-foot"><span className="store-price">{priceLabel}</span>{p.url && <span className="store-go">View <Icon name="arrow-up-right" style={{ width: 13, height: 13 }} /></span>}</div>
+                </>
+              );
+              return p.url
+                ? <a key={p.id} className="store-card" href={p.url} target="_blank" rel="noopener">{inner}</a>
+                : <div key={p.id} className="store-card">{inner}</div>;
+            })}
           </div>
         </section>
       )}
@@ -814,7 +920,7 @@ function PublicFooter() {
   // A profile is the member's surface — Marquee's presence is one discreet link out, nothing more.
   return (
     <footer className="pubfoot public-only">
-      <a className="made" href="https://marquee.bio" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Made with <b>Marquee</b> <Icon name="arrow-up-right" style={{ width: 12, height: 12 }} /></a>
+      <a className="made" href="https://marquee.bio" target="_blank" rel="noopener">MARQUEE.BIO<span className="made-sub">claim yours</span></a>
     </footer>
   );
 }
@@ -863,7 +969,7 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
           <ToastCtx.Provider value={showToast}>
             <div className={"view-" + view}>
               {profile.beta && (
-                <div style={{ background: "#7C1226", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 600 }}>
+                <div style={{ background: "#73926A", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 600 }}>
                   <span style={{ letterSpacing: ".16em", fontWeight: 800 }}>BETA</span> · an early Marquee profile ·{" "}
                   <a href="https://marquee.bio" target="_blank" rel="noopener" style={{ color: "#fff", textDecoration: "underline", fontWeight: 700 }}>Sign up for beta →</a>
                 </div>
