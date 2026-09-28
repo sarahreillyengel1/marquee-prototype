@@ -34,6 +34,7 @@ export interface BuilderSnapshot {
   reach?: { key: string; handle: string; followers: string; engagement: string; url: string }[];
   audAge?: string; audGender?: string; audGeo?: string;
   calLink?: string;
+  actions?: { type: string; label: string; dest: string; url: string }[];
 }
 
 const LEVEL_SCORE: Record<string, number> = { Foundational: 25, Proficient: 55, Advanced: 80, Expert: 100 };
@@ -143,6 +144,13 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
 
   const hide = new Set(s.hidden || []);
 
+  // The 4-Actions bar under the hero: Work with me, an internal page, or a link.
+  const actions = (s.actions || []).filter((a) => (a.label || "").trim()).slice(0, 4).map((a) => {
+    if (a.dest === "link") return { type: a.type, label: a.label.trim(), destination: absUrl(a.url) || "#" };
+    if (a.dest === "contact") return { type: a.type, label: a.label.trim(), destination: "contact" };
+    return { type: a.type, label: a.label.trim(), destination: a.dest, internal: true };
+  });
+
   const store: StoreItem[] = (s.products || []).filter((p) => p.title?.trim()).map((p, i) => ({
     id: `pr${i}`, kind: p.kind || "Product", title: p.title, featured: !!p.featured,
     blurb: p.blurb || undefined, price: p.price || undefined, url: absUrl(p.url),
@@ -166,7 +174,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
   return {
     name: s.name || "",
     headline: s.headline || "",
-    location: [s.city, s.loc].filter(Boolean).join(" · "),
+    location: s.city || "",
     available: !!s.openNow,
     availableLabel: s.openNow ? "Open to opportunities" : "",
     verified: false,
@@ -177,7 +185,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     searchTags,
     types: undefined,
     enabledSections: undefined,
-    actions: [],
+    actions: hide.has("actions") ? [] : actions,
     bioShort: s.bio || "",
     bioLong,
     bookedFor: [],

@@ -109,8 +109,8 @@
 .mq-root .name{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:clamp(38px,4vw,52px); line-height:1.0; letter-spacing:-0.02em; margin-bottom:14px; }
 .mq-root .role{ font-size:12.5px; font-weight:700; letter-spacing:0.13em; color:var(--pur); text-transform:uppercase; margin-bottom:10px; }
 .mq-root .hero-loc{ font-size:13px; color:var(--gray); margin-bottom:16px; }
-.mq-root .focus{ font-size:16.5px; font-weight:500; color:var(--ink); line-height:1.5; max-width:420px; margin:0 0 16px; }
-.mq-root .bio{ font-size:15px; color:var(--ink2); line-height:1.62; max-width:400px; margin-bottom:22px; }
+.mq-root .focus{ font-size:15.5px; font-weight:500; color:var(--ink); line-height:1.55; max-width:420px; margin:0 0 8px; }
+.mq-root .bio{ font-size:15.5px; color:var(--ink2); line-height:1.55; max-width:420px; margin-bottom:22px; }
 .mq-root .tags{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; max-width:420px; }
 .mq-root .tag{ font-size:12.5px; font-weight:500; color:var(--gray); background:var(--page); border:1px solid var(--line2); border-radius:0; padding:6px 12px; cursor:pointer; }
 .mq-root .tag:hover{ border-color:var(--pur-soft); color:var(--pur); }
@@ -420,7 +420,7 @@
 /* About dynamic panel */
 .mq-root .about-hero{ display:flex; gap:16px; align-items:center; margin-bottom:18px; }
 .mq-root .about-ava{ width:66px; height:66px; border-radius:0; background:radial-gradient(120% 100% at 50% 0%,#EFEAFF,#C7B5FF); flex-shrink:0; overflow:hidden; }
-.mq-root .about-ava img{ width:100%; height:100%; object-fit:cover; }
+.mq-root .about-ava img{ width:100%; height:100%; object-fit:cover; object-position:50% 15%; }
 .mq-root .about-name{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-size:22px; }
 .mq-root .about-role{ font-size:12px; color:var(--pur); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
 .mq-root .bookedfor{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 4px; }
@@ -487,7 +487,7 @@
 .mq-root .bio-wrap{ display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:start; }
 @media(max-width:900px){ .mq-root .bio-wrap{ grid-template-columns:1fr; } }
 .mq-root .bio-side .card{ padding:22px; position:sticky; top:78px; }
-.mq-root .bio-side .about-ava.big{ width:100%; height:190px; border-radius:0; margin-bottom:14px; }
+.mq-root .bio-side .about-ava.big{ width:100%; height:260px; border-radius:0; margin-bottom:14px; }
 .mq-root .bio-facts .kv{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px; }
 .mq-root .bio-facts .kv:last-child{ border-bottom:none; }
 .mq-root .bio-facts .kv span{ color:var(--gray2); } .mq-root .bio-facts .kv b{ font-weight:600; }
@@ -526,3 +526,9 @@
 .mq-root .hm-meta{ position:absolute; left:14px; right:14px; bottom:13px; z-index:2; color:#fff; }
 .mq-root .hm-title{ font-size:15.5px; font-weight:600; line-height:1.24; }
 .mq-root .hm-src{ display:flex; align-items:center; gap:4px; font-size:11.5px; margin-top:5px; color:rgba(255,255,255,.86); }
+
+/* Affirm — superpower endorsements */
+.mq-root .sp-aff{ display:flex; align-items:center; gap:10px; margin-top:8px; font-size:12px; color:var(--gray2); }
+.mq-root .sp-aff button{ font:inherit; font-size:12px; font-weight:600; color:var(--pur); background:none; border:1px solid var(--line2); padding:4px 11px; cursor:pointer; }
+.mq-root .sp-aff button:hover{ border-color:var(--gray2); }
+.mq-root .sp-aff button:disabled{ cursor:default; border-color:transparent; color:var(--green); padding-left:0; }

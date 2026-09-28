@@ -13,12 +13,14 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["Work With Me", "Media", "Reach", "Store", "Long Bio"] },
+  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Store", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Work With Me", "Media", "Reach", "Store", "Long Bio"]);
+const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Store", "Long Bio"]);
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
-const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Store: "store" };
+const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Store: "store", Actions: "actions" };
+const ACTION_TYPES = ["Contact", "Read", "Listen", "Watch", "Attend", "Explore", "Book", "Join", "Buy", "Follow"];
+const ACTION_DESTS = [{ v: "contact", label: "Opens Work with me" }, { v: "media", label: "My Media page" }, { v: "bio", label: "My Bio page" }, { v: "experience", label: "My Experience page" }, { v: "how-i-work", label: "My How I Work page" }, { v: "link", label: "A link (URL)" }];
 const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack", "X", "Podcast", "Facebook"];
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
 // same left-nav sections (profile first, then brand). The real editors stay in place; the
@@ -140,6 +142,7 @@ const BLANK = {
   hidden: [] as string[],
   reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
   audAge: "", audGender: "", audGeo: "", calLink: "",
+  actions: [] as { type: string; label: string; dest: string; url: string }[],
 };
 
 const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
@@ -346,6 +349,11 @@ export default function BuildPreview() {
   const upReach = (key: string, patch: Partial<ReachP>) => setReach((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
   const rmReach = (key: string) => setReach((r) => r.filter((x) => x.key !== key));
   const [calLink, setCalLink] = useState("");
+  type ActionRow = { type: string; label: string; dest: string; url: string };
+  const [actions, setActions] = useState<ActionRow[]>([]);
+  const upAction = (i: number, patch: Partial<ActionRow>) => setActions((a) => a.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addAction = () => setActions((a) => (a.length < 4 ? [...a, { type: "Contact", label: "", dest: "contact", url: "" }] : a));
+  const rmAction = (i: number) => setActions((a) => a.filter((_, j) => j !== i));
   const rmProduct = (i: number) => setProducts((m) => m.filter((_, j) => j !== i));
   const toggleProductFeatured = (i: number) => setProducts((m) => m.map((x, j) => { if (j !== i) return x; if (!x.featured && m.filter((y) => y.featured).length >= 3) return x; return { ...x, featured: !x.featured }; }));
 
@@ -407,7 +415,7 @@ export default function BuildPreview() {
     } catch { setParseErr("Something went wrong. Try again."); }
     setParsing(false);
   };
-  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink });
+  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -430,7 +438,7 @@ export default function BuildPreview() {
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
     setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
     setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
-    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? "");
+    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []);
   };
   useEffect(() => {
     let cancelled = false;
@@ -465,7 +473,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink]);
+  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   const [showPublish, setShowPublish] = useState(false);
@@ -521,6 +529,8 @@ export default function BuildPreview() {
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
           <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/dashboard"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
+          <a href="/dashboard" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Dashboard</a>
+          {claimed && pubUsername && <a href={`/${pubUsername}`} target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">View profile ↗</a>}
           <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
           <button onClick={() => setShowPublish(true)} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">{claimed ? "Update →" : "Publish →"}</button>
         </div>
@@ -687,6 +697,29 @@ export default function BuildPreview() {
                     <textarea value={philosophy} maxLength={280} onChange={(e) => setPhilosophy(e.target.value)} rows={3} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                   </div>
                 )}
+              </div>
+            </>
+          )}
+
+          {active === "Actions" && (
+            <>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four actions.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
+              <div className="space-y-3 max-w-[720px]">
+                {actions.map((a, i) => (
+                  <div key={i} className="border border-[#E1DED7] p-[14px]">
+                    <div className="grid grid-cols-[130px_1fr] gap-[10px] mb-2">
+                      <select value={a.type} onChange={(e) => upAction(i, { type: e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{ACTION_TYPES.map((t) => <option key={t}>{t}</option>)}</select>
+                      <input value={a.label} onChange={(e) => upAction(i, { label: e.target.value })} placeholder={a.type === "Contact" ? "Get in touch" : a.type === "Listen" ? "Your podcast name" : a.type === "Read" ? "Your newsletter" : "What they'll get"} className="font-inter text-[13.5px] font-semibold py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    </div>
+                    <div className="grid grid-cols-[220px_1fr_auto] gap-[10px] items-center">
+                      <select value={a.dest} onChange={(e) => upAction(i, { dest: e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{ACTION_DESTS.map((d) => <option key={d.v} value={d.v}>{d.label}</option>)}</select>
+                      {a.dest === "link" ? <input value={a.url} onChange={(e) => upAction(i, { url: e.target.value })} placeholder="https://…" className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /> : <span className="text-[12px] text-[#a8a29a]">No link needed</span>}
+                      <button onClick={() => rmAction(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-brand-orange">Remove</button>
+                    </div>
+                  </div>
+                ))}
+                {actions.length < 4 && <button onClick={addAction} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add an action ({actions.length}/4)</button>}
               </div>
             </>
           )}
@@ -924,7 +957,7 @@ export default function BuildPreview() {
                       <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
                     </div>
                     <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-sans font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
-                    <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Proof — one example (optional). What was the situation, what you did, what changed." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
+                    <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Short description (optional) — what this looks like in practice. Mention companies or keywords if you like." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-sans text-[11.5px] font-semibold text-[#7d7a74]">Search keywords <span className="font-normal text-[#a8a29a]">· helps people find you · never shown on your profile</span></span>
@@ -983,8 +1016,9 @@ export default function BuildPreview() {
                         {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => toggleMediaFeatured(i)} title="Feature in gallery" className={`text-[16px] leading-none ${m.featured ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
-                        <button onClick={() => rmMedia(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                        <button onClick={() => toggleMediaFeatured(i)} className={`font-sans text-[11.5px] font-medium py-[4px] px-[10px] border ${m.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74] hover:border-brand-ink hover:text-brand-ink"}`}>{m.featured ? "★ Featured" : "☆ Feature"}</button>
+                        <span className="w-px h-[16px] bg-[#E1DED7] mx-1" />
+                        <button onClick={() => rmMedia(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-brand-orange">Remove</button>
                       </div>
                     </div>
                     <input value={m.title} onChange={(e) => upMedia(i, { title: e.target.value })} placeholder="Title, e.g. The operators rebuilding personal branding" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
@@ -1212,7 +1246,8 @@ export default function BuildPreview() {
                 <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">{claimed ? "Updated" : "Published"}</div>
                 <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">You&apos;re live.</h2>
                 <a href={`/${pubResult.msg}`} target="_blank" rel="noopener" className="block font-sans text-[15px] font-semibold text-[#73926A] mb-6 hover:underline">marquee.bio/{pubResult.msg} ↗</a>
-                <button onClick={() => setShowPublish(false)} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px]">Done</button>
+                <button onClick={() => { setShowPublish(false); window.location.href = `/${pubResult.msg}`; }} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px]">See my profile →</button>
+                <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 mt-1 hover:text-brand-ink">Keep editing</button>
               </div>
             ) : claimed ? (
               <>

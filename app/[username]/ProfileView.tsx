@@ -398,6 +398,7 @@ function Hero() {
   return (
     <section className="card hero">
       <div className="hero-l">
+        {profile.available && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
         <h1 className="name">{n1}<br />{rest.join(" ")}</h1>
         <div className="role">{profile.headline}</div>
         {profile.location && <div className="hero-loc">{profile.location}</div>}
@@ -425,7 +426,6 @@ function Hero() {
             : <div className="photo-empty"><div className="pe-ic"><Icon name="camera" /></div><div className="pe-t">Add your photo</div></div>}
         </div>
         <div className="photo-cap">
-          {profile.available && <div className="pc-avail"><span className="d" /> {profile.availableLabel}</div>}
           {profile.verified && <span className="vpill"><Icon name="check" /> Verified</span>}
         </div>
       </div>
@@ -507,6 +507,32 @@ function HeroMedia() {
 const starFirst = <T extends { featured?: boolean }>(xs: T[]) => [...xs].sort((a, b) => Number(!!b.featured) - Number(!!a.featured));
 const parseFollowers = (s: string) => { const m = (s || "").trim().replace(/,/g, "").match(/([\d.]+)\s*([KkMm]?)/); if (!m) return 0; const mult = m[2].toLowerCase() === "m" ? 1e6 : m[2].toLowerCase() === "k" ? 1e3 : 1; return parseFloat(m[1]) * mult; };
 const fmtFollowers = (n: number) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n)));
+
+// "Affirm" — visitors confirm a superpower. One per visitor (browser id), no login.
+function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
+  const [count, setCount] = useState<number | null>(null);
+  const [mine, setMine] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const vid = () => { try { let v = localStorage.getItem("mq_vid"); if (!v) { v = crypto.randomUUID(); localStorage.setItem("mq_vid", v); } return v; } catch { return "anon"; } };
+  useEffect(() => {
+    fetch(`/api/affirm?username=${encodeURIComponent(slug)}&visitorId=${encodeURIComponent(vid())}`).then((r) => r.json())
+      .then((j) => { setCount(j.counts?.[superpower] ?? 0); setMine((j.mine || []).includes(superpower)); }).catch(() => setCount(0));
+  }, [slug, superpower]);
+  const affirm = async () => {
+    if (mine || busy) return; setBusy(true);
+    try {
+      const r = await fetch("/api/affirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: slug, superpower, visitorId: vid() }) });
+      const j = await r.json(); if (r.ok) { setMine(true); setCount(j.count ?? (count ?? 0) + 1); }
+    } finally { setBusy(false); }
+  };
+  const n = count ?? 0;
+  return (
+    <div className="sp-aff">
+      <button type="button" onClick={affirm} disabled={mine || busy}>{mine ? "You affirmed ✓" : "Affirm"}</button>
+      {n > 0 && <span>{n === 1 ? "1 person affirms this" : `${n} people affirm this`}</span>}
+    </div>
+  );
+}
 
 function ProfilePage() {
   const { profile, goto } = useStore();
@@ -611,7 +637,7 @@ function ProfilePage() {
         <section className="smt">
           <BlockHead title="Superpowers" sub="What I'm known for" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
           <div className="card col">
-            {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div></div></div>)}
+            {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
           </div>
         </section>
       )}
@@ -816,7 +842,7 @@ function HowIWorkPage() {
       </div>}
       {profile.superpowers.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Superpowers</div><div className="hw-sub">The three things I’m known for</div>
-        {profile.superpowers.map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div></div></div>)}
+        {profile.superpowers.map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
       </div>}
       {profile.skills.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Skills</div><div className="hw-sub">The full capability map</div>
@@ -895,7 +921,6 @@ function BioPage() {
       <PageHead title="About" />
       <div className="bio-wrap">
         <div className="bio-main">
-          <div className="about-video" style={{ cursor: "pointer" }} onClick={() => toast("Intro video coming soon")}><div className="pc"><Icon name="play" fill /></div> Watch 60-second intro</div>
           <div className="case-body">{profile.bioLong.map((p, i) => <p key={i}>{p}</p>)}</div>
           {profile.bookedFor.length > 0 && (<>
             <div className="sec-label">What people book me for</div>
@@ -923,7 +948,6 @@ function BioPage() {
             {profile.rating && <div className="about-rating" style={{ margin: "10px 0 14px" }}><span className="stars">★★★★★</span> {profile.rating.stars}.0 · {profile.rating.count} sessions</div>}
             <div className="bio-facts">
               {profile.location && <div className="kv"><span>Based</span><b>{profile.location.split("·")[0].trim()}</b></div>}
-              <div className="kv"><span>Responds</span><b>~1 business day</b></div>
             </div>
             <button className="msub" style={{ marginTop: 16 }} onClick={openWorkWith}>Work with {first}</button>
           </div>
