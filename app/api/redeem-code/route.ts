@@ -2,9 +2,11 @@ import { createServerSupabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { code, userId } = await request.json();
+  const { code, userId, validateOnly } = await request.json();
 
-  if (!code || !userId) {
+  // validateOnly: signup checks the code BEFORE creating an account, so no account can
+  // exist without a valid, unused beta code. Nothing is consumed in this mode.
+  if (!code || (!userId && !validateOnly)) {
     return NextResponse.json({ error: "Missing code or userId" }, { status: 400 });
   }
 
@@ -30,6 +32,8 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  if (validateOnly) return NextResponse.json({ valid: true });
 
   // Redeem the code
   const { error: updateError } = await supabase

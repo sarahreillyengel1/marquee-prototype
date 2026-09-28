@@ -20,6 +20,7 @@ Captured from testing the full build→publish loop. Grouped for execution.
 - ✅ Pre-share fixes: link normalization (https://) · hero location · media shown once (4 featured)
 - ✅ Spec items (D): Superpowers on home · Leadership MBTI/Enneagram/years/team + archetype descriptions carried · featured stars honored for experience/media/values/store · all 12 values carried ("View all") · no empty cards on sub-pages when hidden
 - ✅ Signup pricing corrected: $29/mo · $299/yr
+- ✅ Auth/onboarding hardening (Sept 28): one-click sign-in links handled site-wide (AuthLinkHandler; explicit setSession since the PKCE client rejects hash links) · "Forgot password?" + /reset-password flow · signup validates the beta code BEFORE creating an account (bots can no longer mint accounts) · 6 dotted-gmail bot accounts deleted · Sarah's profile + draft migrated from test@marquee.bio to sarah@campsix.co · Supabase Site URL fixed to marquee.bio (was localhost:3000 — every auth email was landing on a dead page)
 - ⏳ Awaiting Sarah: custom booking for Oct 1? · billing at beta? · Resend email? · Expertise consolidation before/after Oct 1? · Highlights keep/drop · Codex loop? · values presets (later)
 
 ### Approved queue (Sarah, Sep 8) — in order

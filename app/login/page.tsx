@@ -11,6 +11,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetMsg, setResetMsg] = useState("");
+
+  async function sendReset() {
+    setError(""); setResetMsg("");
+    if (!email.trim()) { setError("Enter your email above first, then click Forgot password."); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+    if (error) setError(error.message);
+    else setResetMsg("Check your email — we sent a link to set a new password.");
+  }
   const router = useRouter();
   const supabase = createBrowserSupabase();
 
@@ -85,6 +94,11 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+            {resetMsg && (
+              <div className="text-sm bg-brand-sage/15 text-brand-ink rounded-lg px-4 py-3">
+                {resetMsg}
+              </div>
+            )}
 
             <button
               type="submit"
@@ -92,6 +106,9 @@ export default function LoginPage() {
               className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
             >
               {loading ? "Logging in…" : "Log in →"}
+            </button>
+            <button type="button" onClick={sendReset} className="w-full text-sm text-brand-ink/60 hover:text-brand-ink pt-1">
+              Forgot password?
             </button>
           </form>
         </div>

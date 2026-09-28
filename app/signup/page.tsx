@@ -32,6 +32,19 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
+      // Gate first: no account is created unless the beta code is valid and unused.
+      const check = await fetch("/api/redeem-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: betaCode, validateOnly: true }),
+      });
+      if (!check.ok) {
+        const r = await check.json().catch(() => ({}));
+        setError(r.error || "That code isn't valid.");
+        setLoading(false);
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
