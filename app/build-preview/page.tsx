@@ -163,7 +163,7 @@ const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Consc
 type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
-  const [active, setActive] = useState("Media");
+  const [active, setActive] = useState("Resume"); // new users start at the top; returning users are repositioned on load
   const [photoUrl, setPhotoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   // Onboarding guide state: "welcome" intro → 0..12 walking the sections → "done" → null (dismissed)
@@ -442,7 +442,11 @@ export default function BuildPreview() {
       // On a load failure, STOP: never hydrate BLANK (autosave would then overwrite the real draft).
       if (error) { setLoadErr("Couldn't load your saved draft. Refresh to try again — nothing has been changed."); return; }
       const saved = data?.data as Partial<typeof BLANK> | undefined;
+      // "Returning" means they've actually entered something — an autosaved empty row is still a new user.
+      const hasDraft = !!(saved && ((saved.name || "").trim() || (saved.headline || "").trim() || (saved.entries?.length ?? 0) > 0 || (saved.skills?.length ?? 0) > 0));
       hydrate(saved && Object.keys(saved).length ? saved : BLANK);
+      // First visit → Resume step + welcome tour. Returning → straight into editing, no tour.
+      if (hasDraft) { setActive("About You"); setTour(null); } else { setActive("Resume"); setTour("welcome"); }
       const { data: pub } = await supabase.from("published_profiles").select("username").eq("user_id", user.id).maybeSingle();
       if (!cancelled && pub?.username) { setPubUsername(pub.username); setClaimed(true); }
       setLoaded(true);
@@ -510,20 +514,20 @@ export default function BuildPreview() {
             })}
           </div>
         ))}
-        <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">Almost there</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">You're in the final stretch.</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#73926A]" style={{ width: "38%" }} /></div></div></div>
+        {(() => { const parts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()]; const pct = Math.round((parts.filter(Boolean).length / parts.length) * 100); const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#73926A] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
       </aside>
 
       {/* ── MAIN ── */}
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
-          <span className="font-sans text-[13px] text-[#7d7a74] cursor-pointer">Save and exit</span>
+          <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/dashboard"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
           <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
           <button onClick={() => setShowPublish(true)} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">{claimed ? "Update →" : "Publish →"}</button>
         </div>
 
         <main className="p-[40px_48px] flex-1 max-w-[820px]">
           <div className="flex items-center justify-between mb-4 max-w-[720px] gap-3 flex-wrap">
-            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#73926A] bg-[#EAF1E6] py-[5px] px-[11px]">Step {stepNo} of {ALL_STEPS.length - 1} · {active}</span>
+            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#73926A] bg-[#EAF1E6] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
             {HIDEABLE[active] && (
               <button onClick={() => toggleHidden(HIDEABLE[active])} className="inline-flex items-center gap-2 font-sans text-[12px] text-[#57524c] hover:text-brand-ink">
                 <span className={`w-[34px] h-[19px] rounded-full relative transition-colors ${hidden.includes(HIDEABLE[active]) ? "bg-[#d8d4cc]" : "bg-[#73926A]"}`}><span className={`absolute top-[2px] w-[15px] h-[15px] bg-white rounded-full transition-all ${hidden.includes(HIDEABLE[active]) ? "left-[2px]" : "left-[17px]"}`} /></span>
@@ -615,7 +619,7 @@ export default function BuildPreview() {
                       <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-[46px] h-[46px] flex-none border-[1.5px] border-dashed border-[#E1DED7] flex items-center justify-center cursor-pointer text-center" title={e.kind === "role" ? "Upload company logo" : "Upload a logo or image"}>
+                      <div className="w-[46px] h-[46px] flex-none border border-[#E1DED7] bg-[#F4F2EF] flex items-center justify-center text-center" title={e.kind === "role" ? "Company" : "Project"}>
                         {e.primary ? <span className="font-sans font-semibold text-[16px] text-[#254B18]">{e.primary[0].toUpperCase()}</span> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-[12px]">
@@ -1004,7 +1008,6 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Testimonials.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">Words from people you&apos;ve worked with. Star up to 2 to feature on your profile; the rest live in your bio.</p>
-              <button className="mb-5 font-sans text-[13px] py-[8px] px-[14px] border border-[#73926A] text-[#73926A] hover:bg-[#EAF1E6]">+ Request a testimonial <span className="text-[#a8a29a] font-normal">· we&apos;ll send them a link</span></button>
               <div className="space-y-4 max-w-[720px]">
                 {testis.map((t, i) => (
                   <div key={i} className={`p-[18px] border ${t.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
@@ -1241,16 +1244,18 @@ export default function BuildPreview() {
 }
 
 function Field({ label, value, onChange, max, textarea }: { label: string; value: string; onChange: (v: string) => void; max?: number; textarea?: boolean }) {
+  // Stable id from the label so clicking the label focuses its input (a11y) and the field is addressable.
+  const id = "f-" + label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   return (
     <div>
       <div className="flex items-baseline justify-between mb-2">
-        <label className="font-sans text-[13px] font-semibold">{label}</label>
+        <label htmlFor={id} className="font-sans text-[13px] font-semibold cursor-pointer">{label}</label>
         {max ? <span className="text-[11px] text-[#7d7a74]">{value.length} / {max}</span> : null}
       </div>
       {textarea ? (
-        <textarea value={value} maxLength={max} rows={3} onChange={(e) => onChange(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink resize-none" />
+        <textarea id={id} value={value} maxLength={max} rows={3} onChange={(e) => onChange(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink resize-none" />
       ) : (
-        <input value={value} maxLength={max} onChange={(e) => onChange(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+        <input id={id} value={value} maxLength={max} onChange={(e) => onChange(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
       )}
     </div>
   );

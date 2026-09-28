@@ -57,7 +57,16 @@ const FLOW: Record<string, Engagement["flow"]> = {
   book: "book", proposal: "proposal", availability: "availability", approval: "availability",
   request: "message", message: "message",
 };
+// Confirmed archetype set (Sept 2026) with the descriptions shown in the builder.
+const ARCH_DESC: Record<string, string> = {
+  "The Builder": "0→1, creation under ambiguity.", "The Fixer": "Diagnose, stabilize, turn around.",
+  "The Scaler": "Takes what works and multiplies it.", "The Operator": "Systems, process, execution excellence.",
+  "The Strategist": "Big picture, long arc, systems thinker.", "The Coach": "Grows people, builds culture, develops talent.",
+  "The Connector": "Networks, partnerships, bridges worlds.", "The Visionary": "Sees what others don't, pulls people forward.",
+};
 const initials = (s: string) => (s.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("") || "•").toUpperCase();
+// Outbound links must be absolute — "linkedin.com/in/x" would otherwise resolve relative to the profile URL and 404.
+const absUrl = (u?: string): string | undefined => { const v = (u || "").trim(); if (!v) return undefined; return /^(https?:\/\/|mailto:)/i.test(v) ? v : `https://${v.replace(/^\/+/, "")}`; };
 
 export function builderToProfile(s: BuilderSnapshot, username: string): Profile {
   const socials: Social[] = ([
@@ -65,28 +74,35 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     ["tiktok", s.socials?.tiktok], ["website", s.socials?.website],
   ] as const)
     .filter(([, url]) => url && url.trim())
-    .map(([kind, url]) => ({ kind, url: url as string, visible: true }));
+    .map(([kind, url]) => ({ kind, url: absUrl(url as string) as string, visible: true }));
 
   const roles: Role[] = (s.entries || []).map((e, i) => ({
     id: `r${i}`, company: e.primary || "", logoLetter: initials(e.primary || "?"),
-    role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "",
+    role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "", featured: !!e.featured,
     metrics: e.result ? [{ value: e.result, label: "" }] : [],
   }));
 
   const skills: Skill[] = (s.skills || []).map((k) => ({ name: k.name, score: LEVEL_SCORE[k.level] ?? 55, featured: !!k.top }));
 
-  const values: Value[] = (s.vFeatured?.length ? s.vFeatured : s.vals || [])
-    .map((v) => ({ name: v, blurb: "", color: "#EAF1E6", icon: "check" }));
+  // Carry ALL chosen values; mark the featured ones (home shows featured, "View all" shows everything).
+  const featuredVals = new Set(s.vFeatured || []);
+  const values: Value[] = (s.vals || []).map((v) => ({ name: v, blurb: "", color: "#EAF1E6", icon: "check", featured: featuredVals.has(v) }));
 
   const superpowers: Superpower[] = (s.powers || [])
     .filter((p) => p.statement?.trim())
     .map((p) => ({ title: p.statement, blurb: p.proof || "", icon: "bolt" }));
 
-  const leadership: LeadershipTrait[] = (s.arch || []).map((a) => ({ title: a, blurb: "", icon: "compass" }));
+  const leadership: LeadershipTrait[] = (s.arch || []).map((a) => ({ title: a, blurb: ARCH_DESC[a] || "", icon: "compass" }));
+  const leadershipMeta = {
+    mbti: s.mbti && s.mbti !== "I don't know" ? s.mbti : undefined,
+    enneagram: s.enn && s.enn !== "I don't know" ? s.enn : undefined,
+    yearsLeading: s.ledTeam && s.yearsLed ? s.yearsLed : undefined,
+    largestTeam: s.ledTeam && s.largestTeam ? s.largestTeam : undefined,
+  };
 
   const media: MediaItem[] = (s.media || []).filter((m) => m.title?.trim()).map((m, i) => {
     const type = MEDIA_TYPE[m.kind] ?? "Press";
-    return { id: `m${i}`, type, title: m.title, bg: MEDIA_BG[type] ?? "#E6E2D0", image: m.img || undefined, darkText: type !== "Video", url: m.url || undefined, source: m.outlet || undefined };
+    return { id: `m${i}`, type, title: m.title, featured: !!m.featured, bg: MEDIA_BG[type] ?? "#E6E2D0", image: m.img || undefined, darkText: type !== "Video", url: absUrl(m.url), source: m.outlet || undefined };
   });
 
   const education: Credential[] = [
@@ -128,13 +144,13 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
   const hide = new Set(s.hidden || []);
 
   const store: StoreItem[] = (s.products || []).filter((p) => p.title?.trim()).map((p, i) => ({
-    id: `pr${i}`, kind: p.kind || "Product", title: p.title,
-    blurb: p.blurb || undefined, price: p.price || undefined, url: p.url || undefined,
+    id: `pr${i}`, kind: p.kind || "Product", title: p.title, featured: !!p.featured,
+    blurb: p.blurb || undefined, price: p.price || undefined, url: absUrl(p.url),
   }));
 
   const reach: ReachStat[] = (s.reach || []).filter((p) => (p.followers || "").trim() || (p.handle || "").trim()).map((p) => ({
     platform: p.key, handle: p.handle || undefined, followers: p.followers || "",
-    engagement: p.engagement || undefined, url: p.url || undefined,
+    engagement: p.engagement || undefined, url: absUrl(p.url),
   }));
   const audience = (s.audAge || s.audGender || s.audGeo)
     ? { age: s.audAge || undefined, gender: s.audGender || undefined, geo: s.audGeo || undefined }
@@ -175,7 +191,8 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     roles: hide.has("experience") ? [] : roles,
     impact: hide.has("impact") ? [] : impact,
     leadership: hide.has("leadership") ? [] : leadership,
-    leadershipBelief: s.philosophy || "",
+    leadershipBelief: hide.has("leadership") ? "" : (s.philosophy || ""),
+    leadershipMeta: hide.has("leadership") ? undefined : leadershipMeta,
     values: hide.has("values") ? [] : values,
     superpowers: hide.has("superpowers") ? [] : superpowers,
     skills: hide.has("skills") ? [] : skills,
@@ -184,7 +201,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     store: hide.has("store") ? [] : store,
     reach: hide.has("reach") ? [] : reach,
     audience: hide.has("reach") ? undefined : audience,
-    calLink: cal || undefined,
+    calLink: absUrl(cal),
     education: hide.has("education") ? [] : education,
     sections: {
       impact: !hide.has("impact") && impact.length > 0,

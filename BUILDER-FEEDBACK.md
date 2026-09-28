@@ -11,6 +11,17 @@ Captured from testing the full build→publish loop. Grouped for execution.
 - ✅ Work-With-Me copy/booking: "Send request" across the board; advisory=send request only; coaching=book+send request; speaking dropped length/available-date (was #7 + offer fixes)
 - ✅ Ongoing-management UX: persistent Back/Next per step; claim-once (publish→Update, no re-asking username); draft Preview route /build-preview/preview
 
+### Sept 28 — launch-readiness day
+- ✅ Fresh-account E2E (signup → code → builder → publish → profile) PASSES on a real new user: no seed leak, empty sections hidden, links absolute, only included offers, request form (no fake slots), rate shown
+- ✅ Onboarding entry fixed: new users start at Resume + welcome tour (was landing on step 11/Media); returning users go straight to About You; "Step 0" → 1-based counter
+- ✅ Field labels linked to inputs (a11y)
+- ✅ Builder polish: "Save and exit" works (saves → your profile/dashboard); dead "Request a testimonial" + fake logo-upload removed for beta; rail progress is real
+- ✅ Blocker fixes deployed: inquiryEmail at publish (Send request works) · no fake booking without a scheduling link · Share copies the real slug · draft-load can't wipe a draft · stock-photo "sarah" demo unregistered
+- ✅ Pre-share fixes: link normalization (https://) · hero location · media shown once (4 featured)
+- ✅ Spec items (D): Superpowers on home · Leadership MBTI/Enneagram/years/team + archetype descriptions carried · featured stars honored for experience/media/values/store · all 12 values carried ("View all") · no empty cards on sub-pages when hidden
+- ✅ Signup pricing corrected: $29/mo · $299/yr
+- ⏳ Awaiting Sarah: custom booking for Oct 1? · billing at beta? · Resend email? · Expertise consolidation before/after Oct 1? · Highlights keep/drop · Codex loop? · values presets (later)
+
 ### Approved queue (Sarah, Sep 8) — in order
 1. ✅ Quick wins: Back/Next · claim-once · edit/preview UX
 2. ✅ Deep skills library: dead search box wired → 337-skill catalog dropdown (name + category), custom add, Enter-to-add; grouped by the catalog's 8 categories; sliders + ★ kept

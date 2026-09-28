@@ -306,7 +306,7 @@ function PublicBar() {
   const { goto, profile } = useStore();
   const openWorkWith = useWorkWith();
   const copyLink = useCopyLink();
-  const anchors: [string, PageKey][] = profile.singlePage ? [] : [["Profile", "profile"], ["Experience", "experience"], ["How I Work", "how-i-work"], ["Media", "media"]];
+  const anchors: [string, PageKey][] = profile.singlePage ? [] : ([["Profile", "profile"], ["Experience", "experience"], ["How I Work", "how-i-work"], ...(profile.media.length ? [["Media", "media"] as [string, PageKey]] : [])] as [string, PageKey][]);
   return (
     <header className="pubbar public-only">
       <div className="pubbar-in">
@@ -400,6 +400,7 @@ function Hero() {
       <div className="hero-l">
         <h1 className="name">{n1}<br />{rest.join(" ")}</h1>
         <div className="role">{profile.headline}</div>
+        {profile.location && <div className="hero-loc">{profile.location}</div>}
         {profile.tagline && <p className="focus">{profile.tagline}</p>}
         <p className="bio">{profile.bioShort}</p>
         <div className="tags">
@@ -503,6 +504,7 @@ function HeroMedia() {
   );
 }
 
+const starFirst = <T extends { featured?: boolean }>(xs: T[]) => [...xs].sort((a, b) => Number(!!b.featured) - Number(!!a.featured));
 const parseFollowers = (s: string) => { const m = (s || "").trim().replace(/,/g, "").match(/([\d.]+)\s*([KkMm]?)/); if (!m) return 0; const mult = m[2].toLowerCase() === "m" ? 1e6 : m[2].toLowerCase() === "k" ? 1e3 : 1; return parseFloat(m[1]) * mult; };
 const fmtFollowers = (n: number) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n)));
 
@@ -516,7 +518,6 @@ function ProfilePage() {
     <div className="page on">
       <Hero />
       <Actions />
-      <HeroMedia />
 
       {on("activeProjects") && s.activeProjects && has(profile.activeProjects) && (
         <section className="smt">
@@ -542,7 +543,7 @@ function ProfilePage() {
         <div className="card feat">
           <BlockHead title="Featured Experience" sub="My top 3 experiences" />
           <div className="fgrid">
-            {profile.roles.slice(0, 3).map((r) => (
+            {starFirst(profile.roles).slice(0, 3).map((r) => (
               <div key={r.id} className="fc" onClick={() => goto("experience")}>
                 <div className="fctop"><LogoTile cls="fclogo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="fcco">{r.company.toUpperCase()}</div><div className="fcrole">{r.role}</div></div></div>
                 <div className="fbadges"><span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
@@ -576,6 +577,14 @@ function ProfilePage() {
           {profile.leadership.map((l) => (
             <div key={l.title} className="li"><div className="lici"><Icon name={l.icon} /></div><div><div className="lit">{l.title}</div><div className="lid">{l.blurb}</div></div></div>
           ))}
+          {profile.leadershipMeta && (profile.leadershipMeta.mbti || profile.leadershipMeta.enneagram || profile.leadershipMeta.yearsLeading || profile.leadershipMeta.largestTeam) && (
+            <div className="fbadges" style={{ marginTop: 4 }}>
+              {profile.leadershipMeta.mbti && <span className="fb">{profile.leadershipMeta.mbti}</span>}
+              {profile.leadershipMeta.enneagram && <span className="fb">Enneagram {profile.leadershipMeta.enneagram}</span>}
+              {profile.leadershipMeta.yearsLeading && <span className="fb">{profile.leadershipMeta.yearsLeading} yrs leading</span>}
+              {profile.leadershipMeta.largestTeam && <span className="fb">Largest team {profile.leadershipMeta.largestTeam}</span>}
+            </div>
+          )}
           <span className="blink" style={{ marginLeft: 0 }} onClick={() => goto("how-i-work")}>View all leadership <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
         </div>
         )}
@@ -583,7 +592,7 @@ function ProfilePage() {
         <div className="card col">
           <BlockHead title="Values" />
           <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>Principles that guide my work</div>
-          {profile.values.slice(0, 4).map((v) => (
+          {starFirst(profile.values).slice(0, 4).map((v) => (
             <div key={v.name} className="li"><div className="vici" style={{ background: v.color }}><Icon name={v.icon} style={{ width: 16, height: 16 }} /></div><div><div className="lit">{v.name}</div><div className="lid">{v.blurb}</div></div></div>
           ))}
           <span className="blink" style={{ marginLeft: 0 }} onClick={() => goto("how-i-work")}>View all values <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
@@ -596,6 +605,15 @@ function ProfilePage() {
         </div>
         )}
       </section>
+      )}
+
+      {on("superpowers") && has(profile.superpowers) && (
+        <section className="smt">
+          <BlockHead title="Superpowers" sub="What I'm known for" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
+          <div className="card col">
+            {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div></div></div>)}
+          </div>
+        </section>
       )}
 
       {profile.singlePage && has(profile.bioLong) && (
@@ -611,7 +629,7 @@ function ProfilePage() {
         <section className="smt">
           <BlockHead title="Media" link={profile.singlePage ? undefined : "View all media"} onLink={() => goto("media")} />
           <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
-            {profile.media.map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
+            {starFirst(profile.media).slice(0, 4).map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
           </div>
         </section>
       )}
@@ -668,7 +686,7 @@ function ProfilePage() {
         <section className="smt">
           <BlockHead title="Store" sub="Work you can buy" />
           <div className="store-grid">
-            {profile.store!.map((p) => {
+            {starFirst(profile.store!).map((p) => {
               const priceLabel = p.price ? (p.price === "0" ? "Free" : `$${p.price}`) : "";
               const inner = (
                 <>
@@ -774,7 +792,7 @@ function ExperiencePage() {
                 <div key={c.id} className="xedu-row"><LogoTile cls="xrole-logo" letter={c.short} /><div><div className="xedu-t">{c.title}</div><div className="xedu-s">{c.sub}</div></div></div>
               ))}
             </div>
-            <div className="xcerts"><b>Certifications</b>{profile.education.filter((c) => !/university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))).map((c) => `${c.title}${c.sub ? ` — ${c.sub}` : ""}`).join(" · ")}</div>
+            {profile.education.some((c) => c.sub === "Certification" || !/university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))) && <div className="xcerts"><b>Certifications</b>{profile.education.filter((c) => !/university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))).map((c) => `${c.title}${c.sub ? ` — ${c.sub}` : ""}`).join(" · ")}</div>}
           </div>
         </>
       )}
@@ -787,23 +805,23 @@ function HowIWorkPage() {
   return (
     <div className="page on">
       <PageHead title="How I Work" sub="How I lead, what I stand for, what I’m great at, and the skills behind it — in one place." />
-      <div className="card hw-sec">
+      {profile.leadership.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Leadership</div><div className="hw-sub">How I lead and build teams</div>
         {profile.leadership.map((l) => <div key={l.title} className="sp"><div className="sp-ic"><Icon name={l.icon} /></div><div><div className="sp-t">{l.title}</div><div className="sp-d">{l.blurb}</div></div></div>)}
         {profile.leadershipBelief && <div className="belief">“{profile.leadershipBelief}”</div>}
-      </div>
-      <div className="card hw-sec">
+      </div>}
+      {profile.values.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Values</div><div className="hw-sub">Principles that guide my work</div>
         <div className="vgrid">{profile.values.map((v) => <div key={v.name} className="sp" style={{ border: "none", padding: 0 }}><div className="sp-ic" style={{ background: v.color }}><Icon name={v.icon} /></div><div><div className="sp-t">{v.name}</div><div className="sp-d">{v.blurb}</div></div></div>)}</div>
-      </div>
-      <div className="card hw-sec">
+      </div>}
+      {profile.superpowers.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Superpowers</div><div className="hw-sub">The three things I’m known for</div>
         {profile.superpowers.map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div></div></div>)}
-      </div>
-      <div className="card hw-sec">
+      </div>}
+      {profile.skills.length > 0 && <div className="card hw-sec">
         <div className="hw-title">Skills</div><div className="hw-sub">The full capability map</div>
         <Skills />
-      </div>
+      </div>}
     </div>
   );
 }

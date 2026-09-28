@@ -1,6 +1,6 @@
 # Marquee Profile — Pages & Onboarding Structure
 
-**Status doc, Sept 26 2026.** Extends `PROFILE-ARCHITECTURE.md` (v2, the canonical spec) with everything decided and built since Michaela's profile. Where something is decided but not yet built, it is marked **PENDING** — nothing here claims more than what exists.
+**Status doc, updated Sept 28 2026.** Extends `PROFILE-ARCHITECTURE.md` (v2, the canonical spec) with everything decided and built since Michaela's profile. Where something is decided but not yet built, it is marked **PENDING** — nothing here claims more than what exists.
 
 ---
 
@@ -24,17 +24,17 @@
 ### 3.1 Profile (home) — the cover
 | # | Section | Rule | Status |
 |---|---|---|---|
-| 1 | **Hero** | Photo in its own box (never overlapped); "Open to opportunities" is a small green-dot **text line above the name** — **no pill on the photo**. Name · headline · **current focus** line · location · **featured keywords the person selects** · CTAs. Right: the **Open-to card**, each offer **clickable** into Work with Me. | Photo/name/headline/focus/keywords/CTAs ✅ · Open-to card ✅ · **keyword selection PENDING** (currently top-5 starred skills) · **location not rendered — PENDING** |
-| 2 | **Featured Experience** | Top 3 experience cards, 3-line teaser, "Full timeline →" | ✅ (currently first 3 roles — **starring not carried yet, PENDING**) |
+| 1 | **Hero** | Photo in its own box (never overlapped); "Open to opportunities" is a small green-dot **text line above the name** — **no pill on the photo**. Name · headline · **current focus** line · location · **featured keywords the person selects** · CTAs. Right: the **Open-to card**, each offer **clickable** into Work with Me. | Photo/name/headline/focus/keywords/CTAs ✅ · Open-to card ✅ · location ✅ (Sept 28) · **keyword selection PENDING** (currently top-5 starred skills) |
+| 2 | **Featured Experience** | Top 3 experience cards, 3-line teaser, "Full timeline →" | ✅ starred roles first (Sept 28) |
 | 3 | **Signature Skills · Values** | ~6 featured skills (starred) · the 4 featured values | Skills ✅ (starred, falls back to top-by-score) · Values ✅ |
-| 4 | **Featured Media** | Up to 4 starred items → "All media →" | Renders ✅ but **shows first 3 and appears twice on the page (HeroMedia + Media row) — PENDING fix**; starring not carried |
+| 4 | **Featured Media** | Up to 4 starred items → "All media →" | ✅ shown once, 4 starred first (Sept 28) |
 | 5 | **Education & Credentials** | School + certifications | ✅ |
 | 6 | **Testimonial** | One featured quote | ✅ (spec says up to 2 featured — PENDING) |
-| 7 | **Superpowers** | Top 3 (spec: standard module on the profile) | **Not rendered on home — PENDING** |
+| 7 | **Superpowers** | Top 3 (spec: standard module on the profile) | ✅ (Sept 28) |
 
 ### 3.2 Expertise — the depth
 Featured Experience (3 cards) → **Full timeline** → **Impact** → **Leadership** (3 archetypes with descriptions · MBTI · Enneagram · years leading · largest team · philosophy) → **Skills** (all, grouped by category, sage bars) → **Superpowers** (top 3) → **Values** (all 12).
-**Status:** Experience/Impact/Skills/Superpowers/Values render across the current Experience + How-I-Work pages ✅. **PENDING:** merge into one Expertise page; carry MBTI/Enneagram/years/team into the profile (mapper drops them today); archetype descriptions (available in the builder, not shown); values "View all" currently shows only the featured 4.
+**Status:** Experience/Impact/Skills/Superpowers/Values render across the current Experience + How-I-Work pages ✅. ✅ MBTI/Enneagram/years/team + archetype descriptions carried; values "View all" shows all 12 (Sept 28). **PENDING:** merge into one Expertise page (awaiting Sarah: before or after Oct 1).
 
 ### 3.3 Media
 All items, filterable by type (Articles · Podcasts · Awards · Videos · Press · Portfolio · Case Studies · Resources). **Status:** ✅ (Video missing from the tab filter — minor PENDING).

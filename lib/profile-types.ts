@@ -52,6 +52,7 @@ export interface Action {
 
 export interface Role {
   id: string
+  featured?: boolean
   company: string
   logoLetter: string
   /** Owner-uploaded company logo. When set, the tile shows this image instead of
@@ -96,6 +97,7 @@ export interface ActiveProject {
 
 export interface StoreItem {
   id: string
+  featured?: boolean
   kind: string
   title: string
   blurb?: string
@@ -113,6 +115,7 @@ export interface ReachStat {
 
 export interface MediaItem {
   id: string
+  featured?: boolean
   type: 'Project' | 'Podcast' | 'Newsletter' | 'Press' | 'Speaking' | 'Board' | 'Portfolio' | 'Video'
   title: string
   sub?: string
@@ -128,7 +131,7 @@ export interface MediaItem {
 }
 
 export interface Skill { name: string; score: number; featured?: boolean }
-export interface Value { name: string; blurb: string; color: string; icon: string }
+export interface Value { name: string; blurb: string; color: string; icon: string; featured?: boolean }
 export interface LeadershipTrait { title: string; blurb: string; icon: string }
 export interface Superpower { title: string; blurb: string; icon: string }
 export interface Credential { id: string; short: string; title: string; sub: string; verified?: boolean }
@@ -187,6 +190,8 @@ export interface Profile {
   impact: { value: string; label: string; sub: string }[]
   leadership: LeadershipTrait[]
   leadershipBelief: string
+  /** MBTI · Enneagram · years leading · largest team (spec: Leadership always shows these when present) */
+  leadershipMeta?: { mbti?: string; enneagram?: string; yearsLeading?: string; largestTeam?: string }
   values: Value[]
   superpowers: Superpower[]
   skills: Skill[]

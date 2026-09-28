@@ -40,6 +40,7 @@ const rounds = Math.max(1, parseInt(arg("rounds", "3"), 10));
 const out = arg("out", ".claudex/out.md");
 const reviewModel = arg("review-model", "gpt-4o");
 const reviseModel = arg("revise-model", "claude-sonnet-5");
+const reviewOnly = process.argv.includes("--review-only"); // ChatGPT audits only; no auto-revision (you apply fixes)
 if (!task) { console.error("--task is required"); process.exit(1); }
 
 const read = (p: string) => fs.existsSync(p) ? fs.readFileSync(p, "utf8") : `(missing: ${p})`;
@@ -76,6 +77,9 @@ async function claudeRevise(review: Awaited<ReturnType<typeof chatgptReview>>): 
   return msg.content.filter((b) => b.type === "text").map((b) => (b as { text: string }).text).join("\n");
 }
 
+const logPath = out.replace(/\.md$/, "") + ".log.md";
+const flushLog = () => { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(logPath, log.join("\n")); };
+
 // ── loop ──
 (async () => {
   for (let r = 1; r <= rounds; r++) {
@@ -83,16 +87,18 @@ async function claudeRevise(review: Awaited<ReturnType<typeof chatgptReview>>): 
     const review = await chatgptReview(r);
     console.log(review.approved ? "APPROVED ✓" : `${review.issues.length} issue(s)`);
     log.push(`## Round ${r} — ChatGPT review`, `**Approved:** ${review.approved}`, `**Summary:** ${review.summary}`, ...review.issues.map((i) => `- **[${i.severity}]** ${i.where} — ${i.problem}\n  ↳ fix: ${i.fix}`), "");
+    flushLog(); // never lose a review to a later crash
     if (review.approved) { log.push(`✅ Approved by ChatGPT on round ${r}.`); break; }
+    if (reviewOnly) { log.push(`ℹ️ Review-only mode: findings above; no automatic revision.`); break; }
     if (r === rounds) { log.push(`⚠️ Hit round limit (${rounds}) without approval.`); break; }
     process.stdout.write(`   Claude revising… `);
     artifact = await claudeRevise(review);
     console.log("done");
     log.push(`## Round ${r} — Claude revision`, artifact, "");
+    flushLog();
   }
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, artifact);
-  const logPath = out.replace(/\.md$/, "") + ".log.md";
-  fs.writeFileSync(logPath, log.join("\n"));
+  flushLog();
   console.log(`\nFinal artifact → ${out}\nTranscript     → ${logPath}\n(Source files were NOT modified — review the artifact, then apply.)`);
 })().catch((e) => { console.error("claudex-loop failed:", e?.message ?? e); process.exit(1); });
