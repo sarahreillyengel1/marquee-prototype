@@ -27,11 +27,17 @@
 | 1 | **Header** | **Left:** name · title · quick facts (up to 3 short lines, no label) · **Currently** (serif statement, labelled) · **Known for** (4 keywords, then "+N more") · Read full bio · location · social links. **Right, one card:** photo · **Open to** (up to 3, each clickable) · "Work with {first name}". **Bottom of the header:** the **Previous** row — brands worked at or with, as text, up to 8, no rules around it. "Open to opportunities" stays a small text line above the name; Verified sits above it. | ✅ built Sept 28 · **keyword selection PENDING** (currently starred skills) · Verified needs the ID check (PENDING) |
 | 1b | **Actions** | The 4 CTAs. **Not part of the header** — the first section below it. 1–4 tiles that stretch to fill the row. | ✅ |
 | 2 | **Featured Experience** | Top 3 experience cards, 3-line teaser, "Full timeline →". The full timeline does **not** live on home. | ✅ starred roles first (Sept 28) |
-| 3 | **Signature Skills · Values** | ~6 featured skills (starred) · the 4 featured values | Skills ✅ (starred, falls back to top-by-score) · Values ✅ |
+| 3 | **Featured Skills · Values** | **8** featured skills (starred first, then the strongest of the rest) · the 4 featured values as tiles. The two cards sit side by side and fill to the same height. Title is "Featured Skills", never "Signature Skills". | ✅ (Sept 28) |
 | 4 | **Featured Media** | Up to 4 starred items → "All media →" | ✅ shown once, 4 starred first (Sept 28) |
 | 5 | **Education & Credentials** | School + certifications | ✅ |
 | 6 | **Testimonial** | One featured quote | ✅ (spec says up to 2 featured — PENDING) |
 | 7 | **Superpowers** | Top 3 (spec: standard module on the profile) | ✅ (Sept 28) |
+
+**Home order (Sept 28):** Header → Actions → Featured Experience → Featured Skills + Values → Testimonial → Superpowers → Featured Media → Education & Credentials. **Media and Education are last.** Home is featured items only.
+
+**Affirm (Sept 28):** sign-in required; shown as a pill, "Affirmed by N" with up to 3 faces (the affirmer's own Marquee photo, or initials). The owner cannot affirm their own superpower.
+
+**Header photo (Sept 28):** portrait frame (4:5). The person drags to reposition and can zoom, in the builder.
 
 **Does not live on home** (it lives on the depth pages): the full Experience timeline, Impact, Leadership. One-page profiles (e.g. Michaela) have no depth pages, so they keep these on the single page.
 
@@ -56,7 +62,7 @@ Short preview on the profile → "Read full bio" → dedicated Bio page. **Statu
 
 ## 4. Onboarding / builder (`/build-preview`)
 
-**About You now holds every header field:** photo + photo position · name · city · headline · **Quick facts** (was "About") · **Currently** (was "Current focus", moved from Experience) · **Previous** (brands, up to 8) · **Look**.
+**About You now holds every header field:** photo (drag to reposition, zoom) · name · city · headline · **Quick facts** (was "About") · **Currently** (was "Current focus", moved from Experience) · **Previous** (brands, up to 8) · **Look**.
 
 **Steps:** Resume → About You · Experience · Leadership · Impact · Skills · Superpowers · Values · Testimonials · Education → Work With Me · Media · **Reach** · Store · Long Bio.
 

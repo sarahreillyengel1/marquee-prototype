@@ -36,6 +36,7 @@ const P: Record<string, string> = {
   "trending-up": '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   zap: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
   bolt: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
+  "badge-check": '<path d="M12 2.5l2.3 1.7 2.9-.1.9 2.7 2.3 1.7-.9 2.7.9 2.7-2.3 1.7-.9 2.7-2.9-.1L12 21.5l-2.3-1.7-2.9.1-.9-2.7-2.3-1.7.9-2.7-.9-2.7 2.3-1.7.9-2.7 2.9.1z"/><path d="M8.6 12.2l2.3 2.3 4.5-4.6"/>',
   compass: '<circle cx="12" cy="12" r="9"/><path d="M16.2 7.8l-2.1 6.3-6.3 2.1 2.1-6.3z"/>',
   heart: '<path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -375,8 +376,9 @@ function Skills({ featured }: { featured?: boolean } = {}) {
   const { profile } = useStore();
   const all = profile.skills;
   if (all.length === 0) return null;
-  const base = all.some((s) => s.featured) ? all.filter((s) => s.featured) : [...all].sort((a, b) => b.score - a.score);
-  const list = featured ? base.slice(0, 8) : all;
+  const starred = all.filter((s) => s.featured);
+  const rest = all.filter((s) => !s.featured).sort((a, b) => b.score - a.score);
+  const list = featured ? [...starred, ...rest].slice(0, 8) : all;
   const max = Math.max(...all.map((s) => s.score));
   return <div className="skfull">{list.map((s) => (
     <div key={s.name} className="skl"><div className="sklt"><b>{s.name}</b><span>{s.score}</span></div>
@@ -387,7 +389,11 @@ function Skills({ featured }: { featured?: boolean } = {}) {
 /* ─────────────── pages ─────────────── */
 // The header: text on the left, one card on the right (photo · Open to · Work with),
 // and the "Previous" brand row along the bottom. The Actions row is NOT part of it.
-const PHOTO_FOCUS = { top: "50% 18%", center: "50% 50%", bottom: "50% 82%" } as const;
+// Shared with the builder's photo framer so what you drag is what the header shows.
+const photoStyle = (pos?: { x: number; y: number }, zoom?: number): CSSProperties => {
+  const at = `${pos?.x ?? 50}% ${pos?.y ?? 25}%`;
+  return { objectPosition: at, transformOrigin: at, transform: zoom && zoom > 1 ? `scale(${zoom})` : undefined };
+};
 const nameSize = (n: string) => (n.length <= 12 ? 56 : n.length <= 22 ? 48 : 40);
 const focusSize = (f: string) => (f.length <= 80 ? 24 : f.length <= 120 ? 21 : 19);
 
@@ -446,7 +452,7 @@ function Hero() {
           <div className="hd-ph">
             {profile.photoUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={profile.photoUrl} alt={profile.name} referrerPolicy="no-referrer" style={{ objectPosition: PHOTO_FOCUS[profile.photoFocus || "top"] }} />
+              ? <img src={profile.photoUrl} alt={profile.name} referrerPolicy="no-referrer" style={photoStyle(profile.photoPos, profile.photoZoom)} />
               : <div className="photo-empty"><div className="pe-ic"><Icon name="camera" /></div><div className="pe-t">Add your photo</div></div>}
           </div>
           <div className="hd-ot">
@@ -537,28 +543,68 @@ const starFirst = <T extends { featured?: boolean }>(xs: T[]) => [...xs].sort((a
 const parseFollowers = (s: string) => { const m = (s || "").trim().replace(/,/g, "").match(/([\d.]+)\s*([KkMm]?)/); if (!m) return 0; const mult = m[2].toLowerCase() === "m" ? 1e6 : m[2].toLowerCase() === "k" ? 1e3 : 1; return parseFloat(m[1]) * mult; };
 const fmtFollowers = (n: number) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n)));
 
-// "Affirm" — visitors confirm a superpower. One per visitor (browser id), no login.
+// "Affirm" — signed-in people affirm a superpower; their faces show in the pill.
+type Affirmer = { name: string; photoUrl?: string; slug?: string };
+type AffirmData = { powers: Record<string, { count: number; people: Affirmer[] }>; mine: string[]; signedIn: boolean; isOwner: boolean };
+const affirmCache = new Map<string, Promise<AffirmData>>();
+const loadAffirm = (slug: string) => {
+  if (!affirmCache.has(slug)) {
+    affirmCache.set(slug, fetch(`/api/affirm?username=${encodeURIComponent(slug)}`).then((r) => r.json())
+      .catch(() => ({ powers: {}, mine: [], signedIn: false, isOwner: false })));
+  }
+  return affirmCache.get(slug)!;
+};
+const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
 function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
-  const [count, setCount] = useState<number | null>(null);
+  const [count, setCount] = useState(0);
+  const [people, setPeople] = useState<Affirmer[]>([]);
   const [mine, setMine] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [busy, setBusy] = useState(false);
-  const vid = () => { try { let v = localStorage.getItem("mq_vid"); if (!v) { v = crypto.randomUUID(); localStorage.setItem("mq_vid", v); } return v; } catch { return "anon"; } };
+  const toast = useToast();
   useEffect(() => {
-    fetch(`/api/affirm?username=${encodeURIComponent(slug)}&visitorId=${encodeURIComponent(vid())}`).then((r) => r.json())
-      .then((j) => { setCount(j.counts?.[superpower] ?? 0); setMine((j.mine || []).includes(superpower)); }).catch(() => setCount(0));
+    let live = true;
+    loadAffirm(slug).then((j) => {
+      if (!live) return;
+      setCount(j.powers?.[superpower]?.count ?? 0); setPeople(j.powers?.[superpower]?.people ?? []);
+      setMine((j.mine || []).includes(superpower)); setSignedIn(!!j.signedIn); setIsOwner(!!j.isOwner);
+    });
+    return () => { live = false; };
   }, [slug, superpower]);
   const affirm = async () => {
-    if (mine || busy) return; setBusy(true);
+    if (mine || busy) return;
+    if (!signedIn) { window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`; return; }
+    setBusy(true);
     try {
-      const r = await fetch("/api/affirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: slug, superpower, visitorId: vid() }) });
-      const j = await r.json(); if (r.ok) { setMine(true); setCount(j.count ?? (count ?? 0) + 1); }
+      const r = await fetch("/api/affirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: slug, superpower }) });
+      const j = await r.json();
+      if (r.ok) { setMine(true); setCount(j.count ?? count + 1); setPeople(j.people ?? people); affirmCache.delete(slug); }
+      else toast(j.error || "Couldn't save that just now.");
     } finally { setBusy(false); }
   };
-  const n = count ?? 0;
   return (
-    <div className="sp-aff">
-      <button type="button" onClick={affirm} disabled={mine || busy}>{mine ? "You affirmed ✓" : "Affirm"}</button>
-      {n > 0 && <span>{n === 1 ? "1 person affirms this" : `${n} people affirm this`}</span>}
+    <div className="aff">
+      {count > 0 && (
+        <span className="aff-pill">
+          <Icon name="badge-check" />
+          <span className="aff-t">Affirmed by {count}</span>
+          <span className="aff-faces">
+            {people.map((p, i) => {
+              const face = p.photoUrl
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={p.photoUrl} alt={p.name} referrerPolicy="no-referrer" />
+                : <span className="aff-in">{initials(p.name)}</span>;
+              return p.slug
+                ? <a key={i} className="aff-face" href={`/${p.slug}`} title={p.name}>{face}</a>
+                : <span key={i} className="aff-face" title={p.name}>{face}</span>;
+            })}
+          </span>
+        </span>
+      )}
+      {!isOwner && !mine && <button type="button" className="aff-btn" onClick={affirm} disabled={busy}>{signedIn ? "Affirm" : "Sign in to affirm"}</button>}
+      {mine && <span className="aff-done"><Icon name="check" /> You affirmed this</span>}
     </div>
   );
 }
@@ -652,49 +698,21 @@ function ProfilePage() {
         )}
         {showSkills && (
         <div className="card col">
-          <BlockHead title="Signature Skills" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
+          <BlockHead title="Featured Skills" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
           <Skills featured />
         </div>
         )}
         {showVals && (
         <div className="card col">
           <BlockHead title="Values" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
-          <div style={{ fontSize: 12, color: "var(--gray2)", margin: "0 0 16px" }}>Principles that guide my work</div>
+          <div className="vlist">
           {starFirst(profile.values).slice(0, 4).map((v) => (
             <div key={v.name} className="li"><div className="vici" style={{ background: v.color }}><Icon name={v.icon} style={{ width: 16, height: 16 }} /></div><div><div className="lit">{v.name}</div><div className="lid">{v.blurb}</div></div></div>
           ))}
+          </div>
         </div>
         )}
       </section>
-      )}
-
-      {profile.singlePage && has(profile.bioLong) && (
-        <section className="smt">
-          <div className="card col">
-            <BlockHead title="About" />
-            <div className="aboutbio">{profile.bioLong.map((p, i) => <p key={i}>{p}</p>)}</div>
-          </div>
-        </section>
-      )}
-
-      {on("media") && s.media && has(profile.media) && (
-        <section className="smt">
-          <BlockHead title="Featured Media" link={profile.singlePage ? undefined : "All media"} onLink={() => goto("media")} />
-          <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
-            {starFirst(profile.media).slice(0, 4).map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
-          </div>
-        </section>
-      )}
-
-      {on("education") && s.education && has(profile.education) && (
-        <section className="smt">
-          <BlockHead title="Education & Credentials" />
-          <div className="edu-grid">
-            {profile.education.map((c) => (
-              <div key={c.id} className="card edu"><div className="edul">{c.short}</div><div className="edut">{c.title} {c.verified && <span className="vchk" style={{ width: 16, height: 16 }}><Icon name="check" /></span>}</div><div className="edus">{c.sub}</div></div>
-            ))}
-          </div>
-        </section>
       )}
 
       {on("testimonials") && profile.testimonial && (
@@ -713,6 +731,15 @@ function ProfilePage() {
           <BlockHead title="Superpowers" sub="What I'm known for" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
           <div className="card col">
             {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
+          </div>
+        </section>
+      )}
+
+      {profile.singlePage && has(profile.bioLong) && (
+        <section className="smt">
+          <div className="card col">
+            <BlockHead title="About" />
+            <div className="aboutbio">{profile.bioLong.map((p, i) => <p key={i}>{p}</p>)}</div>
           </div>
         </section>
       )}
@@ -761,6 +788,26 @@ function ProfilePage() {
                 ? <a key={p.id} className="store-card" href={p.url} target="_blank" rel="noopener">{inner}</a>
                 : <div key={p.id} className="store-card">{inner}</div>;
             })}
+          </div>
+        </section>
+      )}
+
+      {on("media") && s.media && has(profile.media) && (
+        <section className="smt">
+          <BlockHead title="Featured Media" link={profile.singlePage ? undefined : "All media"} onLink={() => goto("media")} />
+          <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
+            {starFirst(profile.media).slice(0, 4).map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
+          </div>
+        </section>
+      )}
+
+      {on("education") && s.education && has(profile.education) && (
+        <section className="smt">
+          <BlockHead title="Education & Credentials" />
+          <div className="edu-grid">
+            {profile.education.map((c) => (
+              <div key={c.id} className="card edu"><div className="edul">{c.short}</div><div className="edut">{c.title} {c.verified && <span className="vchk" style={{ width: 16, height: 16 }}><Icon name="check" /></span>}</div><div className="edus">{c.sub}</div></div>
+            ))}
           </div>
         </section>
       )}

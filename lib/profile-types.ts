@@ -157,8 +157,9 @@ export interface Profile {
   availableLabel: string
   verified: boolean
   photoUrl: string
-  /** Which part of the photo stays in frame in the header. Undefined = "top". */
-  photoFocus?: 'top' | 'center' | 'bottom'
+  /** Where the photo sits in its frame (0–100 each way) and how far it is zoomed (1–3). Set by dragging in the builder. */
+  photoPos?: { x: number; y: number }
+  photoZoom?: number
   tagline: string
   /** Label over the serif statement in the header. Undefined = "Currently"; "" = no label. */
   focusLabel?: string

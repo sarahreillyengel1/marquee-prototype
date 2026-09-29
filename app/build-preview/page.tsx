@@ -149,7 +149,7 @@ const BLANK = {
   reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
   audAge: "", audGender: "", audGeo: "", calLink: "",
   actions: [] as { type: string; label: string; dest: string; url: string }[],
-  look: "classic", previous: [] as string[], photoFocus: "top",
+  look: "classic", previous: [] as string[], photoPos: { x: 50, y: 25 }, photoZoom: 1,
 };
 
 const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
@@ -357,7 +357,8 @@ export default function BuildPreview() {
   const rmReach = (key: string) => setReach((r) => r.filter((x) => x.key !== key));
   const [calLink, setCalLink] = useState("");
   const [look, setLook] = useState("classic");
-  const [photoFocus, setPhotoFocus] = useState("top");
+  const [photoPos, setPhotoPos] = useState({ x: 50, y: 25 });
+  const [photoZoom, setPhotoZoom] = useState(1);
   const [previous, setPrevious] = useState<string[]>([]);
   const [prevDraft, setPrevDraft] = useState("");
   const PREV_MAX = 8;
@@ -428,7 +429,7 @@ export default function BuildPreview() {
     } catch { setParseErr("Something went wrong. Try again."); }
     setParsing(false);
   };
-  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoFocus });
+  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -451,7 +452,7 @@ export default function BuildPreview() {
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
     setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
     setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
-    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoFocus(d.photoFocus ?? "top");
+    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoPos(d.photoPos ?? { x: 50, y: 25 }); setPhotoZoom(d.photoZoom ?? 1);
   };
   useEffect(() => {
     let cancelled = false;
@@ -486,7 +487,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoFocus]);
+  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   const [showPublish, setShowPublish] = useState(false);
@@ -606,15 +607,7 @@ export default function BuildPreview() {
                   {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
                   {uploading && <span className="font-sans text-[12px] text-[#73926A]">Uploading…</span>}
                 </div>
-                {photoUrl && (
-                  <div className="mt-3">
-                    <div className="font-sans text-[12px] text-[#7d7a74] mb-[6px]">Your header photo is wider than it is tall. Choose the part to keep in frame.</div>
-                    <div className="flex items-center gap-[12px]">
-                      <div className="w-[120px] aspect-[5/4] overflow-hidden border border-[#E1DED7] shrink-0"><img src={photoUrl} alt="" className="w-full h-full object-cover" style={{ objectPosition: photoFocus === "center" ? "50% 50%" : photoFocus === "bottom" ? "50% 82%" : "50% 18%" }} /></div>
-                      <div className="flex gap-[8px]">{[["top", "Top"], ["center", "Middle"], ["bottom", "Bottom"]].map(([k, l]) => <button key={k} onClick={() => setPhotoFocus(k)} aria-pressed={photoFocus === k} className={`font-sans text-[13px] py-[8px] px-[14px] border-[1.5px] bg-white ${photoFocus === k ? "border-brand-ink" : "border-[#E1DED7] text-[#3a352f] hover:border-[#a8a29a]"}`}>{l}</button>)}</div>
-                    </div>
-                  </div>
-                )}
+                {photoUrl && <PhotoFramer url={photoUrl} pos={photoPos} zoom={photoZoom} onPos={setPhotoPos} onZoom={setPhotoZoom} />}
               </div>
               <div className="grid grid-cols-2 gap-[18px] max-w-[600px]"><Field label="Name" value={name} onChange={setName} /><Field label="City / State" value={city} onChange={setCity} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /></div>
@@ -1317,6 +1310,50 @@ export default function BuildPreview() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Drag the photo inside a frame shaped like the header's photo box; the slider zooms.
+// Position is stored as 0–100 each way, so the profile can reproduce it at any size.
+function PhotoFramer({ url, pos, zoom, onPos, onZoom }: { url: string; pos: { x: number; y: number }; zoom: number; onPos: (p: { x: number; y: number }) => void; onZoom: (z: number) => void }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const img = useRef<HTMLImageElement>(null);
+  const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const clamp = (n: number) => Math.min(100, Math.max(0, n));
+  // how far the photo overhangs the frame, in pixels, on each axis
+  const overhang = () => {
+    const f = frame.current, i = img.current;
+    if (!f || !i || !i.naturalWidth) return { ox: 0, oy: 0 };
+    const fit = Math.max(f.clientWidth / i.naturalWidth, f.clientHeight / i.naturalHeight) * zoom;
+    return { ox: i.naturalWidth * fit - f.clientWidth, oy: i.naturalHeight * fit - f.clientHeight };
+  };
+  const at = `${pos.x}% ${pos.y}%`;
+  return (
+    <div className="mt-4 flex flex-wrap items-start gap-[18px]">
+      <div
+        ref={frame}
+        role="img"
+        aria-label="Header photo. Drag to reposition."
+        className="w-[200px] aspect-[4/5] overflow-hidden border border-[#E1DED7] bg-[#ECEAE3] shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+        onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = { px: e.clientX, py: e.clientY, x: pos.x, y: pos.y }; }}
+        onPointerMove={(e) => {
+          const d = drag.current; if (!d) return;
+          const { ox, oy } = overhang();
+          onPos({ x: ox > 1 ? clamp(d.x - ((e.clientX - d.px) / ox) * 100) : d.x, y: oy > 1 ? clamp(d.y - ((e.clientY - d.py) / oy) * 100) : d.y });
+        }}
+        onPointerUp={() => { drag.current = null; }}
+        onPointerCancel={() => { drag.current = null; }}
+      >
+        <img ref={img} src={url} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: at, transformOrigin: at, transform: zoom > 1 ? `scale(${zoom})` : undefined }} />
+      </div>
+      <div className="max-w-[260px]">
+        <div className="font-sans text-[13px] font-semibold mb-1">Position your photo</div>
+        <p className="text-[12px] text-[#7d7a74] leading-[1.5] mb-3">Drag the photo to choose what shows in your header. This frame is the same shape as the one on your profile.</p>
+        <label htmlFor="f-photo-zoom" className="font-sans text-[12px] text-[#7d7a74] block mb-1">Zoom</label>
+        <input id="f-photo-zoom" type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => onZoom(Number(e.target.value))} className="w-[200px] accent-[#2E2C28]" />
+        <div><button onClick={() => { onPos({ x: 50, y: 25 }); onZoom(1); }} className="font-sans text-[12px] text-[#7d7a74] underline underline-offset-2 hover:text-brand-ink mt-2">Reset</button></div>
+      </div>
     </div>
   );
 }

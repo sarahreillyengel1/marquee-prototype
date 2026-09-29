@@ -37,9 +37,11 @@ export interface BuilderSnapshot {
   actions?: { type: string; label: string; dest: string; url: string }[];
   look?: string;
   previous?: string[];
-  photoFocus?: string;
+  photoPos?: { x: number; y: number };
+  photoZoom?: number;
 }
 
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number(n) || 0));
 const LEVEL_SCORE: Record<string, number> = { Foundational: 25, Proficient: 55, Advanced: 80, Expert: 100 };
 const MEDIA_TYPE: Record<string, MediaItem["type"]> = {
   Press: "Press", Talk: "Speaking", Podcast: "Podcast", Writing: "Newsletter",
@@ -190,7 +192,8 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     tagline: s.focus || "",
     look,
     previous,
-    photoFocus: s.photoFocus === "center" || s.photoFocus === "bottom" ? s.photoFocus : undefined,
+    photoPos: s.photoPos ? { x: clamp(s.photoPos.x, 0, 100), y: clamp(s.photoPos.y, 0, 100) } : undefined,
+    photoZoom: s.photoZoom ? clamp(s.photoZoom, 1, 3) : undefined,
     slug: username,
     tags: (s.skills || []).filter((k) => k.top).map((k) => k.name).slice(0, 6),
     searchTags,
