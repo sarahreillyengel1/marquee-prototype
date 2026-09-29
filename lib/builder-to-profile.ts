@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────
 import type {
   Profile, Role, MediaItem, Skill, Value, Superpower, LeadershipTrait,
-  Credential, Engagement, OpenToItem, Social, EngagementKey, StoreItem, ReachStat,
+  Credential, Engagement, OpenToItem, Social, EngagementKey, StoreItem, ReachStat, ProfileLook,
 } from "./profile-types";
 
 // The shape the builder autosaves (matches snapshot() in app/build-preview/page.tsx).
@@ -35,6 +35,9 @@ export interface BuilderSnapshot {
   audAge?: string; audGender?: string; audGeo?: string;
   calLink?: string;
   actions?: { type: string; label: string; dest: string; url: string }[];
+  look?: string;
+  previous?: string[];
+  photoFocus?: string;
 }
 
 const LEVEL_SCORE: Record<string, number> = { Foundational: 25, Proficient: 55, Advanced: 80, Expert: 100 };
@@ -164,7 +167,12 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     ? { age: s.audAge || undefined, gender: s.audGender || undefined, geo: s.audGeo || undefined }
     : undefined;
 
+  const LOOKS: ProfileLook[] = ["classic", "warm", "mono", "bold"];
+  const look = LOOKS.find((l) => l === s.look);
+  const previous = Array.from(new Set((s.previous || []).map((b) => b.trim()).filter(Boolean))).slice(0, 8);
+
   const searchTags = Array.from(new Set([
+    ...previous,
     ...addedOffers.flatMap((o) => (o.keywords || "").split(",").map((t) => t.trim())),
     ...(s.industries || []),
     ...(s.skills || []).map((k) => k.name),
@@ -180,6 +188,9 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     verified: false,
     photoUrl: s.photoUrl || "",
     tagline: s.focus || "",
+    look,
+    previous,
+    photoFocus: s.photoFocus === "center" || s.photoFocus === "bottom" ? s.photoFocus : undefined,
     slug: username,
     tags: (s.skills || []).filter((k) => k.top).map((k) => k.name).slice(0, 6),
     searchTags,

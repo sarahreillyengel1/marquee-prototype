@@ -146,6 +146,9 @@ export interface SectionVisibility {
   portfolio: boolean
 }
 
+/** Colour look for a profile. Layout, type and spacing are identical in all four. */
+export type ProfileLook = 'classic' | 'warm' | 'mono' | 'bold'
+
 export interface Profile {
   name: string
   headline: string
@@ -154,7 +157,15 @@ export interface Profile {
   availableLabel: string
   verified: boolean
   photoUrl: string
+  /** Which part of the photo stays in frame in the header. Undefined = "top". */
+  photoFocus?: 'top' | 'center' | 'bottom'
   tagline: string
+  /** Label over the serif statement in the header. Undefined = "Currently"; "" = no label. */
+  focusLabel?: string
+  /** Colour look. Undefined = "warm", the original Marquee colours. */
+  look?: ProfileLook
+  /** Brands the person has worked at or with — the "Previous" row at the bottom of the header. Max 8. */
+  previous?: string[]
   slug: string
   tags: string[]
   /** Aggregated searchable tags (offer keywords + industries + skills + values). Not rendered; powers directory search. */

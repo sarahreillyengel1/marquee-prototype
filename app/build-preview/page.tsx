@@ -19,7 +19,13 @@ const ALL_STEPS = RAIL.flatMap((p) => p.steps);
 const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Store", "Long Bio"]);
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
 const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Store: "store", Actions: "actions" };
-const ACTION_TYPES = ["Contact", "Read", "Listen", "Watch", "Attend", "Explore", "Book", "Join", "Buy", "Follow"];
+const LOOKS = [
+  { key: "classic", name: "Classic", note: "Black and white, soft beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
+  { key: "warm", name: "Warm", note: "Soft paper, sage, sky", sw: ["#F7F6F2", "#73926A", "#A8CFFF", "#EED0BF"] },
+  { key: "mono", name: "Mono", note: "Stone, light to dark", sw: ["#F7F6F2", "#E2DED5", "#CFC9BE", "#2E2C28"] },
+  { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
+];
+const ACTION_TYPES = ["Contact", "Hire", "Book", "Partner", "Sponsor", "Read", "Listen", "Watch", "Attend", "Join", "Apply", "Buy", "Shop", "Invest", "Donate", "Follow"];
 const ACTION_DESTS = [{ v: "contact", label: "Opens Work with me" }, { v: "media", label: "My Media page" }, { v: "bio", label: "My Bio page" }, { v: "experience", label: "My Experience page" }, { v: "how-i-work", label: "My How I Work page" }, { v: "link", label: "A link (URL)" }];
 const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack", "X", "Podcast", "Facebook"];
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
@@ -143,6 +149,7 @@ const BLANK = {
   reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
   audAge: "", audGender: "", audGeo: "", calLink: "",
   actions: [] as { type: string; label: string; dest: string; url: string }[],
+  look: "classic", previous: [] as string[], photoFocus: "top",
 };
 
 const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
@@ -349,6 +356,12 @@ export default function BuildPreview() {
   const upReach = (key: string, patch: Partial<ReachP>) => setReach((r) => r.map((x) => (x.key === key ? { ...x, ...patch } : x)));
   const rmReach = (key: string) => setReach((r) => r.filter((x) => x.key !== key));
   const [calLink, setCalLink] = useState("");
+  const [look, setLook] = useState("classic");
+  const [photoFocus, setPhotoFocus] = useState("top");
+  const [previous, setPrevious] = useState<string[]>([]);
+  const [prevDraft, setPrevDraft] = useState("");
+  const PREV_MAX = 8;
+  const addPrevious = () => { const v = prevDraft.trim().replace(/,$/, "").trim(); if (v && !previous.some((x) => x.toLowerCase() === v.toLowerCase()) && previous.length < PREV_MAX) setPrevious((c) => [...c, v]); setPrevDraft(""); };
   type ActionRow = { type: string; label: string; dest: string; url: string };
   const [actions, setActions] = useState<ActionRow[]>([]);
   const upAction = (i: number, patch: Partial<ActionRow>) => setActions((a) => a.map((x, j) => (j === i ? { ...x, ...patch } : x)));
@@ -415,7 +428,7 @@ export default function BuildPreview() {
     } catch { setParseErr("Something went wrong. Try again."); }
     setParsing(false);
   };
-  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions });
+  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoFocus });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -438,7 +451,7 @@ export default function BuildPreview() {
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
     setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
     setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
-    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []);
+    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoFocus(d.photoFocus ?? "top");
   };
   useEffect(() => {
     let cancelled = false;
@@ -473,7 +486,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions]);
+  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoFocus]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   const [showPublish, setShowPublish] = useState(false);
@@ -593,10 +606,41 @@ export default function BuildPreview() {
                   {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
                   {uploading && <span className="font-sans text-[12px] text-[#73926A]">Uploading…</span>}
                 </div>
+                {photoUrl && (
+                  <div className="mt-3">
+                    <div className="font-sans text-[12px] text-[#7d7a74] mb-[6px]">Your header photo is wider than it is tall. Choose the part to keep in frame.</div>
+                    <div className="flex items-center gap-[12px]">
+                      <div className="w-[120px] aspect-[5/4] overflow-hidden border border-[#E1DED7] shrink-0"><img src={photoUrl} alt="" className="w-full h-full object-cover" style={{ objectPosition: photoFocus === "center" ? "50% 50%" : photoFocus === "bottom" ? "50% 82%" : "50% 18%" }} /></div>
+                      <div className="flex gap-[8px]">{[["top", "Top"], ["center", "Middle"], ["bottom", "Bottom"]].map(([k, l]) => <button key={k} onClick={() => setPhotoFocus(k)} aria-pressed={photoFocus === k} className={`font-sans text-[13px] py-[8px] px-[14px] border-[1.5px] bg-white ${photoFocus === k ? "border-brand-ink" : "border-[#E1DED7] text-[#3a352f] hover:border-[#a8a29a]"}`}>{l}</button>)}</div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-[18px] max-w-[600px]"><Field label="Name" value={name} onChange={setName} /><Field label="City / State" value={city} onChange={setCity} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /></div>
-              <div className="max-w-[600px] mt-[18px]"><Field label="About" value={bio} onChange={setBio} max={200} textarea /></div>
+              <div className="max-w-[600px] mt-[18px]"><Field label="Quick facts" value={bio} onChange={setBio} max={200} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">Up to three short lines, shown under your title. Press Enter to start a new line.</p></div>
+              <div className="max-w-[600px] mt-[18px]"><Field label="Currently" value={focus} onChange={setFocus} max={160} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">One or two sentences on what you are doing now. Shown in your header under the label “Currently”.</p></div>
+              <div className="max-w-[600px] mt-[18px]">
+                <div className="flex items-baseline justify-between mb-2"><label htmlFor="f-previous" className="font-sans text-[13px] font-semibold cursor-pointer">Previous</label><span className="text-[11px] text-[#7d7a74]">{previous.length} / {PREV_MAX}</span></div>
+                <div className="flex flex-wrap items-center gap-[6px] border border-[#E1DED7] bg-white py-[6px] px-[8px] focus-within:border-brand-ink">
+                  {previous.map((b) => <span key={b} className="inline-flex items-center gap-[6px] font-sans text-[13px] py-[5px] px-[10px] bg-[#F1EEE8] text-[#3a352f]">{b}<button onClick={() => setPrevious((c) => c.filter((x) => x !== b))} aria-label={`Remove ${b}`} className="text-[#7d7a74] hover:text-brand-ink">×</button></span>)}
+                  {previous.length < PREV_MAX && <input id="f-previous" value={prevDraft} onChange={(e) => setPrevDraft(e.target.value)} onBlur={addPrevious} onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addPrevious(); } }} placeholder={previous.length ? "add another…" : "Type a brand, press Enter"} className="flex-1 min-w-[150px] font-inter text-[13px] py-[5px] px-[6px] focus:outline-none" />}
+                </div>
+                <p className="text-[12px] text-[#7d7a74] mt-[6px]">Brands you have worked at or with. Shown at the bottom of your header, in this order.</p>
+              </div>
+              <div className="mt-6 max-w-[600px]">
+                <label className="font-sans text-[13px] font-semibold block mb-1">Look</label>
+                <p className="text-[12px] text-[#7d7a74] mb-[10px]">The colours of your profile. Layout and type are the same in all four.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
+                  {LOOKS.map((l) => (
+                    <button key={l.key} onClick={() => setLook(l.key)} aria-pressed={look === l.key} className={`text-left py-[10px] px-[12px] border-[1.5px] bg-white ${look === l.key ? "border-brand-ink" : "border-[#E1DED7] hover:border-[#a8a29a]"}`}>
+                      <span className="flex mb-[8px]">{l.sw.map((c) => <span key={c} className="w-[20px] h-[20px] border border-[#E1DED7] -ml-px first:ml-0" style={{ background: c }} />)}</span>
+                      <span className="font-sans text-[13px] font-semibold block">{l.name}</span>
+                      <span className="font-sans text-[11.5px] text-[#7d7a74] block leading-snug">{l.note}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="mt-6"><label className="font-sans text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-sans text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
               <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-sans text-[14px]">Open to opportunities now</span></label>
               <div className="mt-6 max-w-[600px]"><label className="font-sans text-[13px] font-semibold block mb-2">Links</label><div className="grid grid-cols-2 gap-[12px]">
@@ -616,8 +660,6 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your experience.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">We pulled your roles from your resume. Confirm them, add projects, and feature your best work.</p>
-
-              <div className="max-w-[620px] mb-8"><Field label="Current focus" value={focus} onChange={setFocus} max={160} textarea /></div>
 
               <div className="font-sans text-[13px] font-semibold mb-1">Timeline</div>
               <p className="text-[12.5px] text-[#7d7a74] mb-3">Add your roles (full-time jobs) and your projects (consulting or client engagements). Both sit on your timeline. Star the ones to feature.</p>
@@ -705,11 +747,12 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four actions.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
+              <datalist id="action-types">{ACTION_TYPES.map((t) => <option key={t} value={t} />)}</datalist>
               <div className="space-y-3 max-w-[720px]">
                 {actions.map((a, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[14px]">
                     <div className="grid grid-cols-[130px_1fr] gap-[10px] mb-2">
-                      <select value={a.type} onChange={(e) => upAction(i, { type: e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{ACTION_TYPES.map((t) => <option key={t}>{t}</option>)}</select>
+                      <input list="action-types" value={a.type} onChange={(e) => upAction(i, { type: e.target.value })} placeholder="Contact, Hire, Book…" className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
                       <input value={a.label} onChange={(e) => upAction(i, { label: e.target.value })} placeholder={a.type === "Contact" ? "Get in touch" : a.type === "Listen" ? "Your podcast name" : a.type === "Read" ? "Your newsletter" : "What they'll get"} className="font-inter text-[13.5px] font-semibold py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                     </div>
                     <div className="grid grid-cols-[220px_1fr_auto] gap-[10px] items-center">

@@ -288,6 +288,8 @@ const michaela: Profile = {
   verified: true,
   photoUrl: '/images/michaela.jpg', // Michaela's real photo (cropped, border removed)
   tagline: 'Discover true freedom.',
+  focusLabel: '', // her line is a motto, not a "Currently" statement
+  look: 'warm',
   slug: 'michaelareilly',
   tags: ['Internal Family Systems', 'Psychedelic Integration', 'Art Therapy', 'Somatics', 'Non Duality', 'Retreats', 'Podcast Host', 'Speaker'],
   types: { primary: 'creator', secondary: 'coach' },

@@ -1,13 +1,13 @@
 # Marquee Profile — Pages & Onboarding Structure
 
-**Status doc, updated Sept 28 2026.** Extends `PROFILE-ARCHITECTURE.md` (v2, the canonical spec) with everything decided and built since Michaela's profile. Where something is decided but not yet built, it is marked **PENDING** — nothing here claims more than what exists.
+**Status doc, updated Sept 28 2026 (header + looks + home-page pass).** Extends `PROFILE-ARCHITECTURE.md` (v2, the canonical spec) with everything decided and built since Michaela's profile. Where something is decided but not yet built, it is marked **PENDING** — nothing here claims more than what exists.
 
 ---
 
 ## 1. Principles (locked)
 
 - **Home page = featured picks; depth lives on the dedicated pages.** The home page never dumps a full list (this is what made the Skills/Values/Leadership row lopsided).
-- **The design system does not change.** Stone paper, charcoal ink, soft-blue CTA, sage skill bars, squared corners, Canela/Lora + Inter. Structure and curation change; the look does not.
+- **One design, four colour looks.** The person picks **Classic · Warm · Mono · Bold** in the builder. Looks change colour only; layout, type and spacing are identical. Warm is the original Marquee look and the default for profiles published before looks existed. Colours come only from the palette in `BRAND.md`. Squared corners; Canela for display, Poppins for labels, Inter for body.
 - **No invented content, ever.** The profile shows only what the person entered. No placeholder certs, colleges, quotes or stats.
 - **No jargon** in profile copy or labels (e.g. no "strongest proofs").
 - **The person controls what shows:** which keywords feature in the header, which items are featured within a section, which sections are hidden. Hidden sections reflow cleanly (no empty cards).
@@ -24,13 +24,18 @@
 ### 3.1 Profile (home) — the cover
 | # | Section | Rule | Status |
 |---|---|---|---|
-| 1 | **Hero** | Photo in its own box (never overlapped); "Open to opportunities" is a small green-dot **text line above the name** — **no pill on the photo**. Name · headline · **current focus** line · location · **featured keywords the person selects** · CTAs. Right: the **Open-to card**, each offer **clickable** into Work with Me. | Photo/name/headline/focus/keywords/CTAs ✅ · Open-to card ✅ · location ✅ (Sept 28) · **keyword selection PENDING** (currently top-5 starred skills) |
-| 2 | **Featured Experience** | Top 3 experience cards, 3-line teaser, "Full timeline →" | ✅ starred roles first (Sept 28) |
+| 1 | **Header** | **Left:** name · title · quick facts (up to 3 short lines, no label) · **Currently** (serif statement, labelled) · **Known for** (4 keywords, then "+N more") · Read full bio · location · social links. **Right, one card:** photo · **Open to** (up to 3, each clickable) · "Work with {first name}". **Bottom of the header:** the **Previous** row — brands worked at or with, as text, up to 8, no rules around it. "Open to opportunities" stays a small text line above the name; Verified sits above it. | ✅ built Sept 28 · **keyword selection PENDING** (currently starred skills) · Verified needs the ID check (PENDING) |
+| 1b | **Actions** | The 4 CTAs. **Not part of the header** — the first section below it. 1–4 tiles that stretch to fill the row. | ✅ |
+| 2 | **Featured Experience** | Top 3 experience cards, 3-line teaser, "Full timeline →". The full timeline does **not** live on home. | ✅ starred roles first (Sept 28) |
 | 3 | **Signature Skills · Values** | ~6 featured skills (starred) · the 4 featured values | Skills ✅ (starred, falls back to top-by-score) · Values ✅ |
 | 4 | **Featured Media** | Up to 4 starred items → "All media →" | ✅ shown once, 4 starred first (Sept 28) |
 | 5 | **Education & Credentials** | School + certifications | ✅ |
 | 6 | **Testimonial** | One featured quote | ✅ (spec says up to 2 featured — PENDING) |
 | 7 | **Superpowers** | Top 3 (spec: standard module on the profile) | ✅ (Sept 28) |
+
+**Does not live on home** (it lives on the depth pages): the full Experience timeline, Impact, Leadership. One-page profiles (e.g. Michaela) have no depth pages, so they keep these on the single page.
+
+**On home for now, until their own pages exist:** Reach and Store, at the bottom.
 
 ### 3.2 Expertise — the depth
 Featured Experience (3 cards) → **Full timeline** → **Impact** → **Leadership** (3 archetypes with descriptions · MBTI · Enneagram · years leading · largest team · philosophy) → **Skills** (all, grouped by category, sage bars) → **Superpowers** (top 3) → **Values** (all 12).
@@ -50,6 +55,8 @@ Offers as cards. **Office Hours / Coaching → "Book a time" via CUSTOM native s
 Short preview on the profile → "Read full bio" → dedicated Bio page. **Status:** ✅.
 
 ## 4. Onboarding / builder (`/build-preview`)
+
+**About You now holds every header field:** photo + photo position · name · city · headline · **Quick facts** (was "About") · **Currently** (was "Current focus", moved from Experience) · **Previous** (brands, up to 8) · **Look**.
 
 **Steps:** Resume → About You · Experience · Leadership · Impact · Skills · Superpowers · Values · Testimonials · Education → Work With Me · Media · **Reach** · Store · Long Bio.
 

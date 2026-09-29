@@ -10,10 +10,32 @@ Tagline: **Be known. Not filtered.** · Line: *Your work. Deserves the spotlight
 - App icon `m` in a wine tile.
 - The Brand Essentials guide shows a Geometric M / Signal M mark + a Canela wordmark — **these are NOT the current logo and are not used next to the wordmark.** The live Inter wordmark wins. (If/when Sarah supplies approved M-mark master files, revisit — never recreate them.)
 
-## Color palette (digital hex)
-**Foundation:** Paper `#FFFFFF` · White `#F7F7F8` · Ink `#111111` · Stone `#E6E2D0` · Warm Taupe `#DBCDC4`
-**Brand:** Crimson `#B21E2F` · **Wine `#670821`** (hero brand color) · Purple `#C7B5EE` · Sky `#C0DDFB` · Blue `#1F3BC4`
-**Accent:** Citron `#D6E27B` · Blush `#F8C3FF` · Sage `#73926A` · Mint `#B9E3A5` · Orange `#FF5436`
+## Color palette (digital hex) — CONFIRMED BY SARAH, 2026-09-28
+**This table is the single source of truth.** It supersedes every other list (the May 2024 Design Language sheet, the GTM brand guide, `tailwind.config.ts`, `profile-design.css`). **Softer versions are allowed** (Sarah, 2026-09-28: "i don't mind softer versions btw, but this is it") — a lighter or quieter tint of one of these twelve is fine for backgrounds, tiles, borders and hover states. A new hue that is not a tint of one of these is not; ask first.
+
+| Name | Hex | Role |
+|---|---|---|
+| Ink | `#111111` | Text |
+| Paper | `#F7F6F2` | Background |
+| Lavender | `#C7B5FF` | Signature |
+| Vermillion | `#FF5A36` | Primary CTA |
+| Crimson | `#AB0000` | Deep accent |
+| Wine | `#670821` | Editorial dark |
+| Sky | `#A8CFFF` | Secondary |
+| Powder | `#C0DDFB` | Soft blue |
+| Sage | `#73926A` | Muted green |
+| Peach | `#EED0BF` | Peach |
+| Stone | `#E9E6DF` | Neutral |
+| Citron | `#D6E27B` | Highlight |
+
+**Known drift in the code (not yet corrected — needs Sarah's go):** the live site uses Wine `#7C1226`, red `#F8563A`, purple `#CBBCF0`, blue `#C9DDF7`, beige `#F6F2EC`.
+
+### Profile looks (colour only — layout, type and spacing are identical)
+- **Classic** — black and white, beige (Stone) buttons, one soft colour (Powder), and a light touch of Wine (title line, action labels).
+- **Warm** — what marquee.bio/michaelareilly looks like today: Paper, Sage accent, Sky button, Peach / Powder / Stone tints.
+- **Mono** — monochromatic in Stone only, light to dark. No hue choice (Sarah, 2026-09-28).
+- **Bold** — black, white, Lavender and Wine, in large blocks.
+
 *(Use CMYK/Pantone for print.)*
 
 ## Typography

@@ -1,0 +1,303 @@
+<title>Marquee Profile Header</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap">
+<style>
+  @font-face{ font-family:"Canela Text"; src:url(data:font/otf;base64,@@CANELA@@) format("opentype"); font-weight:400; font-style:normal; font-display:swap; }
+
+  /* page chrome (the mockup frame, not the product) — deliberately one light look */
+  :root{ --c-bg:#ECEAE3; --c-ink:#111111; --c-muted:#6E6A62; --c-line:#D5D0C5; --c-card:#FFFFFF; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--c-bg); color:var(--c-ink); font-family:Inter,system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5; padding-inline:16px; padding-block:20px 64px; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+  .top{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
+  .ttl{ font-size:13px; color:var(--c-muted); }
+  .ttl b{ color:var(--c-ink); letter-spacing:.16em; font-weight:700; margin-right:8px; }
+  .ctl{ display:flex; flex-wrap:wrap; gap:14px; }
+  .grp[hidden]{ display:none !important; }
+  .grp{ display:flex; align-items:center; border:1px solid var(--c-line); background:var(--c-card); }
+  .grp .gl{ font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--c-muted); padding:0 10px; }
+  .grp button{ font:inherit; font-size:13px; font-weight:500; color:var(--c-muted); background:none; border:0; border-left:1px solid var(--c-line); padding:9px 13px; cursor:pointer; }
+  .grp button:hover{ color:var(--c-ink); }
+  .grp button.on{ background:var(--c-ink); color:#fff; }
+  .grp button:focus-visible, .stage button:focus-visible, .stage a:focus-visible{ outline:2px solid #20518F; outline-offset:2px; }
+
+  /* ═════ the four looks — same layout, type and components; only these tokens change ═════ */
+  .stage{ --r:0px; color:var(--ink); display:flex; flex-direction:column; gap:10px; }
+  .head{ border:1px solid var(--c-line); background:var(--ground); padding:56px 56px 48px; }
+  .sect{ border:1px solid var(--c-line); background:var(--ground); padding:32px 56px 36px; }
+  .cap{ font-family:Inter,system-ui,sans-serif; font-size:10.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--c-muted); margin:8px 0 0; }
+  /* CLASSIC — black, white, beige buttons, one soft colour (sky) */
+  .stage[data-look="classic"]{
+    --ground:#FFFFFF; --card:#FFFFFF; --ink:#111111; --ink2:#2E2C28; --muted:#6B665F; --line:#D9D5CB; --card-line:#D9D5CB; --card-bw:1px;
+    --accent:#670821; --v-bg:transparent; --v-ink:#670821; --v-line:#670821;
+    --chip1:#E9E6DF; --chip2:#E9E6DF; --chip3:#E9E6DF; --chip4:#E9E6DF; --chip-ink:#111111; --chip-line:#D9D5CB;
+    --tile:#C0DDFB; --tile-ink:#111111; --tile-line:transparent;
+    --bar:#111111; --bar-ink:#FFFFFF; --b2-bg:#E9E6DF; --b2-ink:#111111; --b2-line:#D9D5CB;
+    --act:#E9E6DF; --act-line:#D9D5CB; --act-ty:#670821; --strong:#111111;
+    --shadow:0 1px 2px rgba(17,17,17,.04), 0 20px 44px rgba(17,17,17,.10);
+  }
+  /* WARM — Michaela's live page today: stone paper, charcoal, sage accent, soft-blue button, peach/sage/sky tints */
+  .stage[data-look="warm"]{
+    --ground:#F7F6F2; --card:#FFFFFF; --ink:#111111; --ink2:#2E2C28; --muted:#6E6A62; --line:#E9E6DF; --card-line:#E9E6DF; --card-bw:1px;
+    --accent:#73926A; --v-bg:transparent; --v-ink:#5C7A54; --v-line:#73926A;
+    --chip1:#EED0BF; --chip2:#CBD8C0; --chip3:#C0DDFB; --chip4:#E9E6DF; --chip-ink:#2E2C28; --chip-line:transparent;
+    --tile:#ECEAE3; --tile-ink:#2E2C28; --tile-line:transparent;
+    --bar:#A8CFFF; --bar-ink:#111111; --b2-bg:#FFFFFF; --b2-ink:#111111; --b2-line:#E2DED5;
+    --act:#E9E6DF; --act-line:#E9E6DF; --act-ty:#5C7A54; --strong:#111111;
+    --shadow:0 1px 2px rgba(17,17,17,.03), 0 18px 40px rgba(30,26,20,.10);
+  }
+  /* BOLD — black, white, the purple, the burgundy; colour in large blocks */
+  .stage[data-look="bold"]{
+    --ground:#FFFFFF; --card:#FFFFFF; --ink:#111111; --ink2:#111111; --muted:#4A4642; --line:#111111; --card-line:#111111; --card-bw:1.5px;
+    --accent:#670821; --v-bg:#670821; --v-ink:#FFFFFF; --v-line:#670821;
+    --chip1:#C7B5FF; --chip2:#C7B5FF; --chip3:#C7B5FF; --chip4:#C7B5FF; --chip-ink:#111111; --chip-line:transparent;
+    --tile:#111111; --tile-ink:#FFFFFF; --tile-line:transparent;
+    --bar:#670821; --bar-ink:#FFFFFF; --b2-bg:#111111; --b2-ink:#FFFFFF; --b2-line:#111111;
+    --act:#C7B5FF; --act-line:transparent; --act-ty:#670821; --strong:#111111;
+    --shadow:none;
+  }
+  /* MONO — monochromatic: Stone only, light to dark. No hue choice. */
+  .stage[data-look="mono"]{ --card:#FFFFFF; --card-bw:1px; --chip-line:transparent; --tile-line:transparent; --v-bg:transparent; --bar-ink:#FFFFFF; --b2-bg:#FFFFFF; --act-line:transparent;
+    --shadow:0 1px 2px rgba(17,17,17,.03), 0 18px 40px rgba(30,26,20,.09); }
+  .stage[data-look="mono"]{
+    --ground:#F7F6F2; --ink:#1A1815; --ink2:#2E2C28; --muted:#6E6A62; --line:#E2DED5; --card-line:#E2DED5; --accent:#2E2C28; --v-ink:#2E2C28; --v-line:#2E2C28;
+    --chip1:#ECEAE3; --chip2:#E2DED5; --chip3:#D6D1C6; --chip4:#F1EEE8; --chip-ink:#1A1815; --tile:#E2DED5; --tile-ink:#2E2C28;
+    --bar:#2E2C28; --b2-ink:#2E2C28; --b2-line:#CFC9BE; --act:#ECEAE3; --act-ty:#2E2C28; --strong:#1A1815; }
+
+  .headline,.kf,.lbl,.ww,.ot h4,.btn,.vpill,.sample,.chip,.act .ty,.act .lb,.row .t,.bar{ font-family:Poppins,Inter,system-ui,sans-serif; }
+  .hdr{ display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,470px); gap:64px; align-items:center; }
+  .sample{ display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); border:1px dashed var(--muted); padding:4px 9px; margin-bottom:18px; }
+  .vpill{ display:inline-flex; align-items:center; gap:7px; font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--v-ink); background:var(--v-bg); border:1px solid var(--v-line); padding:5px 10px; margin-bottom:18px; }
+  .name{ font-family:"Canela Text",Georgia,"Times New Roman",serif; font-weight:400; font-size:min(var(--name-size,48px), 11.5vw); line-height:1.02; letter-spacing:-.02em; margin:0 0 18px; text-wrap:balance; color:var(--ink); }
+  .headline{ font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); line-height:1.6; margin:0 0 10px; max-width:46ch; }
+  .loc{ display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--muted); margin:0; }
+  .fr{ display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; }
+  .focus{ font-family:"Canela Text",Georgia,serif; font-weight:400; font-size:var(--focus-size,21px); line-height:1.26; letter-spacing:-.01em; color:var(--ink); margin:0 0 12px; max-width:30em; text-wrap:pretty; }
+  .bio{ font-size:15px; line-height:1.6; color:var(--ink2); margin:0 0 26px; max-width:34em; white-space:pre-line; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .lbl{ font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .l .headline{ margin-bottom:14px; }
+  .l .bio{ margin-bottom:24px; }
+  .l .focus{ margin-bottom:28px; }
+  .ww{ display:flex; flex-wrap:wrap; align-items:center; gap:14px 34px; margin-top:40px; }
+  .ww .k{ font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+  .ww .b{ font-size:14px; font-weight:600; letter-spacing:.02em; color:var(--ink); }
+  .ww[hidden]{ display:none; }
+  .kf{ font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:0 0 12px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 26px; }
+  .chip{ font:inherit; font-size:13.5px; font-weight:500; color:var(--chip-ink); border:1px solid var(--chip-line); padding:7px 13px; border-radius:var(--r); }
+  .chip.c1{ background:var(--chip1); } .chip.c2{ background:var(--chip2); } .chip.c3{ background:var(--chip3); } .chip.c4{ background:var(--chip4); }
+  button.chip.more{ background:transparent; border:1px solid var(--muted); color:var(--ink2); cursor:pointer; }
+  .foot{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; padding-top:24px; border-top:1px solid var(--line); }
+  .btn{ font:inherit; display:inline-flex; align-items:center; gap:9px; font-size:12.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--b2-ink); background:var(--b2-bg); border:1.5px solid var(--b2-line); padding:13px 20px; border-radius:var(--r); cursor:pointer; }
+  .btn:hover{ border-color:var(--strong); }
+  .soc{ display:flex; gap:8px; }
+  .soc a{ width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--ink2); border:1px solid var(--line); border-radius:var(--r); background:var(--card); }
+  .soc a:hover{ border-color:var(--strong); color:var(--ink); }
+
+  .card{ background:var(--card); border:var(--card-bw) solid var(--card-line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; }
+  .ph{ aspect-ratio:5/4; max-width:100%; background:radial-gradient(120% 100% at 50% 0%, #F3F1EC 0%, #EAE7E0 60%, #E2DED5 100%); display:flex; align-items:center; justify-content:center; color:#9C968C; font-size:12.5px; }
+  .ph img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ot{ padding:22px 24px 24px; }
+  .ot h4{ font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+  .row{ width:100%; font:inherit; text-align:left; background:none; border:0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:14px; align-items:center; padding:14px 0; color:var(--ink); cursor:pointer; }
+  .row .tile{ width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--tile); color:var(--tile-ink); border:1px solid var(--tile-line); border-radius:var(--r); }
+  .row .t{ font-size:15px; font-weight:600; line-height:1.25; }
+  .row .n{ font-size:13.5px; color:var(--muted); margin-top:2px; }
+  .row .chev{ color:var(--muted); display:flex; }
+  .row:hover .t{ text-decoration:underline; text-underline-offset:3px; }
+  .bar:hover{ filter:brightness(.94); }
+  .bar{ width:100%; font:inherit; margin-top:18px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bar); color:var(--bar-ink); border:0; border-radius:var(--r); padding:16px 18px; font-size:15px; font-weight:600; cursor:pointer; }
+
+  .acts{ display:grid; grid-template-columns:repeat(var(--n,4), minmax(0,1fr)); gap:12px; }
+  .act{ position:relative; display:flex; flex-direction:column; text-decoration:none; color:var(--ink); background:var(--act); border:1px solid var(--act-line); border-radius:var(--r); padding:18px 44px 18px 18px; }
+  .act .ty{ font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--act-ty); }
+  .act .lb{ font-size:16.5px; font-weight:700; line-height:1.22; margin-top:8px; overflow-wrap:anywhere; }
+  .act .ar{ position:absolute; top:15px; right:15px; color:var(--ink2); display:flex; }
+
+  .rules{ background:var(--c-card); border:1px solid var(--c-line); padding:24px 26px; }
+  .rules h2{ font-family:"Canela Text",Georgia,serif; font-weight:400; font-size:22px; margin:0 0 4px; }
+  .rules .now{ font-size:12.5px; color:var(--c-muted); margin:0 0 16px; font-variant-numeric:tabular-nums; }
+  .rules ul{ margin:0; padding:0; list-style:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 32px; }
+  .rules li{ font-size:13.5px; color:#2E2C28; padding-left:16px; position:relative; }
+  .rules li::before{ content:""; position:absolute; left:0; top:.62em; width:6px; height:6px; background:#73926A; }
+  .rules li b{ color:#111; }
+
+  @media (max-width:900px){
+    .head{ padding:32px 22px 30px; } .sect{ padding:24px 22px 26px; }
+    .hdr{ grid-template-columns:1fr; gap:34px; }
+    .acts{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .rules ul{ grid-template-columns:1fr; }
+  }
+  @media (max-width:480px){ .acts{ grid-template-columns:1fr; } .ctl{ gap:8px; } .grp button{ padding:8px 10px; } }
+  @media (prefers-reduced-motion:no-preference){ .btn,.soc a,.grp button{ transition:background .15s, color .15s, border-color .15s; } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="ttl"><b>MARQUEE</b>Profile header — one design, four looks</div>
+    <div class="ctl">
+      <div class="grp" role="group" aria-label="Look" id="g-look"><span class="gl">Look</span><button id="look-classic" data-look="classic">Classic</button><button id="look-warm" data-look="warm">Warm</button><button id="look-mono" data-look="mono">Mono</button><button id="look-bold" data-look="bold">Bold</button></div>
+      <div class="grp" role="group" aria-label="Profile" id="g-who"><span class="gl">Profile</span><button id="who-sarah" data-who="sarah">Sarah</button><button id="who-michaela" data-who="michaela">Michaela</button><button id="who-long" data-who="long">Length test</button></div>
+      <div class="grp" role="group" aria-label="Verified" id="g-ver"><span class="gl">Verified</span><button id="ver-off" data-ver="off">Off</button><button id="ver-on" data-ver="on">On</button></div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage" data-look="classic">
+    <p class="cap">Header</p>
+    <div class="head">
+      <div class="hdr" id="hdr"></div>
+      <div class="ww" id="ww" hidden></div>
+    </div>
+    <p class="cap">Below the header: Actions, the first section of the page</p>
+    <div class="sect">
+      <div class="acts" id="acts"></div>
+    </div>
+  </div>
+
+  <section class="rules">
+    <h2>How the header adapts</h2>
+    <p class="now" id="now"></p>
+    <ul>
+      <li><b>Name</b> sizes itself by length — 56 / 48 / 40px — and never runs past two lines.</li>
+      <li><b>Currently</b> (serif, labelled) sizes itself too, so all 160 characters always fit. Nothing is cut off.</li>
+      <li><b>Your short lines</b> (sans, under your title) keep your line breaks and show up to three lines.</li>
+      <li><b>Previous</b> — brand names as text, up to eight, inside the header with no rules around it. Hidden when empty.</li>
+      <li><b>Location</b> sits at the bottom, beside your social links.</li>
+      <li><b>Known for</b> shows your first four, then “+N more.” You choose which four in the builder.</li>
+      <li><b>Open to</b> shows up to three in the card; everything you offer is on Work with Me.</li>
+      <li><b>Actions</b> are not part of the header. They are the first section below it: one to four tiles that stretch to fill the row.</li>
+      <li><b>Edges</b> are 0px everywhere: card, chips, buttons, tiles, photo.</li>
+      <li><b>Verified</b> appears only after an ID check. Off by default.</li>
+      <li><b>No photo yet?</b> The card holds its shape with a quiet placeholder (see Length test).</li>
+      <li><b>Classic</b> — black and white, Stone buttons, Powder tiles, and a light touch of Wine on the title line and action labels.</li>
+      <li><b>Warm</b> — Michaela's live page today: stone paper, sage accent, soft-blue button, Peach / Powder / Stone tints.</li>
+      <li><b>Mono</b> — monochromatic in Stone, light to dark. One version, no colour choice.</li>
+      <li><b>Bold</b> — black, white, Lavender and Wine, in large blocks.</li>
+      <li><b>Type</b> — Canela for display, Poppins for labels and short headlines, Inter for body. From your Design Language sheet.</li>
+      <li>Looks change <b>colour only</b>. Layout, type and spacing are identical in all four.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+  var IC = {
+    pin:'<path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+    book:'<path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2z"/><path d="M22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/>',
+    linkedin:'<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
+    instagram:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/>',
+    website:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>',
+    compass:'<circle cx="12" cy="12" r="9"/><path d="M16 8l-2.5 5.5L8 16l2.5-5.5z"/>',
+    briefcase:'<rect x="3" y="7" width="18" height="13"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+    mountain:'<path d="M3 19l6-11 4 7 2-3 6 7z"/>',
+    mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+    users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
+    arrow:'<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
+    up:'<path d="M7 17L17 7"/><path d="M8 7h9v9"/>',
+    chev:'<path d="M9 6l6 6-6 6"/>',
+    check:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'
+  };
+  function svg(n, s){ s = s || 18; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>'; }
+  function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  var PEOPLE = {
+    sarah: {
+      look:'classic', verified:false, first:'Sarah',
+      name:'Sarah Reilly Engel', headline:'Co-Founder & CEO', loc:'Westport, CT',
+      worked:['Salesforce','LTK','Hello Alice'],
+      focus:'Building the future of professional identity and helping humans monetize their expertise with Marquee.bio. Currently raising Pre-Seed round.',
+      bio:'Founder @Marquee.bio\n5x Venture Backed Startup Exec\nGTM, Ops, Revenue, AI',
+      tags:['Go-to-market strategy','Growth marketing','Content strategy','Community building'],
+      openTo:[{i:'compass',t:'Office Hours',n:'60 minutes'},{i:'briefcase',t:'Fractional Role',n:'3-6 Months'}],
+      socials:['linkedin','instagram','website'],
+      actions:[{ty:'Read',lb:'Substack'},{ty:'Explore',lb:'Marquee.bio'}],
+      photo:'data:image/jpeg;base64,@@SARAH@@', pos:'50% 28%'
+    },
+    michaela: {
+      look:'warm', verified:true, first:'Michaela',
+      name:'Michaela Reilly', headline:'Psychedelic Facilitator · Educator · Advocate · Podcast Host', loc:'Boston, MA',
+      focus:'Discover true freedom.',
+      bio:'My own deep journey led me through psychedelics, non-dual pointings, and eventually into supporting others in returning to their true, unconditioned nature.',
+      tags:['Internal Family Systems','Psychedelic Integration','Art Therapy','Somatics','Non Duality','Retreats','Podcast Host','Speaker'],
+      openTo:[{i:'compass',t:'Integration Sessions',n:'1:1 · virtual'},{i:'mountain',t:'Retreats',n:'Small groups · seasonal'},{i:'mic',t:'Speaking',n:'Talks & workshops'}],
+      socials:['instagram','website'],
+      actions:[{ty:'Contact',lb:'Get in touch'},{ty:'Listen',lb:'The Psychedelic Mom'},{ty:'Attend',lb:'Join a retreat'},{ty:'Explore',lb:'Services'}],
+      photo:'data:image/jpeg;base64,@@MICHAELA@@', pos:'50% 10%'
+    },
+    long: {
+      look:'classic', verified:false, first:'Alexandria', sample:true,
+      name:'Alexandria Montgomery-Fitzgerald', worked:['Sample Brand One','Brand Two','A Longer Sample Brand','Four','Five','Six','Seven','Eight'], headline:'Founder · Operator · Investor · Board Member · Author · Host', loc:'Minneapolis–Saint Paul, MN',
+      focus:'Sample Currently line, exactly one hundred and sixty characters long, the most the builder accepts, so you can review where the longest case sits in the header.',
+      bio:'Sample line one of the short text.\nSample line two, a little longer than the first.\nSample line three.\nSample line four, hidden behind Read full bio. This short text is exactly 200 characters, in all.',
+      tags:['Sample tag one','Two','A much longer sample tag','Four','Five','Six','Seven','Eight','Nine'],
+      openTo:[{i:'compass',t:'Office Hours',n:'45 minutes'},{i:'users',t:'Advisory Board',n:'1 per quarter'},{i:'mic',t:'Speaking',n:'Request'},{i:'briefcase',t:'Project Work',n:'6 – 12 weeks'}],
+      socials:['linkedin','website'],
+      actions:[{ty:'Contact',lb:'Get in touch'},{ty:'Invest',lb:'A longer action title that wraps'},{ty:'Read',lb:'Newsletter'},{ty:'Follow',lb:'Updates'}],
+      photo:'', pos:'50% 20%'
+    }
+  };
+
+  var state = { who:'sarah', look:'classic', ver:false, allTags:false };
+  var stage = document.getElementById('stage'), hdr = document.getElementById('hdr'), acts = document.getElementById('acts'), now = document.getElementById('now');
+
+  function nameSize(n){ return n.length <= 12 ? 56 : n.length <= 22 ? 48 : 40; }
+  function focusSize(f){ return f.length <= 80 ? 24 : f.length <= 120 ? 21 : 19; }
+
+  function render(){
+    var p = PEOPLE[state.who];
+    stage.setAttribute('data-look', state.look);
+    var ns = nameSize(p.name), fs = focusSize(p.focus);
+    var shown = state.allTags ? p.tags : p.tags.slice(0, 4);
+    var extra = p.tags.length - 4;
+    var rows = p.openTo.slice(0, 3);
+
+    var focusB = '<p class="lbl">Currently</p><p class="focus" style="--focus-size:' + fs + 'px">' + esc(p.focus) + '</p>';
+    var bioB = '<p class="bio">' + esc(p.bio) + '</p>';
+    var left = '<div class="l">'
+      + (p.sample ? '<div class="sample">Sample content — length test</div><br>' : '')
+      + (state.ver ? '<div class="vpill">' + svg('check', 14) + 'Verified</div>' : '')
+      + '<h1 class="name" style="--name-size:' + ns + 'px">' + esc(p.name) + '</h1>'
+      + '<p class="headline">' + esc(p.headline) + '</p>'
+      + bioB + focusB
+      + '<p class="kf">Known for</p>'
+      + '<div class="chips">'
+      + shown.map(function(t, i){ return '<span class="chip c' + ((i % 4) + 1) + '">' + esc(t) + '</span>'; }).join('')
+      + (extra > 0 ? '<button type="button" class="chip more" id="more">' + (state.allTags ? 'Show fewer' : '+' + extra + ' more') + '</button>' : '')
+      + '</div>'
+      + '<div class="foot"><button type="button" class="btn">' + svg('book', 16) + 'Read full bio</button>'
+      + '<div class="fr"><p class="loc">' + svg('pin', 15) + esc(p.loc) + '</p><div class="soc">' + p.socials.map(function(s){ return '<a href="#" aria-label="' + s + '">' + svg(s, 17) + '</a>'; }).join('') + '</div></div></div>'
+      + '</div>';
+
+    var right = '<div class="card">'
+      + '<div class="ph">' + (p.photo ? '<img src="' + p.photo + '" alt="' + esc(p.name) + '" style="object-position:' + p.pos + '">' : 'Add your photo') + '</div>'
+      + '<div class="ot"><h4>Open to</h4>'
+      + rows.map(function(o){ return '<button type="button" class="row"><span class="tile">' + svg(o.i, 18) + '</span><span><span class="t">' + esc(o.t) + '</span><br><span class="n">' + esc(o.n) + '</span></span><span class="chev">' + svg('chev', 17) + '</span></button>'; }).join('')
+      + '<button type="button" class="bar"><span>Work with ' + esc(p.first) + '</span>' + svg('arrow', 18) + '</button>'
+      + '</div></div>';
+
+    hdr.innerHTML = left + right;
+    var ww = document.getElementById('ww'), wl = (p.worked || []).slice(0, 8);
+    ww.hidden = !wl.length;
+    ww.innerHTML = '<span class="k">' + esc(p.workedLabel || 'Previous') + '</span>' + wl.map(function(b){ return '<span class="b">' + esc(b) + '</span>'; }).join('');
+    acts.style.setProperty('--n', p.actions.length);
+    acts.innerHTML = p.actions.map(function(a){ return '<a class="act" href="#"><span class="ty">' + esc(a.ty) + '</span><span class="lb">' + esc(a.lb) + '</span><span class="ar">' + svg('up', 16) + '</span></a>'; }).join('');
+
+    now.textContent = 'Showing now — name: ' + p.name.length + ' characters → ' + ns + 'px · currently: ' + p.focus.length + ' of 160 characters → ' + fs + 'px · short lines: ' + p.bio.length + ' of 200 · known for: ' + Math.min(4, p.tags.length) + ' of ' + p.tags.length + ' · open to: ' + rows.length + ' of ' + p.openTo.length + ' · actions: ' + p.actions.length;
+
+    var m = document.getElementById('more');
+    if (m) m.addEventListener('click', function(){ state.allTags = !state.allTags; render(); });
+    Array.prototype.forEach.call(hdr.querySelectorAll('a[href="#"]'), function(a){ a.addEventListener('click', function(e){ e.preventDefault(); }); });
+    Array.prototype.forEach.call(acts.querySelectorAll('a'), function(a){ a.addEventListener('click', function(e){ e.preventDefault(); }); });
+
+    mark('g-look', 'look', state.look); mark('g-who', 'who', state.who); mark('g-ver', 'ver', state.ver ? 'on' : 'off');
+  }
+  function mark(id, key, val){ Array.prototype.forEach.call(document.getElementById(id).querySelectorAll('button'), function(b){ b.classList.toggle('on', b.getAttribute('data-' + key) === val); }); }
+
+  document.getElementById('g-look').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) { state.look = b.getAttribute('data-look'); render(); } });
+  document.getElementById('g-who').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) { state.who = b.getAttribute('data-who'); state.look = PEOPLE[state.who].look; state.ver = PEOPLE[state.who].verified; state.allTags = false; render(); } });
+  document.getElementById('g-ver').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) { state.ver = b.getAttribute('data-ver') === 'on'; render(); } });
+
+  render();
+})();
+</script>

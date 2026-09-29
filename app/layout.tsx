@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat, Lora } from "next/font/google";
+import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat, Lora, Poppins } from "next/font/google";
 import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthLinkHandler } from "@/components/AuthLinkHandler";
@@ -44,6 +44,13 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+// Poppins — UI labels and short headlines (BRAND.md). Used by the profile header.
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-poppins",
+});
+
 const caveat = Caveat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -72,7 +79,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${caveat.variable} ${lora.variable} ${canela.variable} font-sans antialiased`}
+        className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${caveat.variable} ${lora.variable} ${canela.variable} ${poppins.variable} font-sans antialiased`}
       >
         <AuthLinkHandler />
         {children}
