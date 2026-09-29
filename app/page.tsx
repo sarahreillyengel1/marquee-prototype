@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import WaitlistModal from "@/components/WaitlistModal";
+import Pricing from "@/components/Pricing";
 import { IconInstagram } from "@/components/icons";
 
 // ── shared class tokens (v7) ──
@@ -73,7 +74,7 @@ const FAQS = [
   ["Is this a replacement for LinkedIn?", "No. LinkedIn is where your network lives, and it does that well. Marquee is where your work lives: what you do, how you work, what you charge, and how someone books you. Most people keep both and put their Marquee link in their LinkedIn bio."],
   ["Who is Marquee for?", "Anyone whose value does not fit on one line. Fractional executives, consultants, coaches, advisors, founders, creators, and people in full-time roles who also advise, speak, teach, or sell. If you earn from more than one thing, or you plan to, this was built for you."],
   ["Who can see my profile?", "You decide. The Career Blueprint produces two things: a private read only you see, including your constraints and what you need to earn, and a public profile with what you choose to show. Nothing moves from one to the other without you."],
-  ["When is it live?", "The Career Blueprint is live now and free. Profiles are open to a small invited group today, with public access later this year. Request early access and we will come back to you with a date."],
+  ["When is it live?", "The Career Blueprint is live now and free. Profiles are in private beta and open now to the first 250 Founding Members. Marquee Pro opens December 1."],
 ];
 
 export default function HomePage() {
@@ -94,9 +95,9 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-hair">
         <div className={`${WRAP} py-[14px] flex items-center justify-between gap-4`}>
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
-          <div className="flex gap-5 items-center">
+          <div className="flex gap-3 sm:gap-5 items-center">
             <Link href="/login" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
-            <button onClick={() => apply("nav")} className={`${BTN} bg-dred text-white hover:bg-red !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Request early access</button>
+            <Link href="/join" className={`${BTN} bg-dred text-white hover:bg-red !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Sign Up Now</Link>
           </div>
         </div>
       </nav>
@@ -110,10 +111,10 @@ export default function HomePage() {
             <div className={`${SCRIPT} text-dred my-[18px]`}>Be known. Not filtered.</div>
             <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
             <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-8">
-              <button onClick={() => apply("hero")} className={`${BTN} bg-red text-white hover:bg-dred`}>Request early access</button>
+              <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred`}>Sign Up Now</Link>
               <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
-            <p className="text-[13px] font-semibold text-dred mt-4">Beta opens October 1 — request early access to claim your spot.</p>
+            <p className="text-[13px] font-semibold text-dred mt-4">Private beta is open now. Limited to 250 Founding Members.</p>
           </div>
           <div className="hidden md:flex justify-center">
             <PhonePreview />
@@ -268,24 +269,8 @@ export default function HomePage() {
         <div className={`${WRAP} text-center`}>
           <div className={EYEBROW}>What it costs</div>
           <h2 className={`${H2} mt-4`}>Pricing.</h2>
-          <div className="grid md:grid-cols-2 gap-[22px] mt-11 max-w-[880px] mx-auto">
-            <div className="bg-dred text-white border border-dred rounded-[10px] p-[38px_34px] flex flex-col text-center">
-              <h3 className={H3}>Career Blueprint</h3>
-              <div className="font-lora text-[clamp(34px,5vw,50px)] mt-4 mb-1.5">Free</div>
-              <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
-                {["Guided questionnaire to identify your purpose and strengths", "30-day personalized career roadmap", "Where your income opportunities are"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
-              </ul>
-              <a href="#blueprint" className={`${BTN} bg-white text-dred block w-full`}>Get Free Career Blueprint</a>
-            </div>
-            <div className="bg-white border border-hair rounded-[10px] p-[38px_34px] flex flex-col text-center">
-              <h3 className={H3}>Professional</h3>
-              <div className="font-lora text-[clamp(34px,5vw,50px)] mt-4 mb-1.5">$99<small className="font-inter text-[14px] text-dred"> / year</small></div>
-              <ul className="list-none mt-[22px] mb-[30px] flex-1 text-left">
-                {["Your own marquee.bio/username link", "Media, projects, and work highlights in one place", "Every way you work, with clear rates", "Inbound contact routing tied directly to your work style", "Storefront, booking, and payments"].map((l) => <li key={l} className="text-[14.5px] py-[10px] border-b border-hair last:border-0">{l}</li>)}
-              </ul>
-              <button onClick={() => apply("pricing")} className={`${BTN} bg-red text-white hover:bg-dred block w-full`}>Request early access</button>
-            </div>
-          </div>
+          <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Join now as a Founding Member for $20/month, or get reminded when Marquee Pro opens December 1.</p>
+          <Pricing />
         </div>
       </section>
 
@@ -319,7 +304,7 @@ export default function HomePage() {
             <Image src="/images/marquee-stack-graphic.png" alt="A professional surrounded by the disconnected tools their identity is scattered across: LinkedIn, resume, personal website, newsletter, link in bio, portfolio, speaking, advisory, booking, products, projects, and media mentions." width={740} height={740} className="w-full h-auto block" priority />
           </div>
           <div className="text-[30px] text-dred leading-none mt-4 mb-6">↓</div>
-          <button onClick={() => apply("stack")} className={`${BTN} bg-red text-white hover:bg-dred sm:text-[17px] sm:!px-[34px] sm:!py-[18px]`}>Get one link for your professional story</button>
+          <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred sm:text-[17px] sm:!px-[34px] sm:!py-[18px]`}>Get one link for your professional story</Link>
           <div className={`${SCRIPT} text-dred mt-5`}>marquee.bio/yourname</div>
         </div>
       </section>
@@ -347,7 +332,7 @@ export default function HomePage() {
           <h2 className={`${H2} max-w-[940px] mx-auto`}>Your professional identity in one link.</h2>
           <div className={`${SCRIPT} mt-[18px]`}>marquee.bio/yourname</div>
           <div className="flex flex-wrap gap-3 justify-center mt-8">
-            <button onClick={() => apply("closing")} className={`${BTN} bg-white text-dred`}>Request early access</button>
+            <Link href="/join" className={`${BTN} bg-white text-dred`}>Sign Up Now</Link>
             <a href="#blueprint" className={`${BTN} !border-white/70 text-white`}>Get Free Career Blueprint</a>
           </div>
         </div>
@@ -388,7 +373,7 @@ export default function HomePage() {
           </div>
           <div className="mt-10 flex justify-between flex-wrap gap-[14px] text-[13px] text-ink">
             <div>© 2026 Marquee Identity, Inc.</div>
-            <div><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></div>
+            <div><a href="#" className="hover:text-dred">Privacy</a> &nbsp;·&nbsp; <a href="#" className="hover:text-dred">Terms</a> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have an invite code? →</Link></div>
           </div>
         </div>
       </footer>

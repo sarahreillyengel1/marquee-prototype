@@ -5,6 +5,9 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { ARCHETYPES } from "@/lib/archetypes";
+import { BookingSetup } from "./BookingSetup";
+import { SiteScan } from "./SiteScan";
+import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
 import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES } from "@/lib/company-tags";
 import { Logo } from "@/components/Logo";
 import { createBrowserSupabase } from "@/lib/supabase";
@@ -22,8 +25,8 @@ const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impac
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
 const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", Actions: "actions" };
 const LOOKS = [
-  { key: "classic", name: "Classic", note: "Black and white, soft beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
-  { key: "warm", name: "Warm", note: "Soft paper, sage, sky", sw: ["#F7F6F2", "#73926A", "#A8CFFF", "#EED0BF"] },
+  { key: "classic", name: "Classic", note: "Black, white, beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
+  { key: "warm", name: "Warm", note: "Paper, sage, sky", sw: ["#F7F6F2", "#73926A", "#A8CFFF", "#EED0BF"] },
   { key: "mono", name: "Mono", note: "Stone, light to dark", sw: ["#F7F6F2", "#E2DED5", "#CFC9BE", "#2E2C28"] },
   { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
 ];
@@ -106,7 +109,7 @@ function extractKeywords(text: string): string[] {
   return out;
 }
 
-type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; keywords: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
+type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; extra?: { min: number; price: string }[]; keywords: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
 const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Public"];
 const BOOKING_OPTS: Record<string, { v: string; label: string }[]> = {
@@ -626,10 +629,12 @@ export default function BuildPreview() {
                 <p className="text-[12px] text-[#7d7a74] mb-[10px]">The colours of your profile. Layout and type are the same in all four.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
                   {LOOKS.map((l) => (
-                    <button key={l.key} onClick={() => setLook(l.key)} aria-pressed={look === l.key} className={`text-left py-[10px] px-[12px] border-[1.5px] bg-white ${look === l.key ? "border-brand-ink" : "border-[#E1DED7] hover:border-[#a8a29a]"}`}>
-                      <span className="flex mb-[8px]">{l.sw.map((c) => <span key={c} className="w-[20px] h-[20px] border border-[#E1DED7] -ml-px first:ml-0" style={{ background: c }} />)}</span>
-                      <span className="font-sans text-[13px] font-semibold block">{l.name}</span>
-                      <span className="font-sans text-[11.5px] text-[#7d7a74] block leading-snug">{l.note}</span>
+                    <button key={l.key} onClick={() => setLook(l.key)} aria-pressed={look === l.key} className={`h-[96px] flex flex-col justify-between text-left p-[12px] border-[1.5px] bg-white ${look === l.key ? "border-brand-ink" : "border-[#E1DED7] hover:border-[#a8a29a]"}`}>
+                      <span className="grid grid-cols-4 w-[88px] h-[22px] border border-[#E1DED7]">{l.sw.map((c) => <span key={c} style={{ background: c }} />)}</span>
+                      <span className="block">
+                        <span className="font-sans text-[13px] font-semibold block leading-[1.2]">{l.name}</span>
+                        <span className="font-sans text-[11.5px] text-[#7d7a74] block leading-[1.3] mt-[3px] whitespace-nowrap overflow-hidden text-ellipsis">{l.note}</span>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -794,10 +799,6 @@ export default function BuildPreview() {
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Work With Me</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Select one or more ways people can work with you. Add details for each option you select.</p>
 
-              <div className="border border-[#E1DED7] p-[16px] mb-4 max-w-[720px] bg-[#FBFAF8]">
-                <label className="font-sans text-[13px] font-semibold block mb-1">📅 Cal.com link <span className="font-normal text-[#a8a29a]">· powers &ldquo;Book instantly&rdquo; for Office Hours &amp; Coaching</span></label>
-                <input value={calLink} onChange={(e) => setCalLink(e.target.value)} placeholder="https://cal.com/yourname" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-              </div>
 
               {/* Full-time */}
               <div className="border border-[#E1DED7] p-[18px] mb-4 max-w-[720px]">
@@ -836,10 +837,35 @@ export default function BuildPreview() {
 
                       {(o.key === "office" || o.key === "coaching") && (
                         <div className="grid grid-cols-2 gap-[14px]">
-                          <div><label className={lab}>Session length</label><select value={o.length} onChange={(e) => upOffer(o.key, { length: e.target.value })} className={inp}>{["15 minutes", "30 minutes", "45 minutes", "60 minutes", "90 minutes"].map((t) => <option key={t}>{t}</option>)}</select></div>
+                          <div><label className={lab}>Session length</label><select value={o.length} onChange={(e) => upOffer(o.key, { length: e.target.value })} className={inp}>{["15 minutes", "20 minutes", "30 minutes", "45 minutes", "60 minutes", "90 minutes"].map((t) => <option key={t}>{t}</option>)}</select></div>
                           {rateCell}
                         </div>
                       )}
+                      {(o.key === "office" || o.key === "coaching") && instant && (() => {
+                        const baseMin = parseMinutes(o.length), baseRate = parsePriceCents(o.rate) / 100, extra = o.extra || [];
+                        return (
+                          <div className="mt-[14px]">
+                            <label className={lab}>Also offer other lengths <span className="text-[#a8a29a]">· priced from your {baseMin}-minute rate, and you can change any of them</span></label>
+                            <div className="flex flex-wrap gap-[6px]">
+                              {SESSION_LENGTHS.filter((m) => m !== baseMin).map((m) => { const on = extra.some((x) => x.min === m); return (
+                                <button key={m} aria-pressed={on} onClick={() => upOffer(o.key, { extra: on ? extra.filter((x) => x.min !== m) : [...extra, { min: m, price: String(proRataDollars(baseRate, baseMin, m) || "") }].sort((a, b) => a.min - b.min) })} className={`font-sans text-[12.5px] py-[6px] px-[11px] border ${on ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{m} min{!on && baseRate > 0 ? ` · $${proRataDollars(baseRate, baseMin, m)}` : ""}</button>
+                              ); })}
+                            </div>
+                            {extra.length > 0 && (
+                              <div className="mt-[10px] space-y-[6px]">
+                                {extra.map((x) => (
+                                  <div key={x.min} className="flex items-center gap-[10px]">
+                                    <span className="font-sans text-[13px] w-[64px]">{x.min} min</span>
+                                    <span className="text-[13px] text-[#7d7a74]">$</span>
+                                    <input aria-label={`Price for ${x.min} minutes`} inputMode="decimal" value={x.price} onChange={(e) => upOffer(o.key, { extra: extra.map((y) => (y.min === x.min ? { ...y, price: e.target.value.replace(/[^0-9.]/g, "") } : y)) })} className="w-[96px] font-inter text-[13.5px] py-[7px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                                    {baseRate > 0 && Number(x.price) !== proRataDollars(baseRate, baseMin, x.min) && <button onClick={() => upOffer(o.key, { extra: extra.map((y) => (y.min === x.min ? { ...y, price: String(proRataDollars(baseRate, baseMin, x.min)) } : y)) })} className="font-sans text-[11.5px] text-[#7d7a74] underline underline-offset-2 hover:text-brand-ink">Use ${proRataDollars(baseRate, baseMin, x.min)}</button>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {o.key === "fractional" && (
                         <>
                           <div className="grid grid-cols-2 gap-[14px]">
@@ -889,7 +915,7 @@ export default function BuildPreview() {
                       <div className="mt-[14px]"><label className={lab}>Description (optional)</label><textarea value={o.desc} onChange={(e) => upOffer(o.key, { desc: e.target.value })} rows={2} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" /></div>
 
                       <div className="mt-[16px] pt-[14px] border-t border-[#ECEAE4]"><label className={lab}>How they reach you</label><select value={o.booking} onChange={(e) => upOffer(o.key, { booking: e.target.value })} className="max-w-[240px] font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{opts.map((op) => <option key={op.v} value={op.v}>{op.label}</option>)}</select></div>
-                      {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#EAF1E6] p-[11px]">Book instantly connects <b>Calendly / Cal.com</b> for scheduling and takes payment through <b>Stripe Checkout</b>. <span className="text-[#73926A] font-medium cursor-pointer">Connect Calendly →</span></div>}
+                      {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#F1EEE8] p-[11px]">People pick from the dates and times you set under <b>Booking times</b>, below your offers. Set a length and a price here. If you have no open times, this offer uses Send request.</div>}
                       <div className="flex items-center justify-between mt-4">
                         <button onClick={() => upOffer(o.key, { added: !o.added })} className="flex items-center gap-2 font-sans text-[12.5px] font-medium text-brand-ink">
                           <span className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center text-[11px] ${o.added ? "bg-[#73926A] border-[#73926A] text-white" : "border-[#C7C2B8] text-transparent"}`}>✓</span>
@@ -909,6 +935,9 @@ export default function BuildPreview() {
                   );
                 })}
               </div>
+
+              {/* Booking times sit under the offers, and only matter for offers set to "Book instantly" */}
+              <div className="mt-6"><BookingSetup username={pubUsername || ""} forOffers={offers.filter((o) => o.added && o.booking === "book").map((o) => o.title)} /></div>
 
               <div className="mt-6 flex items-center gap-2 text-[12.5px] text-[#7d7a74] max-w-[720px]">🔒 You control what's visible. You can hide or edit any offering at any time.</div>
             </>
@@ -1073,6 +1102,10 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your media.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Press, talks, writing, podcasts, portfolio — the work that shows what you do. Star up to {MEDIA_FEATURED} to feature in your gallery; the rest live in your bio.</p>
+              <SiteScan website={socials.website} have={media.map((m) => m.url).filter(Boolean)}
+                emptySocials={(["linkedin", "instagram", "x", "tiktok", "youtube", "substack"] as const).filter((k) => !socials[k].trim())}
+                onAdd={(items) => setMedia((m) => [...m.filter((x) => x.title.trim() || x.url.trim()), ...items])}
+                onSocials={(found) => setSocials((c) => ({ ...c, ...found }))} />
               <div className="space-y-4 max-w-[720px]">
                 {media.map((m, i) => (
                   <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>

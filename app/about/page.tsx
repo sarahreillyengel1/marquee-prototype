@@ -1,5 +1,5 @@
 import BrandShell from "@/components/BrandShell";
-import ApplyButton from "@/components/ApplyButton";
+import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = { title: "About · Marquee" };
@@ -94,7 +94,7 @@ export default function AboutPage() {
         <div className={`${WRAP} text-center`}>
           <h2 className={`${H2} max-w-[760px] mx-auto`}>Build your story on Marquee.</h2>
           <div className="flex flex-wrap gap-3 justify-center mt-7">
-            <ApplyButton label="Request early access" source="about-cta" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold bg-white text-dred" />
+            <Link href="/join" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold bg-white text-dred">Sign Up Now</Link>
             <a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold border-[1.5px] border-white/70 text-white">Subscribe to the newsletter</a>
           </div>
         </div>

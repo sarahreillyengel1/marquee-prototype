@@ -9,13 +9,15 @@ function getClient() {
   return _client;
 }
 
-type ClaudeModel = "sonnet" | "haiku";
+type ClaudeModel = "sonnet" | "haiku" | "reader";
 
 const MODEL_IDS: Record<ClaudeModel, string> = {
   // Sonnet — for the high-quality creative work (profile generation)
   sonnet: "claude-sonnet-4-20250514",
   // Haiku — ~3× faster, cheaper. Good enough for structured extraction (resume parse).
   haiku: "claude-haiku-4-5-20251001",
+  // Reader — judgement over long lists of links (site scan).
+  reader: "claude-sonnet-5-5",
 };
 
 export async function callClaude(

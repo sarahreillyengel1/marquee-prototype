@@ -171,16 +171,10 @@ export default function SignupPage() {
           >
             I have a beta code
           </button>
-          <button
-            onClick={() => setMode("paid")}
-            className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
-              mode === "paid"
-                ? "bg-ink text-white"
-                : "text-ink/70 hover:text-ink"
-            }`}
-          >
-            $29/mo · $299/yr
-          </button>
+          {/* Joining without a code happens on /join: pay first, then create the account */}
+          <Link href="/join" className="flex-1 py-2.5 px-4 rounded-full text-sm font-medium text-center text-ink/70 hover:text-ink transition-all">
+            Founding Member · $20/mo
+          </Link>
         </div>
 
         {mode === "paid" && (
@@ -217,7 +211,7 @@ export default function SignupPage() {
           <p className="text-ink/60 text-sm mb-6">
             {mode === "beta"
               ? "Enter your beta invite code to get started."
-              : "$29/month, or $299/year paid upfront. Cancel anytime."}
+              : "$29/month, or $279/year paid upfront. Cancel anytime."}
           </p>
 
           <form

@@ -291,6 +291,7 @@ const michaela: Profile = {
   focusLabel: '', // her line is a motto, not a "Currently" statement
   look: 'warm',
   ownMediaColors: true, // her tiles were coloured by hand
+  foundingMember: true, // granted by Sarah, 2026-09-29
   slug: 'michaelareilly',
   tags: ['Internal Family Systems', 'Psychedelic Integration', 'Art Therapy', 'Somatics', 'Non Duality', 'Retreats', 'Podcast Host', 'Speaker'],
   types: { primary: 'creator', secondary: 'coach' },

@@ -8,10 +8,12 @@ export function createBrowserSupabase() {
   );
 }
 
-// Server-side client with service role (for API routes)
+// Server-side client with service role (for API routes).
+// Every read goes to the database: Next.js would otherwise keep and reuse an earlier answer.
 export function createServerSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) } }
   );
 }

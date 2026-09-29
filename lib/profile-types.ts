@@ -25,6 +25,11 @@ export interface Engagement {
   visible: boolean
   /** which flow the CTA opens */
   flow: 'book' | 'proposal' | 'availability' | 'message'
+  /** What this offer covers, in the person's words (e.g. "Raising capital", "GTM"). Shown on Work with Me. */
+  topics?: string[]
+  topicsLabel?: string
+  /** Bookable lengths with their prices, shortest first. One entry when there is a single length. */
+  sessions?: { minutes: number; priceCents: number }[]
 }
 
 export interface OpenToItem {
@@ -169,6 +174,9 @@ export interface Profile {
   tagline: string
   /** Label over the serif statement in the header. Undefined = "Currently"; "" = no label. */
   focusLabel?: string
+  /** Founding Member badge for the hand-built showcase profiles in lib/demo-profiles.ts ONLY.
+   *  For every real member the badge comes from their membership, checked by the server. */
+  foundingMember?: boolean
   /** Media tiles normally take one colour from the look. True keeps each item's own hand-set colour. */
   ownMediaColors?: boolean
   /** Colour look. Undefined = "warm", the original Marquee colours. */

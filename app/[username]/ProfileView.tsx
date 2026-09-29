@@ -26,6 +26,8 @@ import {
 } from "react";
 import "./profile-design.css";
 import { ARCHETYPE_DESC } from "@/lib/archetypes";
+import { DEMO_PROFILES } from "@/lib/demo-profiles";
+import { BookingPicker, RequestForm, useSlots } from "./Booking";
 import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role } from "@/lib/profile-types";
 
 /* ─────────────── icons (ported from marquee-app/src/icons.tsx) ─────────────── */
@@ -172,75 +174,29 @@ function ModalHead({ icon, title, sub, onClose }: { icon: string; title: string;
 const money = (p: string) => (p || "").replace(/^\${2,}/, "$");
 
 /* ─────────────── engagement flow ─────────────── */
-const SLOTS = [["Thu Jul 17", "10:00"], ["Thu Jul 17", "2:30"], ["Fri Jul 18", "11:00"], ["Mon Jul 21", "9:30"], ["Mon Jul 21", "4:00"], ["Tue Jul 22", "1:00"]];
-
+// One offer's pop-up. "Book" offers show the person's real open times; if they have none
+// open (or haven't set hours), it becomes a request form. Never placeholder times.
 function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () => void }) {
   const setModal = useModal();
   const { profile } = useStore();
-  const [slot, setSlot] = useState<number | null>(null);
-  const [done, setDone] = useState(false);
-  const [f, setF] = useState({ name: "", email: "", message: "" });
-  const [sending, setSending] = useState(false);
-  const [err, setErr] = useState("");
-  const submit = () => {
-    setErr(""); setSending(false);
-    if (!f.name.trim() || !f.email.trim() || !f.message.trim()) { setErr("Please add your name, email, and a message."); return; }
-    const to = profile.inquiryEmail;
-    if (!to) { setErr("Couldn’t send just now — please reach out via the links above."); return; }
-    const subject = encodeURIComponent(`Inquiry from ${f.name} — ${e.title}`);
-    const body = encodeURIComponent(`From: ${f.name} (${f.email})\n\n${f.message}`);
-    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-    setDone(true);
-  };
-  if (done) return (
-    <div className="done2"><div className="ic2"><Icon name="check" /></div>
-      <div className="t">{e.flow === "book" ? "Session requested" : "Opening your email…"}</div>
-      <div className="p">{e.flow === "book"
-        ? `${name} will confirm your session shortly — check your inbox for the invite.`
-        : `Your message to ${name} is ready in your email app — just hit send to reach them.`}</div>
-      <button className="msub" style={{ marginTop: 22 }} onClick={() => setModal(null)}>Done</button>
-    </div>
-  );
+  const wantsBooking = e.flow === "book";
+  const slots = useSlots(profile.slug, e.title, wantsBooking);
+  const close = () => setModal(null);
+  const bookable = wantsBooking && !!slots?.open;
   return (
     <>
-      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? money(e.price) : "Request"} onClose={() => setModal(null)} />
+      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? money(e.price) : "Request"} onClose={close} />
       {back && <button className="ww-back" onClick={back}><Icon name="arrow-left" /> All ways to work</button>}
-      <p className="lead">{e.blurb}</p>
-      {e.flow === "book" ? (
-        profile.calLink ? (
+      {e.blurb && <p className="lead">{e.blurb}</p>}
+      <Topics e={e} />
+      {wantsBooking && !slots ? <p className="lead">Checking open times…</p>
+        : bookable ? <BookingPicker username={profile.slug} offer={e.title} ownerFirst={name} slots={slots!} onClose={close} />
+        : wantsBooking && profile.calLink ? (
           <>
-            <p className="lead">Pick a time that works — you&apos;ll book straight on {name}&apos;s calendar.</p>
+            <p className="lead">Pick a time that works. You&apos;ll book straight on {name}&apos;s calendar.</p>
             <a className="msub" href={profile.calLink} target="_blank" rel="noopener" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>Book a time →</a>
           </>
-        ) : (
-        <>
-          <span className="flbl">Choose a time (ET)</span>
-          <div className="slots">
-            {SLOTS.map((s, i) => (
-              <div key={i} className={"slot" + (slot === i ? " sel" : "")} onClick={() => setSlot(i)}>
-                <div className="d">{s[0]}</div><div className="t">{s[1]}</div>
-              </div>
-            ))}
-          </div>
-          <span className="flbl">What do you want to cover?</span>
-          <textarea className="fta" placeholder="e.g. Our self-serve funnel stalls at activation." />
-          <button className="msub" onClick={() => setDone(true)}>
-            {e.rateDisplay === "show" ? `Confirm & pay ${money(e.price).replace("/ hr", "").trim()}` : "Request session"}
-          </button>
-        </>
-        )
-      ) : (
-        <>
-          <span className="flbl">Your name</span><input className="fin" placeholder="Full name" value={f.name} onChange={(ev) => setF({ ...f, name: ev.target.value })} />
-          <span className="flbl">Email</span><input className="fin" type="email" placeholder="you@email.com" value={f.email} onChange={(ev) => setF({ ...f, email: ev.target.value })} />
-          <span className="flbl">A little context</span>
-          <textarea className="fta" placeholder="A little about you and what you’re looking for…" value={f.message} onChange={(ev) => setF({ ...f, message: ev.target.value })} />
-          {err && <div style={{ color: "#B4232A", fontSize: 13, margin: "6px 0 0" }}>{err}</div>}
-          <button className="msub" onClick={submit} disabled={sending}>
-            {sending ? "Sending…" : e.flow === "availability" ? "Check availability" : "Send request"}
-          </button>
-        </>
-      )}
+        ) : <RequestForm username={profile.slug} offer={e.title} ownerFirst={name} cta={e.flow === "availability" ? "Check availability" : "Send request"} onClose={close} />}
     </>
   );
 }
@@ -430,6 +386,16 @@ function Hero() {
   const first = profile.name.split(" ")[0] || profile.name;
   const openWorkWith = useWorkWith();
   const [showAllTags, setShowAllTags] = useState(false);
+  // Founding Member is confirmed by the server from the person's membership, never from the profile itself
+  // (showcase profiles are written in code, not by a member, so theirs is set there)
+  const showcase = !!DEMO_PROFILES[profile.slug];
+  const [founding, setFounding] = useState(showcase && !!profile.foundingMember);
+  useEffect(() => {
+    if (showcase) return;
+    let live = true;
+    fetch(`/api/member-badges?username=${encodeURIComponent(profile.slug)}`).then((r) => r.json()).then((j) => { if (live) setFounding(!!j.founding); }).catch(() => {});
+    return () => { live = false; };
+  }, [profile.slug, showcase]);
   const gotoSection = useGotoSection();
   const openTo = profile.openTo.filter((o) => o.visible).slice(0, 3);
   const rate = (key: string) => {
@@ -446,7 +412,12 @@ function Hero() {
       <div className="hd-grid">
         <div className="hd-l">
           <div className="hd-top">
-          {profile.verified && <div className="hd-ver"><Icon name="check" /> Verified</div>}
+          {(profile.verified || founding) && (
+            <div className="hd-badges">
+              {profile.verified && <span className="hd-ver"><Icon name="check" /> Verified</span>}
+              {founding && <span className="hd-fm"><Icon name="star" /> Founding Member</span>}
+            </div>
+          )}
           {profile.available && profile.availableLabel && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
           <h1 className="hd-name" style={{ "--name-size": `${nameSize(profile.name)}px` } as CSSProperties}>{profile.name}</h1>
           {profile.headline && <div className="hd-title">{profile.headline}</div>}
@@ -1061,6 +1032,45 @@ function ExperiencePage() {
   );
 }
 
+const cents = (c: number) => (c % 100 === 0 ? `$${c / 100}` : `$${(c / 100).toFixed(2)}`);
+
+// What an offer covers, in the person's own words. On the offer card it shows the first
+// three and opens for the rest; in the booking pop-up it is shown in full.
+function Topics({ e, teaser }: { e: Engagement; teaser?: boolean }) {
+  const [open, setOpen] = useState(false);
+  if (!e.topics?.length) return null;
+  const SHOW = 3;
+  const folded = !!teaser && !open && e.topics.length > SHOW;
+  return (
+    <div className="wwp-topics">
+      <div className="wwp-tl">{e.topicsLabel || "Topics"}</div>
+      <div className="wwp-tags">
+        {(folded ? e.topics.slice(0, SHOW) : e.topics).map((t) => <span key={t}>{t}</span>)}
+        {teaser && e.topics.length > SHOW && <button type="button" className="wwp-more" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? "Show fewer" : `+${e.topics.length - SHOW} more`}</button>}
+      </div>
+    </div>
+  );
+}
+
+function OfferCard({ e, onOpen }: { e: Engagement; onOpen: () => void }) {
+  const { profile } = useStore();
+  const slots = useSlots(profile.slug, e.title, e.flow === "book");
+  const bookable = e.flow === "book" && (!!slots?.open || !!profile.calLink);
+  const multi = (e.sessions?.length || 0) > 1;
+  return (
+    <div className="card wwp">
+      <div className="wwp-top">
+        <div className="ww-ic"><Icon name={e.icon} /></div>
+        <div><h3 className="wwp-t">{e.title}</h3><div className="wwp-p">{multi && e.sessions![0].priceCents > 0 ? `From ${cents(e.sessions![0].priceCents)}` : e.rateDisplay === "show" ? money(e.price) : "By request"}</div></div>
+      </div>
+      {e.blurb && <p className="wwp-d">{e.blurb}</p>}
+      {multi && <div className="wwp-len">{e.sessions!.map((x) => <span key={x.minutes}><b>{x.minutes} min</b>{x.priceCents > 0 ? ` ${cents(x.priceCents)}` : ""}</span>)}</div>}
+      <Topics e={e} teaser />
+      <button type="button" className="wwp-btn" onClick={onOpen}>{bookable ? "Book a time" : "Send request"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>
+    </div>
+  );
+}
+
 // Work with Me — the person's offers, each with its own request or booking button.
 function WorkWithPage() {
   const { profile } = useStore();
@@ -1073,16 +1083,7 @@ function WorkWithPage() {
       <PageHead title="Work with Me" />
       {offers.length > 0 && (
         <div className="wwp-grid">
-          {offers.map((e) => (
-            <div key={e.key + e.title} className="card wwp">
-              <div className="wwp-top">
-                <div className="ww-ic"><Icon name={e.icon} /></div>
-                <div><h3 className="wwp-t">{e.title}</h3><div className="wwp-p">{e.rateDisplay === "show" ? money(e.price) : "By request"}</div></div>
-              </div>
-              {e.blurb && <p className="wwp-d">{e.blurb}</p>}
-              <button type="button" className="wwp-btn" onClick={() => engage(e)}>{e.flow === "book" && profile.calLink ? "Book a time" : "Send request"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>
-            </div>
-          ))}
+          {offers.map((e) => <OfferCard key={e.key + e.title} e={e} onOpen={() => engage(e)} />)}
         </div>
       )}
       {profile.reach && profile.reach.length > 0 && (

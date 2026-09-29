@@ -8,6 +8,7 @@ import type {
   Credential, Engagement, OpenToItem, Social, EngagementKey, StoreItem, ReachStat, ProfileLook,
 } from "./profile-types";
 import { ARCHETYPE_DESC } from "./archetypes";
+import { parseMinutes, parsePriceCents } from "./booking";
 
 // The shape the builder autosaves (matches snapshot() in app/build-preview/page.tsx).
 export interface BuilderSnapshot {
@@ -19,7 +20,7 @@ export interface BuilderSnapshot {
   arch: string[]; mbti: string; enn: string; ennWing?: string; disc: string;
   ledTeam: boolean; yearsLed: string; largestTeam: string; orgs: string; philosophy: string;
   ftEnabled: boolean; ftRoles: string;
-  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; duration: string; length: string; cadence: string; keywords?: string }[];
+  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; duration: string; length: string; cadence: string; keywords?: string; extra?: { min: number; price: string }[] }[];
   impacts: { headline: string; context: string; story: string }[];
   skills: { name: string; level: string; top: boolean }[];
   industries: string[]; learning: string[];
@@ -42,6 +43,16 @@ export interface BuilderSnapshot {
   photoZoom?: number;
 }
 
+// How each offer's topics are introduced on the public profile.
+const TOPICS_LABEL: Record<string, string> = { office: "What I can help with", coaching: "What I coach on", fractional: "Roles I take", project: "Types of projects", speaking: "Topics I speak on", advisory: "Companies I advise", content: "Content I make" };
+// Bookable lengths for an offer: the main one, plus any extra lengths the person added.
+const sessionsOf = (o: { booking: string; length: string; rate: string; showRate: boolean; extra?: { min: number; price: string }[] }) => {
+  if (o.booking !== "book") return undefined;
+  const main = { minutes: parseMinutes(o.length), priceCents: o.showRate ? parsePriceCents(o.rate) : 0 };
+  const more = (o.extra || []).filter((x) => x.min > 0 && x.min !== main.minutes).map((x) => ({ minutes: Math.round(x.min), priceCents: o.showRate ? parsePriceCents(x.price) : 0 }));
+  const seen = new Set<number>();
+  return [main, ...more].filter((x) => (seen.has(x.minutes) ? false : (seen.add(x.minutes), true))).sort((a, b) => a.minutes - b.minutes);
+};
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number(n) || 0));
 const LEVEL_SCORE: Record<string, number> = { Foundational: 25, Proficient: 55, Advanced: 80, Expert: 100 };
 const MEDIA_TYPE: Record<string, MediaItem["type"]> = {
@@ -126,7 +137,8 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
   // "book" only works with a real scheduling link; otherwise fall back to the request form
   // (never the placeholder time-slot UI).
   const cal = (s.calLink || "").trim();
-  const flowFor = (booking: string): Engagement["flow"] => { const f = FLOW[booking] ?? "message"; return f === "book" && !cal ? "message" : f; };
+  // "Book" stays "book": the profile checks for open times when someone looks, and falls back to a request form.
+  const flowFor = (booking: string): Engagement["flow"] => FLOW[booking] ?? "message";
   const engagements: Engagement[] = addedOffers.map((o) => ({
     key: OFFER_ENGAGEMENT[o.key] ?? "project",
     icon: OFFER_ICON[o.key] ?? "file",
@@ -136,6 +148,9 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     blurb: o.desc || o.blurb || "",
     visible: true,
     flow: flowFor(o.booking),
+    topics: (o.keywords || "").split(",").map((t) => t.trim()).filter(Boolean),
+    topicsLabel: TOPICS_LABEL[o.key],
+    sessions: sessionsOf(o),
   }));
   const openTo: OpenToItem[] = addedOffers.map((o) => ({
     key: OFFER_ENGAGEMENT[o.key] ?? "project", label: o.title,
