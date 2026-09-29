@@ -15,7 +15,9 @@
 
 ## 2. Site IA / navigation
 
-**Decided:** `Profile · Expertise · Media · Store · Work with Me` (Store only when products exist; Reach lives under Work with Me / its own tab for creators).
+**Decided and built (Sept 28):** `Profile · Experience · Media · Work with Me`. There is no "How I Work" page: everything about the person's work lives on **Experience**, and **Work with Me** is the services page. No descriptive sub-lines under page titles.
+
+**Earlier plan, superseded:** `Profile · Expertise · Media · Store · Work with Me` (Store only when products exist; Reach lives under Work with Me / its own tab for creators).
 
 **Currently live:** `Profile · Experience · How I Work · Media`. → **PENDING:** consolidate Experience + How I Work into **Expertise**; add Store and Work with Me as pages.
 
@@ -33,7 +35,17 @@
 | 6 | **Testimonial** | One featured quote | ✅ (spec says up to 2 featured — PENDING) |
 | 7 | **Superpowers** | Top 3 (spec: standard module on the profile) | ✅ (Sept 28) |
 
-**Home order (Sept 28):** Header → Actions → Featured Experience → Featured Skills + Values → Testimonial → Superpowers → Featured Media → Education & Credentials. **Media and Education are last.** Home is featured items only.
+**Home order (Sept 28):** Header → Actions → Featured Experience → Featured Skills + Values → Testimonial → Superpowers → Featured Media. **Media is last. Education is not on home** (it is on Experience). Home is featured items only. The header has a "See all skills" link after Known for.
+
+**Experience page (Sept 28):** Impact → Roles (3, then "Show all") → Skills (8, then "Show all") → Superpowers → Leadership → Values (4, then "Show all") → Education. Long sections open and close; short ones just show.
+
+**Work with Me page (Sept 28):** one card per offer with price and a Send request / Book a time button; Reach sits below for creators. The "how to work with me" copy is Sarah's to write — PENDING.
+
+**Media tiles** rotate through the look's three tile colours (no per-type colours).
+
+**Pages now:** `Profile · Experience · Media · Shop · Work with Me`. Shop appears only when products exist. There is no Bio page: the long bio is the first section of Experience. Experience order: Bio → Impact → Roles → Skills → Superpowers → Leadership → Values → Education. Each role carries up to 3 industries and 1 company stage (searchable). Impact uses the same row design as Superpowers. Only people with a published Marquee profile can affirm.
+
+**Also Sept 28:** home shows 6 **Core Values** (serif names on tiles, no icons) · skills show the level name and a four-step bar · Impact is plain statements, no icons or colour band · company tiles are uploaded logos, or one letter when there is none · leadership archetypes carry definitions from `lib/archetypes.ts` · Enneagram supports wings · "Open to opportunities" is removed for now · the builder mirrors all of this.
 
 **Affirm (Sept 28):** sign-in required; shown as a pill, "Affirmed by N" with up to 3 faces (the affirmer's own Marquee photo, or initials). The owner cannot affirm their own superpower.
 

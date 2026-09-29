@@ -7,6 +7,7 @@ import type {
   Profile, Role, MediaItem, Skill, Value, Superpower, LeadershipTrait,
   Credential, Engagement, OpenToItem, Social, EngagementKey, StoreItem, ReachStat, ProfileLook,
 } from "./profile-types";
+import { ARCHETYPE_DESC } from "./archetypes";
 
 // The shape the builder autosaves (matches snapshot() in app/build-preview/page.tsx).
 export interface BuilderSnapshot {
@@ -14,8 +15,8 @@ export interface BuilderSnapshot {
   openNow: boolean; dob: string;
   socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string };
   focus: string;
-  entries: { kind: "role" | "project"; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean }[];
-  arch: string[]; mbti: string; enn: string; disc: string;
+  entries: { kind: "role" | "project"; logo?: string; industries?: string[]; stage?: string; ptype?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean }[];
+  arch: string[]; mbti: string; enn: string; ennWing?: string; disc: string;
   ledTeam: boolean; yearsLed: string; largestTeam: string; orgs: string; philosophy: string;
   ftEnabled: boolean; ftRoles: string;
   offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; duration: string; length: string; cadence: string; keywords?: string }[];
@@ -63,13 +64,6 @@ const FLOW: Record<string, Engagement["flow"]> = {
   book: "book", proposal: "proposal", availability: "availability", approval: "availability",
   request: "message", message: "message",
 };
-// Confirmed archetype set (Sept 2026) with the descriptions shown in the builder.
-const ARCH_DESC: Record<string, string> = {
-  "The Builder": "0→1, creation under ambiguity.", "The Fixer": "Diagnose, stabilize, turn around.",
-  "The Scaler": "Takes what works and multiplies it.", "The Operator": "Systems, process, execution excellence.",
-  "The Strategist": "Big picture, long arc, systems thinker.", "The Coach": "Grows people, builds culture, develops talent.",
-  "The Connector": "Networks, partnerships, bridges worlds.", "The Visionary": "Sees what others don't, pulls people forward.",
-};
 const initials = (s: string) => (s.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("") || "•").toUpperCase();
 // Outbound links must be absolute — "linkedin.com/in/x" would otherwise resolve relative to the profile URL and 404.
 const absUrl = (u?: string): string | undefined => { const v = (u || "").trim(); if (!v) return undefined; return /^(https?:\/\/|mailto:)/i.test(v) ? v : `https://${v.replace(/^\/+/, "")}`; };
@@ -83,9 +77,13 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     .map(([kind, url]) => ({ kind, url: absUrl(url as string) as string, visible: true }));
 
   const roles: Role[] = (s.entries || []).map((e, i) => ({
-    id: `r${i}`, company: e.primary || "", logoLetter: initials(e.primary || "?"),
+    id: `r${i}`, company: e.primary || "", logoLetter: initials(e.primary || "?"), logoUrl: e.logo || undefined,
     role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "", featured: !!e.featured,
     metrics: e.result ? [{ value: e.result, label: "" }] : [],
+    kind: e.kind === "project" ? "project" : "role",
+    label: e.kind === "project" ? (e.ptype || "Project") : undefined,
+    industries: (e.industries || []).map((t) => t.trim()).filter(Boolean).slice(0, 3),
+    stage: e.stage || undefined,
   }));
 
   const skills: Skill[] = (s.skills || []).map((k) => ({ name: k.name, score: LEVEL_SCORE[k.level] ?? 55, featured: !!k.top }));
@@ -98,10 +96,11 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     .filter((p) => p.statement?.trim())
     .map((p) => ({ title: p.statement, blurb: p.proof || "", icon: "bolt" }));
 
-  const leadership: LeadershipTrait[] = (s.arch || []).map((a) => ({ title: a, blurb: ARCH_DESC[a] || "", icon: "compass" }));
+  const leadership: LeadershipTrait[] = (s.arch || []).map((a) => ({ title: a, blurb: ARCHETYPE_DESC[a] || "", icon: "compass" }));
   const leadershipMeta = {
     mbti: s.mbti && s.mbti !== "I don't know" ? s.mbti : undefined,
-    enneagram: s.enn && s.enn !== "I don't know" ? s.enn : undefined,
+    // "2 · Helper" with wing 3 reads "2w3 · Helper"
+    enneagram: s.enn && s.enn !== "I don't know" ? (s.ennWing ? s.enn.replace(/^(\d)/, `$1w${s.ennWing}`) : s.enn) : undefined,
     yearsLeading: s.ledTeam && s.yearsLed ? s.yearsLed : undefined,
     largestTeam: s.ledTeam && s.largestTeam ? s.largestTeam : undefined,
   };
@@ -132,7 +131,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     key: OFFER_ENGAGEMENT[o.key] ?? "project",
     icon: OFFER_ICON[o.key] ?? "file",
     title: o.title,
-    price: o.showRate && o.rate ? `$${o.rate} ${o.unit}`.trim() : "Request",
+    price: o.showRate && o.rate ? `$${o.rate.trim().replace(/^\$+/, "")} ${o.unit}`.trim() : "Request",
     rateDisplay: o.showRate && o.rate ? "show" : "contact",
     blurb: o.desc || o.blurb || "",
     visible: true,
@@ -175,6 +174,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
 
   const searchTags = Array.from(new Set([
     ...previous,
+    ...(s.entries || []).flatMap((e) => [...(e.industries || []), e.stage || ""]),
     ...addedOffers.flatMap((o) => (o.keywords || "").split(",").map((t) => t.trim())),
     ...(s.industries || []),
     ...(s.skills || []).map((k) => k.name),

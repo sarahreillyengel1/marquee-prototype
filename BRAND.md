@@ -34,7 +34,7 @@ Tagline: **Be known. Not filtered.** · Line: *Your work. Deserves the spotlight
 - **Classic** — black and white, beige (Stone) buttons, one soft colour (Powder), and a light touch of Wine (title line, action labels).
 - **Warm** — what marquee.bio/michaelareilly looks like today: Paper, Sage accent, Sky button, Peach / Powder / Stone tints.
 - **Mono** — monochromatic in Stone only, light to dark. No hue choice (Sarah, 2026-09-28).
-- **Bold** — black, white, Lavender and Wine, in large blocks.
+- **Bold** — black, white, Lavender and Wine, in large blocks. No dark outlines: lines stay soft Stone in every look.
 
 *(Use CMYK/Pantone for print.)*
 

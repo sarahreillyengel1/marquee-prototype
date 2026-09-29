@@ -290,6 +290,7 @@ const michaela: Profile = {
   tagline: 'Discover true freedom.',
   focusLabel: '', // her line is a motto, not a "Currently" statement
   look: 'warm',
+  ownMediaColors: true, // her tiles were coloured by hand
   slug: 'michaelareilly',
   tags: ['Internal Family Systems', 'Psychedelic Integration', 'Art Therapy', 'Somatics', 'Non Duality', 'Retreats', 'Podcast Host', 'Speaker'],
   types: { primary: 'creator', secondary: 'coach' },

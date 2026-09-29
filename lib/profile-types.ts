@@ -66,6 +66,12 @@ export interface Role {
   /** Accomplishment bullets shown on the Experience page (full-resume detail). */
   highlights?: string[]
   metrics?: { value: string; label: string }[]
+  /** A job, or a project. Projects carry a label (Client, Accelerator, Program, Project) and are drawn differently. */
+  kind?: 'role' | 'project'
+  label?: string
+  /** Searchable company tags: up to 3 industries and one stage or type (Seed, Growth, Professional firm…). */
+  industries?: string[]
+  stage?: string
 }
 
 export interface ProjectCase {
@@ -163,6 +169,8 @@ export interface Profile {
   tagline: string
   /** Label over the serif statement in the header. Undefined = "Currently"; "" = no label. */
   focusLabel?: string
+  /** Media tiles normally take one colour from the look. True keeps each item's own hand-set colour. */
+  ownMediaColors?: boolean
   /** Colour look. Undefined = "warm", the original Marquee colours. */
   look?: ProfileLook
   /** Brands the person has worked at or with — the "Previous" row at the bottom of the header. Max 8. */

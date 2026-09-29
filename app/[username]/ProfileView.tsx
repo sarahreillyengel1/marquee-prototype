@@ -25,6 +25,7 @@ import {
   type CSSProperties,
 } from "react";
 import "./profile-design.css";
+import { ARCHETYPE_DESC } from "@/lib/archetypes";
 import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role } from "@/lib/profile-types";
 
 /* ─────────────── icons (ported from marquee-app/src/icons.tsx) ─────────────── */
@@ -93,7 +94,7 @@ const socialIcon: Record<string, string> = {
 
 /* ─────────────── local store (replaces marquee-app/src/store.tsx) ─────────────── */
 type ViewMode = "owner" | "public";
-type PageKey = "profile" | "experience" | "how-i-work" | "media" | "portfolio" | "project" | "bio";
+type PageKey = "profile" | "experience" | "work-with-me" | "media" | "shop" | "portfolio" | "project";
 
 interface Store {
   profile: Profile;
@@ -104,6 +105,9 @@ interface Store {
   projectId: string | null;
   editing: boolean;
   setEditing: (b: boolean) => void;
+  /** The Experience section a visitor asked for (e.g. "bio"), so it opens expanded. */
+  section: string | null;
+  setSection: (s: string | null) => void;
 }
 const StoreCtx = createContext<Store | null>(null);
 const useStore = () => {
@@ -113,19 +117,14 @@ const useStore = () => {
 };
 
 /* ─────────────── Company tiles: default green; a real uploaded logo overrides ─────────────── */
-const TILE_DEFAULT: [string, string] = ["#C9E9B8", "#254B18"]; // soft green / deep green letters
-function tileStyle(_letter?: string): CSSProperties {
-  const [background, color] = TILE_DEFAULT;
-  return { background, color };
-}
 function LogoTile({ cls, letter, logoUrl }: { cls: string; letter: string; logoUrl?: string }) {
   if (logoUrl) return (
-    <div className={cls} style={{ padding: 0, overflow: "hidden", background: "#fff" }}>
+    <div className={cls + " lt-logo"}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <img src={logoUrl} alt="" />
     </div>
   );
-  return <div className={cls} style={tileStyle(letter)}>{letter}</div>;
+  return <div className={cls + " lt-mono"}>{(letter || "").trim().charAt(0).toUpperCase()}</div>;
 }
 
 /* ─────────────── modal plumbing ─────────────── */
@@ -169,6 +168,9 @@ function ModalHead({ icon, title, sub, onClose }: { icon: string; title: string;
   );
 }
 
+// Profiles published before the fix can carry a doubled "$$" when the rate was typed with its own $.
+const money = (p: string) => (p || "").replace(/^\${2,}/, "$");
+
 /* ─────────────── engagement flow ─────────────── */
 const SLOTS = [["Thu Jul 17", "10:00"], ["Thu Jul 17", "2:30"], ["Fri Jul 18", "11:00"], ["Mon Jul 21", "9:30"], ["Mon Jul 21", "4:00"], ["Tue Jul 22", "1:00"]];
 
@@ -201,7 +203,7 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
   );
   return (
     <>
-      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? e.price : "Request"} onClose={() => setModal(null)} />
+      <ModalHead icon={e.icon} title={e.title} sub={e.rateDisplay === "show" ? money(e.price) : "Request"} onClose={() => setModal(null)} />
       {back && <button className="ww-back" onClick={back}><Icon name="arrow-left" /> All ways to work</button>}
       <p className="lead">{e.blurb}</p>
       {e.flow === "book" ? (
@@ -223,7 +225,7 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
           <span className="flbl">What do you want to cover?</span>
           <textarea className="fta" placeholder="e.g. Our self-serve funnel stalls at activation." />
           <button className="msub" onClick={() => setDone(true)}>
-            {e.rateDisplay === "show" ? `Confirm & pay ${e.price.replace("/ hr", "").trim()}` : "Request session"}
+            {e.rateDisplay === "show" ? `Confirm & pay ${money(e.price).replace("/ hr", "").trim()}` : "Request session"}
           </button>
         </>
         )
@@ -243,9 +245,17 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
   );
 }
 
-function useWorkWith() {
+// Opens one offer's request / booking form.
+function useEngage() {
   const setModal = useModal();
   const { profile } = useStore();
+  const first = profile.name.split(" ")[0] || profile.name;
+  return (e: Engagement) => setModal({ node: <EngageFlow e={e} name={first} /> });
+}
+
+function useWorkWith() {
+  const setModal = useModal();
+  const { profile, goto } = useStore();
   const first = profile.name.split(" ")[0] || profile.name;
   const engagements = profile.engagements.filter((e) => e.visible);
   const openFlow = (e: Engagement) => setModal({ node: <EngageFlow e={e} name={first} back={openGrid} /> });
@@ -258,7 +268,7 @@ function useWorkWith() {
           {engagements.map((e) => (
             <div key={e.key} className="ww-card" onClick={() => openFlow(e)}>
               <div className="ww-top"><div className="ww-ic"><Icon name={e.icon} /></div><div className="ww-name">{e.title}</div>
-                <span className="ww-price">{e.rateDisplay === "show" ? e.price : "Contact"}</span></div>
+                <span className="ww-price">{e.rateDisplay === "show" ? money(e.price) : "Contact"}</span></div>
               <div className="ww-desc">{e.blurb}</div>
             </div>
           ))}
@@ -282,7 +292,8 @@ function useWorkWith() {
       </>
     ),
   });
-  return profile.beta && profile.inquiryEmail ? openBeta : openGrid;
+  if (profile.beta && profile.inquiryEmail) return openBeta;
+  return profile.singlePage ? openGrid : () => goto("work-with-me");
 }
 
 /* ─────────────── chrome ─────────────── */
@@ -310,7 +321,8 @@ function PublicBar() {
   const { goto, profile } = useStore();
   const openWorkWith = useWorkWith();
   const copyLink = useCopyLink();
-  const anchors: [string, PageKey][] = profile.singlePage ? [] : ([["Profile", "profile"], ["Experience", "experience"], ["How I Work", "how-i-work"], ...(profile.media.length ? [["Media", "media"] as [string, PageKey]] : [])] as [string, PageKey][]);
+  const tabs: [string, PageKey, boolean][] = [["Profile", "profile", true], ["Experience", "experience", true], ["Media", "media", profile.media.length > 0], ["Shop", "shop", (profile.store || []).length > 0], ["Work with Me", "work-with-me", profile.engagements.some((e) => e.visible)]];
+  const anchors = profile.singlePage ? [] : tabs.filter((t) => t[2]);
   return (
     <header className="pubbar public-only">
       <div className="pubbar-in">
@@ -329,9 +341,9 @@ function Sidebar() {
   const openWorkWith = useWorkWith();
   const items: [string, string, PageKey | null][] = [
     ["user", "My Profile", "profile"], ["briefcase", "Experience", "experience"], ["star", "Featured Experience", "experience"],
-    ["trending-up", "Impact", "experience"], ["zap", "Superpowers", "how-i-work"], ["compass", "Leadership", "how-i-work"],
-    ["heart", "Values", "how-i-work"], ["grid", "Skills", "how-i-work"], ["play-circle", "Media", "media"],
-    ["cap", "Education", "experience"], ["file", "Bio", "bio"],
+    ["trending-up", "Impact", "experience"], ["zap", "Superpowers", "experience"], ["compass", "Leadership", "experience"],
+    ["heart", "Values", "experience"], ["grid", "Skills", "experience"], ["play-circle", "Media", "media"],
+    ["cap", "Education", "experience"], ["file", "Bio", "experience"],
   ];
   const checks = [!!profile.photoUrl, !!profile.bioShort, profile.bioLong.length > 0, profile.roles.length > 0, profile.skills.length > 0, profile.media.length > 0, profile.education.length > 0, profile.values.length > 0, profile.leadership.length > 0, profile.testimonial != null, profile.tags.length > 0, profile.engagements.some((e) => e.visible)];
   const pct = Math.round((checks.filter(Boolean).length / checks.length) * 100);
@@ -357,13 +369,22 @@ function Sidebar() {
         <span className="improve" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/build-preview"; }}>Improve profile <Icon name="arrow-right" style={{ width: 14, height: 14 }} /></span>
       </div>
       <button className="sbtn primary" onClick={openWorkWith}><Icon name="calendar" style={{ width: 15, height: 15 }} /> Work with {profile.name.split(" ")[0] || profile.name}</button>
-      <div className="sbtn soft" style={{ cursor: "pointer" }} onClick={() => toast("Recruiters can now reach you through your profile")}><span className="lead"><Icon name="send" style={{ width: 15, height: 15, color: "var(--pur)" }} /> Recruiter outreach</span><span className="sub">I&apos;m open to opportunities</span></div>
       <button className="sbtn ghost" onClick={copyLink}><Icon name="link" style={{ width: 15, height: 15 }} /> Share my profile</button>
     </aside>
   );
 }
 
 /* ─────────────── shared blocks ─────────────── */
+// Open the Experience page at one of its sections (skills, values, superpowers…).
+function useGotoSection() {
+  const { goto, setSection } = useStore();
+  return (id: string) => {
+    setSection(id);
+    goto("experience");
+    setTimeout(() => document.getElementById("x-" + id)?.scrollIntoView({ block: "start" }), 80);
+  };
+}
+
 function BlockHead({ title, sub, link, onLink }: { title: string; sub?: string; link?: string; onLink?: () => void }) {
   return (
     <div className="bhead">
@@ -372,17 +393,24 @@ function BlockHead({ title, sub, link, onLink }: { title: string; sub?: string; 
     </div>
   );
 }
-function Skills({ featured }: { featured?: boolean } = {}) {
+const SKILL_LEVEL: Record<number, [string, number]> = { 25: ["Foundational", 1], 55: ["Proficient", 2], 80: ["Advanced", 3], 100: ["Expert", 4] };
+
+function Skills({ featured, limit = 8 }: { featured?: boolean; limit?: number } = {}) {
   const { profile } = useStore();
   const all = profile.skills;
   if (all.length === 0) return null;
   const starred = all.filter((s) => s.featured);
   const rest = all.filter((s) => !s.featured).sort((a, b) => b.score - a.score);
-  const list = featured ? [...starred, ...rest].slice(0, 8) : all;
+  const list = featured ? [...starred, ...rest].slice(0, limit) : all;
+  // Builder profiles store one of four levels. Older demo profiles store free-form weights.
+  const levels = all.every((s) => s.score in SKILL_LEVEL);
   const max = Math.max(...all.map((s) => s.score));
   return <div className="skfull">{list.map((s) => (
-    <div key={s.name} className="skl"><div className="sklt"><b>{s.name}</b><span>{s.score}</span></div>
-      <div className="sklbar"><div className="sklf" style={{ width: `${Math.round((s.score / max) * 100)}%` }} /></div></div>
+    <div key={s.name} className="skl"><div className="sklt"><b>{s.name}</b><span>{levels ? SKILL_LEVEL[s.score][0] : s.score}</span></div>
+      {levels
+        ? <div className="sklseg" role="img" aria-label={`${SKILL_LEVEL[s.score][0]}, level ${SKILL_LEVEL[s.score][1]} of 4`}>{[1, 2, 3, 4].map((n) => <i key={n} className={n <= SKILL_LEVEL[s.score][1] ? "on" : ""} />)}</div>
+        : <div className="sklbar"><div className="sklf" style={{ width: `${Math.round((s.score / max) * 100)}%` }} /></div>}
+    </div>
   ))}</div>;
 }
 
@@ -398,10 +426,11 @@ const nameSize = (n: string) => (n.length <= 12 ? 56 : n.length <= 22 ? 48 : 40)
 const focusSize = (f: string) => (f.length <= 80 ? 24 : f.length <= 120 ? 21 : 19);
 
 function Hero() {
-  const { profile, goto } = useStore();
+  const { profile } = useStore();
   const first = profile.name.split(" ")[0] || profile.name;
   const openWorkWith = useWorkWith();
   const [showAllTags, setShowAllTags] = useState(false);
+  const gotoSection = useGotoSection();
   const openTo = profile.openTo.filter((o) => o.visible).slice(0, 3);
   const rate = (key: string) => {
     const e = profile.engagements.find((x) => x.key === key);
@@ -416,8 +445,9 @@ function Hero() {
     <section className="card hd">
       <div className="hd-grid">
         <div className="hd-l">
+          <div className="hd-top">
           {profile.verified && <div className="hd-ver"><Icon name="check" /> Verified</div>}
-          {profile.available && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
+          {profile.available && profile.availableLabel && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
           <h1 className="hd-name" style={{ "--name-size": `${nameSize(profile.name)}px` } as CSSProperties}>{profile.name}</h1>
           {profile.headline && <div className="hd-title">{profile.headline}</div>}
           {profile.bioShort && <p className="hd-facts">{profile.bioShort}</p>}
@@ -433,11 +463,13 @@ function Hero() {
               <div className="hd-chips">
                 {(showAllTags ? profile.tags : profile.tags.slice(0, 4)).map((t, i) => <span key={t} className={"hd-chip c" + ((i % 4) + 1)}>{t}</span>)}
                 {profile.tags.length > 4 && <button type="button" className="hd-chip more" onClick={() => setShowAllTags((v) => !v)}>{showAllTags ? "Show fewer" : `+${profile.tags.length - 4} more`}</button>}
+                {!profile.singlePage && profile.skills.length > 0 && <button type="button" className="hd-all" onClick={() => gotoSection("skills")}>See all skills <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></button>}
               </div>
             </>
           )}
+          </div>
           <div className="hd-foot">
-            {!profile.singlePage ? <button type="button" className="hd-btn" onClick={() => goto("bio")}><Icon name="book" style={{ width: 16, height: 16 }} /> Read full bio</button> : <span />}
+            {!profile.singlePage && profile.bioLong.length > 0 ? <button type="button" className="hd-btn" onClick={() => gotoSection("bio")}><Icon name="book" style={{ width: 16, height: 16 }} /> Read full bio</button> : <span />}
             <div className="hd-fr">
               {profile.location && <div className="hd-loc"><Icon name="pin" style={{ width: 15, height: 15 }} />{profile.location}</div>}
               {socials.length > 0 && (
@@ -545,12 +577,12 @@ const fmtFollowers = (n: number) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 :
 
 // "Affirm" — signed-in people affirm a superpower; their faces show in the pill.
 type Affirmer = { name: string; photoUrl?: string; slug?: string };
-type AffirmData = { powers: Record<string, { count: number; people: Affirmer[] }>; mine: string[]; signedIn: boolean; isOwner: boolean };
+type AffirmData = { powers: Record<string, { count: number; people: Affirmer[] }>; mine: string[]; signedIn: boolean; isOwner: boolean; hasProfile: boolean };
 const affirmCache = new Map<string, Promise<AffirmData>>();
 const loadAffirm = (slug: string) => {
   if (!affirmCache.has(slug)) {
     affirmCache.set(slug, fetch(`/api/affirm?username=${encodeURIComponent(slug)}`).then((r) => r.json())
-      .catch(() => ({ powers: {}, mine: [], signedIn: false, isOwner: false })));
+      .catch(() => ({ powers: {}, mine: [], signedIn: false, isOwner: false, hasProfile: false })));
   }
   return affirmCache.get(slug)!;
 };
@@ -562,6 +594,7 @@ function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
   const [mine, setMine] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   useEffect(() => {
@@ -569,13 +602,15 @@ function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
     loadAffirm(slug).then((j) => {
       if (!live) return;
       setCount(j.powers?.[superpower]?.count ?? 0); setPeople(j.powers?.[superpower]?.people ?? []);
-      setMine((j.mine || []).includes(superpower)); setSignedIn(!!j.signedIn); setIsOwner(!!j.isOwner);
+      setMine((j.mine || []).includes(superpower)); setSignedIn(!!j.signedIn); setIsOwner(!!j.isOwner); setHasProfile(!!j.hasProfile);
     });
     return () => { live = false; };
   }, [slug, superpower]);
   const affirm = async () => {
     if (mine || busy) return;
-    if (!signedIn) { window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`; return; }
+    // Affirming is for Marquee members: a face and a name stand behind every affirmation.
+    if (!signedIn) { window.location.href = `/signup?next=${encodeURIComponent(window.location.pathname)}`; return; }
+    if (!hasProfile) { window.location.href = "/build-preview"; return; }
     setBusy(true);
     try {
       const r = await fetch("/api/affirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: slug, superpower }) });
@@ -595,15 +630,15 @@ function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
               const face = p.photoUrl
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={p.photoUrl} alt={p.name} referrerPolicy="no-referrer" />
-                : <span className="aff-in">{initials(p.name)}</span>;
+                : p.name ? <span className="aff-in">{initials(p.name)}</span> : <Icon name="user" />;
               return p.slug
                 ? <a key={i} className="aff-face" href={`/${p.slug}`} title={p.name}>{face}</a>
-                : <span key={i} className="aff-face" title={p.name}>{face}</span>;
+                : <span key={i} className="aff-face" title={p.name || "Marquee member"}>{face}</span>;
             })}
           </span>
         </span>
       )}
-      {!isOwner && !mine && <button type="button" className="aff-btn" onClick={affirm} disabled={busy}>{signedIn ? "Affirm" : "Sign in to affirm"}</button>}
+      {!isOwner && !mine && <button type="button" className="aff-btn" onClick={affirm} disabled={busy}>{!signedIn ? "Join to affirm" : hasProfile ? "Affirm" : "Publish your profile to affirm"}</button>}
       {mine && <span className="aff-done"><Icon name="check" /> You affirmed this</span>}
     </div>
   );
@@ -611,6 +646,7 @@ function Affirm({ slug, superpower }: { slug: string; superpower: string }) {
 
 function ProfilePage() {
   const { profile, goto } = useStore();
+  const gotoSection = useGotoSection();
   const s = profile.sections;
   const has = (arr?: unknown[]) => Array.isArray(arr) && arr.length > 0;
   // a section shows only if the owner has it on (or hasn't customized) AND it has content
@@ -654,7 +690,7 @@ function ProfilePage() {
             {starFirst(profile.roles).slice(0, 3).map((r) => (
               <div key={r.id} className="fc" onClick={() => goto("experience")}>
                 <div className="fctop"><LogoTile cls="fclogo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="fcco">{r.company.toUpperCase()}</div><div className="fcrole">{r.role}</div></div></div>
-                <div className="fbadges"><span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
+                <div className="fbadges">{r.kind === "project" && <span className="fb ser">{r.label || "Project"}</span>}<span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
                 <p>{r.blurb}</p>
                 <div className="fres">{r.metrics?.[0]?.value ? <span className="m"><Icon name="trending-up" />{r.metrics[0].value} <span className="u">{(r.metrics[0].label || "").toLowerCase()}</span></span> : <span />}<span className="go"><Icon name="arrow-up-right" style={{ width: 16, height: 16 }} /></span></div>
               </div>
@@ -665,19 +701,14 @@ function ProfilePage() {
       )}
 
       {profile.singlePage && on("impact") && s.impact && has(profile.impact) && (
-        <section className="impact smt">
-          <BlockHead title="Impact" link="View all impact stories" onLink={() => goto("experience")} />
-          <div className="igrid">
-            {profile.impact.map((im, i) => (
-              <div key={i} className="imp"><div className="impi"><Icon name={["trending-up", "dollar", "trophy", "users"][i % 4]} /></div>
-                <div><div className="impv">{im.value}</div><div className="impl">{im.label}</div><div className="imps">{im.sub}</div></div></div>
-            ))}
-          </div>
+        <section className="smt">
+          <BlockHead title="Impact" />
+          <div className="card col"><ImpactList items={profile.impact} /></div>
         </section>
       )}
 
       {(showLead || showVals || showSkills) && (
-      <section className="cols3 smt" style={{ gridTemplateColumns: `repeat(${[showLead, showVals, showSkills].filter(Boolean).length}, minmax(0, 1fr))` }}>
+      <section className="cols3 smt" style={{ "--cols": [showLead, showVals, showSkills].filter(Boolean).length } as CSSProperties}>
         {showLead && (
         <div className="card col">
           <BlockHead title="Leadership" />
@@ -693,21 +724,21 @@ function ProfilePage() {
               {profile.leadershipMeta.largestTeam && <span className="fb">Largest team {profile.leadershipMeta.largestTeam}</span>}
             </div>
           )}
-          <span className="blink" style={{ marginLeft: 0 }} onClick={() => goto("how-i-work")}>View all leadership <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
+          <span className="blink" style={{ marginLeft: 0 }} onClick={() => gotoSection("leadership")}>View all leadership <Icon name="arrow-right" style={{ width: 13, height: 13 }} /></span>
         </div>
         )}
         {showSkills && (
         <div className="card col">
-          <BlockHead title="Featured Skills" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
+          <BlockHead title="Featured Skills" link={profile.singlePage ? undefined : "See all skills"} onLink={() => gotoSection("skills")} />
           <Skills featured />
         </div>
         )}
         {showVals && (
         <div className="card col">
-          <BlockHead title="Values" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
+          <BlockHead title="Core Values" link={profile.singlePage ? undefined : "See all values"} onLink={() => gotoSection("values")} />
           <div className="vlist">
-          {starFirst(profile.values).slice(0, 4).map((v) => (
-            <div key={v.name} className="li"><div className="vici" style={{ background: v.color }}><Icon name={v.icon} style={{ width: 16, height: 16 }} /></div><div><div className="lit">{v.name}</div><div className="lid">{v.blurb}</div></div></div>
+          {starFirst(profile.values).slice(0, 6).map((v) => (
+            <div key={v.name} className="xtile"><div className="xtile-t">{v.name}</div>{v.blurb && <div className="xtile-d">{v.blurb}</div>}</div>
           ))}
           </div>
         </div>
@@ -728,7 +759,7 @@ function ProfilePage() {
 
       {on("superpowers") && has(profile.superpowers) && (
         <section className="smt">
-          <BlockHead title="Superpowers" sub="What I'm known for" link={profile.singlePage ? undefined : "View all"} onLink={() => goto("how-i-work")} />
+          <BlockHead title="Superpowers" />
           <div className="card col">
             {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
           </div>
@@ -744,7 +775,7 @@ function ProfilePage() {
         </section>
       )}
 
-      {has(profile.reach) && (() => {
+      {profile.singlePage && has(profile.reach) && (() => {
         const total = fmtFollowers((profile.reach || []).reduce((a, p) => a + parseFollowers(p.followers), 0));
         const aud = profile.audience;
         return (
@@ -770,7 +801,7 @@ function ProfilePage() {
         );
       })()}
 
-      {has(profile.store) && (
+      {profile.singlePage && has(profile.store) && (
         <section className="smt">
           <BlockHead title="Store" sub="Work you can buy" />
           <div className="store-grid">
@@ -795,13 +826,13 @@ function ProfilePage() {
       {on("media") && s.media && has(profile.media) && (
         <section className="smt">
           <BlockHead title="Featured Media" link={profile.singlePage ? undefined : "All media"} onLink={() => goto("media")} />
-          <div className="mscroll" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(184px,1fr))", gridAutoRows: "222px", gap: 14, overflow: "hidden", maxHeight: 222 }}>
-            {starFirst(profile.media).slice(0, 4).map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} teaser />)}
+          <div className="mscroll">
+            {starFirst(profile.media).slice(0, 4).map((m, i) => <MediaCard key={m.id} m={m} i={i} onInternal={() => goto("portfolio")} teaser />)}
           </div>
         </section>
       )}
 
-      {on("education") && s.education && has(profile.education) && (
+      {profile.singlePage && on("education") && s.education && has(profile.education) && (
         <section className="smt">
           <BlockHead title="Education & Credentials" />
           <div className="edu-grid">
@@ -824,7 +855,8 @@ function TimelineRow({ r, last }: { r: Role; last: boolean }) {
   );
 }
 
-function MediaCard({ m, onInternal, teaser }: { m: MediaItem; onInternal: () => void; teaser?: boolean }) {
+function MediaCard({ m, i = 0, onInternal, teaser }: { m: MediaItem; i?: number; onInternal: () => void; teaser?: boolean }) {
+  const { profile } = useStore();
   const inner = (
     <>
       <div className="mt">{m.type.toUpperCase()}</div>
@@ -835,9 +867,11 @@ function MediaCard({ m, onInternal, teaser }: { m: MediaItem; onInternal: () => 
       {m.play && <div className="mplay"><Icon name="play" fill /></div>}
     </>
   );
-  const style: CSSProperties = { background: m.bg };
-  if (m.internal) return <div className={"mc" + (m.darkText ? " dk" : "")} style={style} onClick={onInternal}>{inner}</div>;
-  return <a className={"mc" + (m.darkText ? " dk" : "")} style={style} href={m.url} target="_blank" rel="noopener">{inner}</a>;
+  const own = !!profile.ownMediaColors;
+  const style: CSSProperties | undefined = own ? { background: m.bg } : undefined;
+  const cls = "mc" + (own ? (m.darkText ? " dk" : "") : ` look m${(i % 3) + 1}`);
+  if (m.internal) return <div className={cls} style={style} onClick={onInternal}>{inner}</div>;
+  return <a className={cls} style={style} href={m.url} target="_blank" rel="noopener">{inner}</a>;
 }
 
 function PageHead({ title, sub, backTo }: { title: string; sub?: string; backTo?: PageKey }) {
@@ -850,26 +884,76 @@ function PageHead({ title, sub, backTo }: { title: string; sub?: string; backTo?
   );
 }
 
-function ExperiencePage() {
-  const { profile } = useStore();
+// Impact is laid out like Superpowers: an icon tile, the result in bold, where it happened underneath.
+function ImpactList({ items }: { items: Profile["impact"] }) {
   return (
-    <div className="page on">
-      <PageHead title="Experience" sub="The full arc — every role, what I owned, and the results that came out of it." />
-      {profile.sections.impact && (
-        <div className="impact smt" style={{ marginTop: 0, marginBottom: 18 }}>
-          <BlockHead title="Impact at a glance" />
-          <div className="igrid">
-            {profile.impact.map((im, i) => (
-              <div key={i} className="imp"><div className="impi"><Icon name={["trending-up", "dollar", "trophy", "users"][i % 4]} /></div>
-                <div><div className="impv">{im.value}</div><div className="impl">{im.label}</div><div className="imps">{im.sub}</div></div></div>
-            ))}
+    <div className="ximp">
+      {items.map((im, i) => (
+        <div key={i} className="sp">
+          <div className="sp-ic"><Icon name="trending-up" /></div>
+          <div>
+            <div className="sp-t">{im.value ? `${im.value} ${im.label}` : im.label}</div>
+            {im.sub && <div className="sp-d">{im.sub}</div>}
           </div>
         </div>
+      ))}
+    </div>
+  );
+}
+
+// One section of the Experience page. Every section shows a first look at its content,
+// can show everything ("Show all"), and can be folded away with the arrow.
+function XSec({ id, title, total = 0, preview = 0, bare, more, children }: { id: string; title: string; total?: number; preview?: number; bare?: boolean; more?: string; children: (all: boolean) => ReactNode }) {
+  const { section } = useStore();
+  // a section asked for by name (Read full bio, See all skills…) arrives fully open
+  const [all, setAll] = useState(section === id);
+  const [folded, setFolded] = useState(false);
+  useEffect(() => { if (section === id) { setAll(true); setFolded(false); } }, [section, id]);
+  const hasMore = preview > 0 && total > preview;
+  return (
+    <section id={"x-" + id} className={"xsec" + (bare ? " bare" : " card") + (folded ? " folded" : "")}>
+      <div className="xsec-h">
+        <h3>{title}</h3>
+        <div className="xsec-c">
+          {hasMore && !folded && <button type="button" className="xsec-t" aria-expanded={all} onClick={() => setAll((v) => !v)}>{all ? "Show fewer" : (more || `Show all ${total}`)}</button>}
+          <button type="button" className="xsec-f" aria-expanded={!folded} aria-label={(folded ? "Open " : "Close ") + title} onClick={() => setFolded((v) => !v)}><Icon name="chevron-down" style={{ width: 16, height: 16, transform: folded ? undefined : "rotate(180deg)" }} /></button>
+        </div>
+      </div>
+      {!folded && children(all)}
+    </section>
+  );
+}
+
+const isDegree = (c: { title: string; sub?: string }) => /university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""));
+const PLURAL: Record<string, string> = { Client: "Clients", Accelerator: "Accelerators", Program: "Programs", Project: "Projects" };
+
+function ExperiencePage() {
+  const { profile } = useStore();
+  const meta = profile.leadershipMeta;
+  const degrees = profile.education.filter(isDegree);
+  const certs = profile.education.filter((c) => !isDegree(c));
+  const jobs = profile.roles.filter((r) => r.kind !== "project");
+  const projects = profile.roles.filter((r) => r.kind === "project");
+  // "Clients & Accelerators", "Projects"… named after what the person actually added
+  const kinds = Array.from(new Set(projects.map((p) => PLURAL[p.label || "Project"] || "Projects")));
+  const projectsTitle = kinds.length > 1 ? `${kinds.slice(0, -1).join(", ")} & ${kinds[kinds.length - 1]}` : kinds[0] || "Projects";
+  const allValues = starFirst(profile.values);
+  return (
+    <div className="page on">
+      <PageHead title="Experience" />
+      {profile.bioLong.length > 0 && (
+        <XSec id="bio" title="Bio" total={profile.bioLong.length} preview={1} more="Read full bio">
+          {(all) => <div className="xbio">{(all ? profile.bioLong : profile.bioLong.slice(0, 1)).map((p, i) => <p key={i}>{p}</p>)}</div>}
+        </XSec>
+      )}
+      {profile.sections.impact && profile.impact.length > 0 && (
+        <XSec id="impact" title="Impact" total={profile.impact.length} preview={4}>
+          {(all) => <ImpactList items={all ? profile.impact : profile.impact.slice(0, 4)} />}
+        </XSec>
       )}
       {profile.activeProjects && profile.activeProjects.length > 0 && (
-        <>
-          <div className="xgroup-h">Currently</div>
-          {profile.activeProjects.map((p) => (
+        <XSec id="current" title="Currently" bare>
+          {() => profile.activeProjects.map((p) => (
             <div key={p.id} className="card xrole">
               <div className="xrole-top"><LogoTile cls="xrole-logo" letter={p.logoLetter} logoUrl={p.logoUrl} /><div><div className="xrole-role">{p.role}</div><div className="xrole-co">{p.name}</div></div><div className="xrole-dates">{p.dates || "Present"}</div></div>
               {p.highlights
@@ -877,59 +961,151 @@ function ExperiencePage() {
                 : p.blurb && <p>{p.blurb}</p>}
             </div>
           ))}
-        </>
+        </XSec>
       )}
 
-      <div className="xgroup-h gap">Experience</div>
-      {profile.roles.map((r) => (
-        <div key={r.id} className="card xrole">
-          <div className="xrole-top"><LogoTile cls="xrole-logo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="xrole-role">{r.role}</div><div className="xrole-co">{r.company}{r.badge ? ` · ${r.badge}` : ""}</div></div><div className="xrole-dates">{r.dates}</div></div>
-          {r.highlights
-            ? <ul className="xbul">{r.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>
-            : r.blurb && <p>{r.blurb}</p>}
-          {r.metrics && r.metrics.length > 0 && <div className="xmetrics">{r.metrics.map((m, i) => <div key={i} className="xm"><div className="v">{m.value}</div><div className="l">{m.label}</div></div>)}</div>}
-        </div>
-      ))}
+      {jobs.length > 0 && (
+        <XSec id="roles" title="Roles" bare total={jobs.length} preview={3}>
+          {(all) => (all ? jobs : jobs.slice(0, 3)).map((r) => (
+            <div key={r.id} className="card xrole">
+              <div className="xrole-top"><LogoTile cls="xrole-logo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="xrole-role">{r.role}</div><div className="xrole-co">{r.company}{r.badge ? ` · ${r.badge}` : ""}</div></div><div className="xrole-dates">{r.dates}</div></div>
+              {r.highlights
+                ? <ul className="xbul">{r.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>
+                : r.blurb && <p>{r.blurb}</p>}
+              {r.metrics && r.metrics.length > 0 && <div className="xmetrics">{r.metrics.map((m, i) => <div key={i} className="xm"><div className="v">{m.value}</div><div className="l">{m.label}</div></div>)}</div>}
+              {(r.stage || (r.industries && r.industries.length > 0)) && <div className="xtags">{r.stage && <span className="xtag st">{r.stage}</span>}{(r.industries || []).map((t) => <span key={t} className="xtag">{t}</span>)}</div>}
+            </div>
+          ))}
+        </XSec>
+      )}
 
-      {profile.education && profile.education.length > 0 && (
-        <>
-          <div className="xgroup-h gap">Education &amp; Certifications</div>
-          <div className="card xrole">
-            <div className="xedu-list">
-              {profile.education.filter((c) => /university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))).map((c) => (
-                <div key={c.id} className="xedu-row"><LogoTile cls="xrole-logo" letter={c.short} /><div><div className="xedu-t">{c.title}</div><div className="xedu-s">{c.sub}</div></div></div>
+      {projects.length > 0 && (
+        <XSec id="projects" title={projectsTitle} total={projects.length} preview={4}>
+          {(all) => (
+            <div className="xprojs">
+              {(all ? projects : projects.slice(0, 4)).map((r) => (
+                <div key={r.id} className="xproj">
+                  <div className="xproj-k">{r.label || "Project"}</div>
+                  <div className="xproj-top"><LogoTile cls="xrole-logo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="xproj-t">{r.company}</div>{r.role && <div className="xproj-o">{r.role}</div>}</div></div>
+                  {r.blurb && <p>{r.blurb}</p>}
+                  {r.metrics && r.metrics.length > 0 && r.metrics[0].value && <div className="xproj-r">{r.metrics[0].value}</div>}
+                  <div className="xproj-f">{r.dates && <span>{r.dates}</span>}{r.stage && <span>{r.stage}</span>}{(r.industries || []).map((t) => <span key={t}>{t}</span>)}</div>
+                </div>
               ))}
             </div>
-            {profile.education.some((c) => c.sub === "Certification" || !/university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))) && <div className="xcerts"><b>Certifications</b>{profile.education.filter((c) => !/university|college|b\.s\.|b\.a\.|m\.s\.|m\.b\.a|ph\.?d/i.test(c.title + " " + (c.sub || ""))).map((c) => `${c.title}${c.sub ? ` — ${c.sub}` : ""}`).join(" · ")}</div>}
-          </div>
-        </>
+          )}
+        </XSec>
+      )}
+
+      {profile.skills.length > 0 && (
+        <XSec id="skills" title="Skills" total={profile.skills.length} preview={9}>
+          {(all) => <Skills featured={!all} limit={9} />}
+        </XSec>
+      )}
+
+      {profile.superpowers.length > 0 && (
+        <XSec id="superpowers" title="Superpowers" total={profile.superpowers.length} preview={3}>
+          {(all) => (all ? profile.superpowers : profile.superpowers.slice(0, 3)).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
+        </XSec>
+      )}
+
+      {profile.leadership.length > 0 && (
+        <XSec id="leadership" title="Leadership">
+          {() => (
+            <>
+              <div className="xlbl">Leadership archetypes</div>
+              <div className="xlead">
+                {profile.leadership.map((l) => { const d = ARCHETYPE_DESC[l.title] || l.blurb; return <div key={l.title} className="xtile"><div className="xtile-t">{l.title}</div>{d && <div className="xtile-d">{d}</div>}</div>; })}
+              </div>
+              {meta && (meta.mbti || meta.enneagram || meta.yearsLeading || meta.largestTeam) && (
+                <div className="xfacts">
+                  {meta.mbti && <div><span>MBTI</span><b>{meta.mbti}</b></div>}
+                  {meta.enneagram && <div><span>Enneagram</span><b>{meta.enneagram}</b></div>}
+                  {meta.yearsLeading && <div><span>Years leading</span><b>{meta.yearsLeading}</b></div>}
+                  {meta.largestTeam && <div><span>Largest team</span><b>{meta.largestTeam}</b></div>}
+                </div>
+              )}
+              {profile.leadershipBelief && <div className="belief">“{profile.leadershipBelief}”</div>}
+            </>
+          )}
+        </XSec>
+      )}
+
+      {profile.values.length > 0 && (
+        <XSec id="values" title="Values" total={profile.values.length} preview={6}>
+          {(all) => (
+            <div className="xvals">
+              {(all ? allValues : allValues.slice(0, 6)).map((v) => <div key={v.name} className="xtile"><div className="xtile-t">{v.name}</div>{v.blurb && <div className="xtile-d">{v.blurb}</div>}</div>)}
+            </div>
+          )}
+        </XSec>
+      )}
+
+      {profile.education.length > 0 && (
+        <XSec id="education" title={certs.length ? "Education & Certifications" : "Education"}>
+          {() => (
+            <>
+              {degrees.length > 0 && (
+                <div className="xedu-list">
+                  {degrees.map((c) => (
+                    <div key={c.id} className="xedu-row"><LogoTile cls="xrole-logo" letter={c.short} /><div><div className="xedu-t">{c.title}</div><div className="xedu-s">{c.sub}</div></div></div>
+                  ))}
+                </div>
+              )}
+              {certs.length > 0 && <div className={"xcerts" + (degrees.length ? "" : " first")}><b>Certifications</b>{certs.map((c) => `${c.title}${c.sub && c.sub !== "Certification" ? ` — ${c.sub}` : ""}`).join(" · ")}</div>}
+            </>
+          )}
+        </XSec>
       )}
     </div>
   );
 }
 
-function HowIWorkPage() {
+// Work with Me — the person's offers, each with its own request or booking button.
+function WorkWithPage() {
   const { profile } = useStore();
+  const engage = useEngage();
+  const offers = profile.engagements.filter((e) => e.visible);
+  const total = fmtFollowers((profile.reach || []).reduce((a, p) => a + parseFollowers(p.followers), 0));
+  const aud = profile.audience;
   return (
     <div className="page on">
-      <PageHead title="How I Work" sub="How I lead, what I stand for, what I’m great at, and the skills behind it — in one place." />
-      {profile.leadership.length > 0 && <div className="card hw-sec">
-        <div className="hw-title">Leadership</div><div className="hw-sub">How I lead and build teams</div>
-        {profile.leadership.map((l) => <div key={l.title} className="sp"><div className="sp-ic"><Icon name={l.icon} /></div><div><div className="sp-t">{l.title}</div><div className="sp-d">{l.blurb}</div></div></div>)}
-        {profile.leadershipBelief && <div className="belief">“{profile.leadershipBelief}”</div>}
-      </div>}
-      {profile.values.length > 0 && <div className="card hw-sec">
-        <div className="hw-title">Values</div><div className="hw-sub">Principles that guide my work</div>
-        <div className="vgrid">{profile.values.map((v) => <div key={v.name} className="sp" style={{ border: "none", padding: 0 }}><div className="sp-ic" style={{ background: v.color }}><Icon name={v.icon} /></div><div><div className="sp-t">{v.name}</div><div className="sp-d">{v.blurb}</div></div></div>)}</div>
-      </div>}
-      {profile.superpowers.length > 0 && <div className="card hw-sec">
-        <div className="hw-title">Superpowers</div><div className="hw-sub">The three things I’m known for</div>
-        {profile.superpowers.map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
-      </div>}
-      {profile.skills.length > 0 && <div className="card hw-sec">
-        <div className="hw-title">Skills</div><div className="hw-sub">The full capability map</div>
-        <Skills />
-      </div>}
+      <PageHead title="Work with Me" />
+      {offers.length > 0 && (
+        <div className="wwp-grid">
+          {offers.map((e) => (
+            <div key={e.key + e.title} className="card wwp">
+              <div className="wwp-top">
+                <div className="ww-ic"><Icon name={e.icon} /></div>
+                <div><h3 className="wwp-t">{e.title}</h3><div className="wwp-p">{e.rateDisplay === "show" ? money(e.price) : "By request"}</div></div>
+              </div>
+              {e.blurb && <p className="wwp-d">{e.blurb}</p>}
+              <button type="button" className="wwp-btn" onClick={() => engage(e)}>{e.flow === "book" && profile.calLink ? "Book a time" : "Send request"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+      {profile.reach && profile.reach.length > 0 && (
+        <section className="smt">
+          <BlockHead title="Reach" sub="Audience & platforms" />
+          <div className="card reach-card">
+            <div className="reach-total"><span className="reach-num">{total}</span><span className="reach-lbl">total followers</span></div>
+            <div className="reach-grid">
+              {profile.reach.map((p) => {
+                const inner = <><div className="reach-plat">{p.platform}</div><div className="reach-f">{p.followers}</div>{p.handle && <div className="reach-h">{p.handle}</div>}{p.engagement && <div className="reach-eng">{p.engagement} eng.</div>}</>;
+                return p.url ? <a key={p.platform} className="reach-tile" href={p.url} target="_blank" rel="noopener">{inner}</a> : <div key={p.platform} className="reach-tile">{inner}</div>;
+              })}
+            </div>
+            {aud && (aud.age || aud.gender || aud.geo) && (
+              <div className="reach-aud">
+                {aud.age && <div><span className="reach-aud-l">Top age</span><span className="reach-aud-v">{aud.age}</span></div>}
+                {aud.gender && <div><span className="reach-aud-l">Audience</span><span className="reach-aud-v">{aud.gender}</span></div>}
+                {aud.geo && <div><span className="reach-aud-l">Top geos</span><span className="reach-aud-v">{aud.geo}</span></div>}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -941,9 +1117,9 @@ function MediaPage() {
   const items = profile.media.filter((m) => f === "All" || m.type === f);
   return (
     <div className="page on">
-      <PageHead title="Media" sub="Talks, writing, press, and the things I’ve made — the fuller library." />
+      <PageHead title="Media" />
       <div className="mtabs">{types.map((t) => <div key={t} className={"mtab" + (t === f ? " on" : "")} onClick={() => setF(t)}>{t}</div>)}</div>
-      <div className="mgrid">{items.map((m) => <MediaCard key={m.id} m={m} onInternal={() => goto("portfolio")} />)}</div>
+      <div className="mgrid">{items.map((m, i) => <MediaCard key={m.id} m={m} i={i} onInternal={() => goto("portfolio")} />)}</div>
     </div>
   );
 }
@@ -993,47 +1169,28 @@ function ProjectPage() {
   );
 }
 
-function BioPage() {
+// Shop — things the person sells. Each item links out to where it is sold.
+function ShopPage() {
   const { profile } = useStore();
-  const openWorkWith = useWorkWith();
-  const toast = useToast();
-  const first = profile.name.split(" ")[0] || profile.name;
+  const items = starFirst(profile.store || []);
   return (
     <div className="page on">
-      <PageHead title="About" />
-      <div className="bio-wrap">
-        <div className="bio-main">
-          <div className="case-body">{profile.bioLong.map((p, i) => <p key={i}>{p}</p>)}</div>
-          {profile.bookedFor.length > 0 && (<>
-            <div className="sec-label">What people book me for</div>
-            <div className="bookedfor">{profile.bookedFor.map((b) => <span key={b} className="bf">{b}</span>)}</div>
-          </>)}
-          {profile.highlights.length > 0 && (<>
-            <div className="sec-label">Career highlights</div>
-            {profile.highlights.map((h, i) => <div key={i} className="about-hl"><span className="ck"><Icon name="check" /></span> {h}</div>)}
-          </>)}
-          {profile.testimonial && (<>
-            <div className="sec-label">What people say</div>
-            <div className="about-review"><p>“{profile.testimonial.quote}”</p><div className="who">{profile.testimonial.who}</div></div>
-          </>)}
-        </div>
-        <aside className="bio-side">
-          <div className="card bio-card">
-            <div className="about-ava big">
-              {profile.photoUrl
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={profile.photoUrl} alt="" referrerPolicy="no-referrer" />
-                : <div className="photo-empty"><div className="pe-ic"><Icon name="camera" /></div></div>}
-            </div>
-            <div className="about-name">{profile.name} {profile.verified && <span className="vchk"><Icon name="check" /></span>}</div>
-            <div className="about-role">{profile.headline}</div>
-            {profile.rating && <div className="about-rating" style={{ margin: "10px 0 14px" }}><span className="stars">★★★★★</span> {profile.rating.stars}.0 · {profile.rating.count} sessions</div>}
-            <div className="bio-facts">
-              {profile.location && <div className="kv"><span>Based</span><b>{profile.location.split("·")[0].trim()}</b></div>}
-            </div>
-            <button className="msub" style={{ marginTop: 16 }} onClick={openWorkWith}>Work with {first}</button>
-          </div>
-        </aside>
+      <PageHead title="Shop" />
+      <div className="store-grid">
+        {items.map((p) => {
+          const priceLabel = p.price ? (p.price === "0" ? "Free" : `$${p.price.replace(/^\$+/, "")}`) : "";
+          const inner = (
+            <>
+              <div className="store-kind">{p.kind}</div>
+              <div className="store-title">{p.title}</div>
+              {p.blurb && <p className="store-blurb">{p.blurb}</p>}
+              <div className="store-foot"><span className="store-price">{priceLabel}</span>{p.url && <span className="store-go">View <Icon name="arrow-up-right" style={{ width: 13, height: 13 }} /></span>}</div>
+            </>
+          );
+          return p.url
+            ? <a key={p.id} className="store-card" href={p.url} target="_blank" rel="noopener">{inner}</a>
+            : <div key={p.id} className="store-card">{inner}</div>;
+        })}
       </div>
     </div>
   );
@@ -1049,6 +1206,8 @@ function PublicFooter() {
   );
 }
 
+const LINKABLE: PageKey[] = ["profile", "experience", "media", "shop", "work-with-me"];
+
 /* ─────────────── entry point ─────────────── */
 export function ProfileView({ profile, view: initialView }: { profile: Profile; view: ViewMode }) {
   const [view, setView] = useState<ViewMode>(initialView);
@@ -1061,6 +1220,16 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => { setView(initialView); }, [initialView]);
+  // open on the page named in the link (#experience, #media, #shop, #work-with-me)
+  useEffect(() => {
+    const open = () => {
+      const h = window.location.hash.replace("#", "") as PageKey;
+      if (LINKABLE.includes(h) && !profile.singlePage) setPage(h);
+    };
+    open();
+    window.addEventListener("hashchange", open);
+    return () => window.removeEventListener("hashchange", open);
+  }, [profile.singlePage]);
 
   // Colour look. `?look=classic|warm|mono|bold` previews a look without publishing.
   const [lookPreview, setLookPreview] = useState<ProfileLook | null>(null);
@@ -1075,9 +1244,16 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
+  const [section, setSection] = useState<string | null>(null);
   const goto = (p: PageKey, id?: string) => {
     setProjectId(id ?? null);
-    setPage(p);
+    // Older saved actions can still point at pages that have since moved onto Experience.
+    const old = p as string;
+    if (old === "bio") setSection("bio");
+    const next = (old === "how-i-work" || old === "bio" ? "experience" : p) as PageKey;
+    setPage(next);
+    // each page has its own link, e.g. marquee.bio/name#experience
+    if (typeof window !== "undefined" && LINKABLE.includes(next)) window.history.replaceState(null, "", next === "profile" ? window.location.pathname + window.location.search : `#${next}`);
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
   };
 
@@ -1087,11 +1263,11 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const store: Store = { profile, view, setView, page, goto, projectId, editing, setEditing };
+  const store: Store = { profile, view, setView, page, goto, projectId, editing, setEditing, section, setSection };
 
   const pages: Record<PageKey, ReactNode> = {
-    profile: <ProfilePage />, experience: <ExperiencePage />, "how-i-work": <HowIWorkPage />,
-    media: <MediaPage />, portfolio: <PortfolioPage />, project: <ProjectPage />, bio: <BioPage />,
+    profile: <ProfilePage />, experience: <ExperiencePage />, "work-with-me": <WorkWithPage />,
+    media: <MediaPage />, shop: <ShopPage />, portfolio: <PortfolioPage />, project: <ProjectPage />,
   };
 
   return (

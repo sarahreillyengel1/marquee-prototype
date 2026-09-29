@@ -4,8 +4,9 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 
 // Affirm — signed-in people affirm a superpower, and their face shows on the profile.
 //
-// GET  /api/affirm?username=x -> { powers: { [superpower]: { count, people: Person[] } }, mine: string[], signedIn, isOwner }
-// POST /api/affirm { username, superpower } -> { ok, count, people }   (401 when signed out)
+// GET  /api/affirm?username=x -> { powers: { [superpower]: { count, people: Person[] } }, mine: string[], signedIn, isOwner, hasProfile }
+// POST /api/affirm { username, superpower } -> { ok, count, people }   (401 signed out · 403 no Marquee profile, or own profile)
+// Only people with a published Marquee profile can affirm, so a name and a face stand behind each one.
 //
 // A signed-in affirmation is stored with visitor_id = "user:<auth uid>". Older anonymous rows
 // (a bare browser id) are ignored, so every affirmation shown belongs to a real account.
@@ -23,7 +24,8 @@ async function currentUserId(): Promise<string | null> {
   } catch { return null; }
 }
 
-// Faces come from each affirmer's own published profile. No profile: their name only (initials).
+// Faces come from each affirmer's own published profile. No profile: initials from their account name,
+// or a plain person icon when the account has no name. Never the email.
 async function peopleFor(supabase: ReturnType<typeof createServerSupabase>, ids: string[]): Promise<Record<string, Person>> {
   const out: Record<string, Person> = {};
   if (!ids.length) return out;
@@ -37,8 +39,8 @@ async function peopleFor(supabase: ReturnType<typeof createServerSupabase>, ids:
     try {
       const { data: u } = await supabase.auth.admin.getUserById(id);
       const meta = (u.user?.user_metadata || {}) as { full_name?: string; name?: string };
-      out[id] = { name: (meta.full_name || meta.name || "").trim() || "Marquee member" };
-    } catch { out[id] = { name: "Marquee member" }; }
+      out[id] = { name: (meta.full_name || meta.name || "").trim() };
+    } catch { out[id] = { name: "" }; }
   }
   return out;
 }
@@ -46,7 +48,7 @@ async function peopleFor(supabase: ReturnType<typeof createServerSupabase>, ids:
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const username = (url.searchParams.get("username") || "").trim().toLowerCase();
-  const empty = { powers: {}, mine: [], signedIn: false, isOwner: false };
+  const empty = { powers: {}, mine: [], signedIn: false, isOwner: false, hasProfile: false };
   if (!username) return NextResponse.json(empty);
   try {
     const supabase = createServerSupabase();
@@ -63,12 +65,14 @@ export async function GET(req: Request) {
       if (p.people.length < FACES && people[r.uid]) p.people.push(people[r.uid]);
       if (me && r.uid === me) mine.push(r.superpower);
     }
-    let isOwner = false;
+    let isOwner = false, hasProfile = false;
     if (me) {
       const { data: own } = await supabase.from("published_profiles").select("user_id").eq("username", username).maybeSingle();
       isOwner = own?.user_id === me;
+      const { data: mineProfile } = await supabase.from("published_profiles").select("username").eq("user_id", me).limit(1);
+      hasProfile = (mineProfile || []).length > 0;
     }
-    return NextResponse.json({ powers, mine, signedIn: !!me, isOwner });
+    return NextResponse.json({ powers, mine, signedIn: !!me, isOwner, hasProfile });
   } catch { return NextResponse.json(empty); }
 }
 
@@ -83,6 +87,8 @@ export async function POST(req: Request) {
     const supabase = createServerSupabase();
     const { data: own } = await supabase.from("published_profiles").select("user_id").eq("username", username).maybeSingle();
     if (own?.user_id === me) return NextResponse.json({ error: "You can't affirm your own superpower." }, { status: 403 });
+    const { data: mineProfile } = await supabase.from("published_profiles").select("username").eq("user_id", me).limit(1);
+    if (!(mineProfile || []).length) return NextResponse.json({ error: "Publish your Marquee profile to affirm." }, { status: 403 });
     // unique(username, superpower, visitor_id) makes a repeat click a no-op
     const { error } = await supabase.from("superpower_affirmations").upsert({ username, superpower, visitor_id: PREFIX + me }, { onConflict: "username,superpower,visitor_id", ignoreDuplicates: true });
     if (error) return NextResponse.json({ error: "Couldn't save that just now." }, { status: 500 });

@@ -4,6 +4,8 @@
 // Step-by-step build. Once approved, moves into /onboard with real state + persistence, reusing existing editors.
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { ARCHETYPES } from "@/lib/archetypes";
+import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES } from "@/lib/company-tags";
 import { Logo } from "@/components/Logo";
 import { createBrowserSupabase } from "@/lib/supabase";
 import type { ResumeParseResult } from "@/types";
@@ -13,12 +15,12 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Store", "Long Bio"] },
+  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Shop", "Long Bio"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Store", "Long Bio"]);
+const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
-const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Store: "store", Actions: "actions" };
+const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", Actions: "actions" };
 const LOOKS = [
   { key: "classic", name: "Classic", note: "Black and white, soft beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
   { key: "warm", name: "Warm", note: "Soft paper, sage, sky", sw: ["#F7F6F2", "#73926A", "#A8CFFF", "#EED0BF"] },
@@ -26,7 +28,7 @@ const LOOKS = [
   { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
 ];
 const ACTION_TYPES = ["Contact", "Hire", "Book", "Partner", "Sponsor", "Read", "Listen", "Watch", "Attend", "Join", "Apply", "Buy", "Shop", "Invest", "Donate", "Follow"];
-const ACTION_DESTS = [{ v: "contact", label: "Opens Work with me" }, { v: "media", label: "My Media page" }, { v: "bio", label: "My Bio page" }, { v: "experience", label: "My Experience page" }, { v: "how-i-work", label: "My How I Work page" }, { v: "link", label: "A link (URL)" }];
+const ACTION_DESTS = [{ v: "contact", label: "Opens Work with me" }, { v: "media", label: "My Media page" }, { v: "bio", label: "My full bio" }, { v: "experience", label: "My Experience page" }, { v: "work-with-me", label: "My Work with Me page" }, { v: "shop", label: "My Shop page" }, { v: "link", label: "A link (URL)" }];
 const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack", "X", "Podcast", "Facebook"];
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
 // same left-nav sections (profile first, then brand). The real editors stay in place; the
@@ -44,7 +46,7 @@ const TOUR_HINTS: Record<string, string> = {
   "Education": "Schools, degrees, and certifications.",
   "Work With Me": "How people can hire, book, or work with you.",
   "Media": "Press, talks, writing, and portfolio.",
-  "Store": "Productize your expertise — templates, guides, courses.",
+  "Shop": "Productize your expertise — templates, guides, courses.",
   "Long Bio": "The full narrative, in your own words.",
 };
 const RELATIONSHIPS = ["Manager", "Peer", "Direct report", "Client", "Mentor", "Partner", "Investor"];
@@ -57,7 +59,7 @@ const MEDIA_COLORS: Record<string, string> = {
   Portfolio: "#B9E3A5", Video: "#FF5436", Deck: "#DBCDC4",
 };
 const VALUES = ["Integrity", "Directness", "Curiosity", "Craft", "Ownership", "Empathy", "Ambition", "Candor", "Autonomy", "Impact", "Growth", "Transparency", "Resilience", "Kindness", "Rigor", "Creativity", "Collaboration", "Humility", "Optimism", "Pragmatism", "Trust", "Courage", "Discipline", "Generosity", "Focus", "Adaptability", "Accountability", "Vision", "Inclusion", "Balance", "Independence", "Boldness", "Patience", "Gratitude", "Fairness", "Simplicity", "Authenticity", "Service"];
-const VAL_MAX = 12, VAL_FEATURED = 4;
+const VAL_MAX = 12, VAL_FEATURED = 6;
 const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
 const SKILL_LEVELS = ["Foundational", "Proficient", "Advanced", "Expert"];
 // Ordered categories + auto-classification. In the real product this classification is done for the
@@ -149,28 +151,18 @@ const BLANK = {
   reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
   audAge: "", audGender: "", audGeo: "", calLink: "",
   actions: [] as { type: string; label: string; dest: string; url: string }[],
-  look: "classic", previous: [] as string[], photoPos: { x: 50, y: 25 }, photoZoom: 1,
+  look: "classic", previous: [] as string[], photoPos: { x: 50, y: 25 }, photoZoom: 1, ennWing: "",
 };
 
 const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
 const WORK_LOC = ["Remote", "Hybrid", "In-Person"];
 const PROJECT_TYPES = ["Product Launch", "Campaign", "Fundraising", "Acquisition", "Redesign", "Product Development"];
-const ARCHETYPES = [
-  { name: "The Builder", desc: "0→1, creation under ambiguity." },
-  { name: "The Fixer", desc: "Diagnose, stabilize, turn around." },
-  { name: "The Scaler", desc: "Takes what works and multiplies it." },
-  { name: "The Operator", desc: "Systems, process, execution excellence." },
-  { name: "The Strategist", desc: "Big picture, long arc, systems thinker." },
-  { name: "The Coach", desc: "Grows people, builds culture, develops talent." },
-  { name: "The Connector", desc: "Networks, partnerships, bridges worlds." },
-  { name: "The Visionary", desc: "Sees what others don't, pulls people forward." },
-];
 const MBTI = ["INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP", "I don't know"];
 const ENNEAGRAM = ["1 · Reformer", "2 · Helper", "3 · Achiever", "4 · Individualist", "5 · Investigator", "6 · Loyalist", "7 · Enthusiast", "8 · Challenger", "9 · Peacemaker", "I don't know"];
 const DISC = ["D · Dominance", "I · Influence", "S · Steadiness", "C · Conscientiousness", "I don't know"];
 
 // A timeline entry is EITHER a role (a job) OR a project (standalone work). Same level.
-type Entry = { kind: "role" | "project"; logo?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
+type Entry = { kind: "role" | "project"; logo?: string; industries?: string[]; stage?: string; ptype?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean };
 
 export default function BuildPreview() {
   const [active, setActive] = useState("Resume"); // new users start at the top; returning users are repositioned on load
@@ -206,6 +198,10 @@ export default function BuildPreview() {
     { kind: "project", primary: "Community Platform Launch", secondary: "at Hello Alice", dates: "2017", desc: "Built and launched the community platform from the ground up.", result: "1.5M members", featured: false },
   ]);
   const upEntry = (i: number, patch: Partial<Entry>) => setEntries((e) => e.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addEntryIndustry = (i: number, raw: string) => {
+    const v = raw.trim().replace(/,$/, "").trim(); if (!v) return;
+    setEntries((es) => es.map((x, j) => { if (j !== i) return x; const cur = x.industries || []; return cur.length >= COMPANY_INDUSTRY_MAX || cur.some((t) => t.toLowerCase() === v.toLowerCase()) ? x : { ...x, industries: [...cur, v] }; }));
+  };
   const addEntry = (kind: "role" | "project") => setEntries((e) => [...e, { kind, primary: "", secondary: "", dates: "", desc: "", result: "", featured: false }]);
   const rmEntry = (i: number) => setEntries((e) => e.filter((_, j) => j !== i));
   const featured = entries.find((x) => x.featured);
@@ -289,7 +285,7 @@ export default function BuildPreview() {
   const [hidden, setHidden] = useState<string[]>([]);
   const toggleHidden = (k: string) => setHidden((h) => (h.includes(k) ? h.filter((x) => x !== k) : [...h, k]));
 
-  // Values — choose up to 12; feature up to 4 that lead the profile, the rest live in the bio.
+  // Values — choose up to 12; star up to 6 "Core Values" that show on the home page, the rest live on Experience.
   const [vals, setVals] = useState<string[]>(["Directness", "Curiosity", "Craft", "Ownership", "Candor", "Growth", "Empathy", "Ambition"]);
   const [vFeatured, setVFeatured] = useState<string[]>(["Directness", "Curiosity", "Craft", "Ownership"]);
   const toggleVal = (v: string) => {
@@ -359,6 +355,7 @@ export default function BuildPreview() {
   const [look, setLook] = useState("classic");
   const [photoPos, setPhotoPos] = useState({ x: 50, y: 25 });
   const [photoZoom, setPhotoZoom] = useState(1);
+  const [ennWing, setEnnWing] = useState("");
   const [previous, setPrevious] = useState<string[]>([]);
   const [prevDraft, setPrevDraft] = useState("");
   const PREV_MAX = 8;
@@ -429,7 +426,7 @@ export default function BuildPreview() {
     } catch { setParseErr("Something went wrong. Try again."); }
     setParsing(false);
   };
-  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
+  const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -452,7 +449,7 @@ export default function BuildPreview() {
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
     setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
     setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
-    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoPos(d.photoPos ?? { x: 50, y: 25 }); setPhotoZoom(d.photoZoom ?? 1);
+    setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoPos(d.photoPos ?? { x: 50, y: 25 }); setPhotoZoom(d.photoZoom ?? 1); setEnnWing(d.ennWing ?? "");
   };
   useEffect(() => {
     let cancelled = false;
@@ -487,7 +484,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom]);
+  }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   const [showPublish, setShowPublish] = useState(false);
@@ -503,7 +500,10 @@ export default function BuildPreview() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setPubResult({ ok: false, msg: "Please log in first." }); setPublishing(false); return; }
       // inquiryEmail powers the "Send request" form on the public profile — without it every inquiry errors.
-      const profile = { ...builderToProfile(snapshot(), u), inquiryEmail: user.email || undefined };
+      // Verified is granted by Marquee, not set in the builder — carry over what the live profile already has.
+      const { data: live } = await supabase.from("published_profiles").select("profile").eq("username", u).eq("user_id", user.id).maybeSingle();
+      const verified = !!(live?.profile as { verified?: boolean } | null)?.verified;
+      const profile = { ...builderToProfile(snapshot(), u), verified, inquiryEmail: user.email || undefined };
       const { error } = await supabase.from("published_profiles").upsert({ username: u, user_id: user.id, profile, published_at: new Date().toISOString() });
       if (error) setPubResult({ ok: false, msg: "That username may be taken — try another." });
       else { setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); }
@@ -635,7 +635,7 @@ export default function BuildPreview() {
                 </div>
               </div>
               <div className="mt-6"><label className="font-sans text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-sans text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
-              <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-sans text-[14px]">Open to opportunities now</span></label>
+              <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-sans text-[14px]">Open to opportunities now <span className="text-[#7d7a74]">· shows a small line above your name</span></span></label>
               <div className="mt-6 max-w-[600px]"><label className="font-sans text-[13px] font-semibold block mb-2">Links</label><div className="grid grid-cols-2 gap-[12px]">
                 <SocialField label="Website" v={socials.website} on={(x) => setSocials((s) => ({ ...s, website: x }))} ph="yoursite.com" />
                 <SocialField label="LinkedIn" v={socials.linkedin} on={(x) => setSocials((s) => ({ ...s, linkedin: x }))} ph="linkedin.com/in/you" />
@@ -664,25 +664,52 @@ export default function BuildPreview() {
                       <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-[46px] h-[46px] flex-none border border-[#E1DED7] bg-[#F4F2EF] flex items-center justify-center text-center" title={e.kind === "role" ? "Company" : "Project"}>
-                        {e.primary ? <span className="font-sans font-semibold text-[16px] text-[#254B18]">{e.primary[0].toUpperCase()}</span> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
+                      <div className="flex-none flex flex-col items-center gap-[4px]">
+                        <label className="w-[46px] h-[46px] border border-[#E1DED7] bg-white flex items-center justify-center text-center cursor-pointer overflow-hidden hover:border-brand-ink" title={e.logo ? "Change logo" : "Add a logo"}>
+                          {e.logo ? <img src={e.logo} alt="" className="w-full h-full object-contain p-[4px]" /> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
+                          <input type="file" accept="image/*" className="hidden" onChange={async (ev) => { const f = ev.target.files?.[0]; if (f) { const url = await uploadImg(f, "logo"); if (url) upEntry(i, { logo: url }); } ev.currentTarget.value = ""; }} />
+                        </label>
+                        {e.logo && <button onClick={() => upEntry(i, { logo: "" })} className="font-sans text-[10px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-[12px]">
-                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : e.ptype === "Client" ? "Client name" : e.ptype === "Accelerator" || e.ptype === "Program" ? "Program name" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                         <input value={e.dates} placeholder="2020 – 2023" onChange={(ev) => upEntry(i, { dates: ev.target.value })} className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       </div>
                     </div>
-                    <input value={e.secondary} placeholder={e.kind === "role" ? "Your title" : "Client (who it was for)"} onChange={(ev) => upEntry(i, { secondary: ev.target.value })} className="w-full font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
+                    <input value={e.secondary} placeholder={e.kind === "role" ? "Your title" : e.ptype === "Client" ? "What you did for them" : e.ptype === "Accelerator" || e.ptype === "Program" ? "Who ran it, or your role" : "Client (who it was for)"} onChange={(ev) => upEntry(i, { secondary: ev.target.value })} className="w-full font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
                     <textarea value={e.desc} placeholder="What you did and what changed." onChange={(ev) => upEntry(i, { desc: ev.target.value })} rows={2} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none mt-2 focus:outline-none focus:border-brand-ink" />
                     {e.kind === "project" && (
                       <input value={e.result} placeholder="Result (optional), e.g. 1.5M members" onChange={(ev) => upEntry(i, { result: ev.target.value })} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
                     )}
+                    {e.kind === "project" && (
+                      <div className="mt-3">
+                        <label className="font-sans text-[12px] font-semibold block mb-[6px]">What is this? <span className="font-normal text-[#a8a29a]">· shown as a label, so it reads differently from a job</span></label>
+                        <div className="flex flex-wrap gap-[6px]">{ENTRY_TYPES.map((t) => <button key={t} onClick={() => upEntry(i, { ptype: t })} aria-pressed={(e.ptype || "Project") === t} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${(e.ptype || "Project") === t ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{t}</button>)}</div>
+                      </div>
+                    )}
+                    <div className="mt-3 pt-3 border-t border-[#ECEAE4] grid sm:grid-cols-2 gap-[14px]">
+                      <div>
+                        <div className="flex items-baseline justify-between mb-[6px]"><label htmlFor={`f-ind-${i}`} className="font-sans text-[12px] font-semibold">Industries <span className="font-normal text-[#a8a29a]">· up to {COMPANY_INDUSTRY_MAX}</span></label><span className="text-[11px] text-[#7d7a74]">{(e.industries || []).length} / {COMPANY_INDUSTRY_MAX}</span></div>
+                        <div className="flex flex-wrap items-center gap-[6px] border border-[#E1DED7] bg-white py-[5px] px-[7px] focus-within:border-brand-ink">
+                          {(e.industries || []).map((t) => <span key={t} className="inline-flex items-center gap-[6px] font-sans text-[12.5px] py-[4px] px-[9px] bg-[#F1EEE8] text-[#3a352f]">{t}<button onClick={() => upEntry(i, { industries: (e.industries || []).filter((x) => x !== t) })} aria-label={`Remove ${t}`} className="text-[#7d7a74] hover:text-brand-ink">×</button></span>)}
+                          {(e.industries || []).length < COMPANY_INDUSTRY_MAX && <input id={`f-ind-${i}`} list="industry-suggestions" placeholder={(e.industries || []).length ? "add another…" : "e.g. Fintech"} className="flex-1 min-w-[110px] font-inter text-[12.5px] py-[4px] px-[5px] focus:outline-none"
+                            onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); addEntryIndustry(i, ev.currentTarget.value); ev.currentTarget.value = ""; } }}
+                            onChange={(ev) => { if (INDUSTRY_SUGGESTIONS.includes(ev.currentTarget.value)) { addEntryIndustry(i, ev.currentTarget.value); ev.currentTarget.value = ""; } }}
+                            onBlur={(ev) => { addEntryIndustry(i, ev.currentTarget.value); ev.currentTarget.value = ""; }} />}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="font-sans text-[12px] font-semibold block mb-[6px]">Stage or type <span className="font-normal text-[#a8a29a]">· pick one</span></label>
+                        <div className="flex flex-wrap gap-[6px]">{COMPANY_STAGES.map((st) => <button key={st} onClick={() => upEntry(i, { stage: e.stage === st ? "" : st })} aria-pressed={e.stage === st} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${e.stage === st ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{st}</button>)}</div>
+                      </div>
+                    </div>
                     <div className="text-right mt-2"><button onClick={() => rmEntry(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
                   </div>
                 ))}
+                <datalist id="industry-suggestions">{INDUSTRY_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
                 <div className="flex gap-3">
                   <button onClick={() => addEntry("role")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a role</button>
-                  <button onClick={() => addEntry("project")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a project</button>
+                  <button onClick={() => addEntry("project")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a client, accelerator or project</button>
                 </div>
               </div>
             </>
@@ -710,7 +737,9 @@ export default function BuildPreview() {
                 <div><label className="font-sans text-[13px] font-semibold block mb-2">MBTI <span className="font-normal text-[#7d7a74]">· optional</span></label>
                   <select value={mbti} onChange={(e) => setMbti(e.target.value)} className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink"><option value="">Select</option>{MBTI.map((m) => <option key={m}>{m}</option>)}</select></div>
                 <div><label className="font-sans text-[13px] font-semibold block mb-2">Enneagram <span className="font-normal text-[#7d7a74]">· optional</span></label>
-                  <select value={enn} onChange={(e) => setEnn(e.target.value)} className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink"><option value="">Select</option>{ENNEAGRAM.map((m) => <option key={m}>{m}</option>)}</select></div>
+                  <select value={enn} onChange={(e) => { setEnn(e.target.value); setEnnWing(""); }} className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink"><option value="">Select</option>{ENNEAGRAM.map((m) => <option key={m}>{m}</option>)}</select>{/^\d/.test(enn) && (() => { const n = Number(enn[0]); const wings = [n === 1 ? 9 : n - 1, n === 9 ? 1 : n + 1]; return (
+                    <select value={ennWing} onChange={(e) => setEnnWing(e.target.value)} aria-label="Enneagram wing" className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink mt-2"><option value="">No wing</option>{wings.map((w) => <option key={w} value={String(w)}>{n}w{w} (wing {w})</option>)}</select>
+                  ); })()}</div>
                 <div><label className="font-sans text-[13px] font-semibold block mb-2">DISC <span className="font-normal text-[#7d7a74]">· optional</span></label>
                   <input value={disc} onChange={(e) => setDisc(e.target.value)} placeholder="e.g. DI, SC" className="w-full font-inter text-[13.5px] py-[10px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /></div>
               </div>
@@ -1029,7 +1058,7 @@ export default function BuildPreview() {
               {vals.length > 0 && (
                 <div className="max-w-[720px]">
                   <div className="flex items-baseline justify-between mb-2">
-                    <label className="font-sans text-[13px] font-semibold">Feature on your profile <span className="font-normal text-[#a8a29a]">· star the {VAL_FEATURED} that matter most</span></label>
+                    <label className="font-sans text-[13px] font-semibold">Core Values <span className="font-normal text-[#a8a29a]">· star up to {VAL_FEATURED}. These show on your home page.</span></label>
                     <span className="text-[11px] text-[#7d7a74]">★ {vFeatured.length}/{VAL_FEATURED}</span>
                   </div>
                   <div className="flex flex-wrap gap-[8px]">
@@ -1175,10 +1204,10 @@ export default function BuildPreview() {
             );
           })()}
 
-          {active === "Store" && (
+          {active === "Shop" && (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your store.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Star up to 3 to feature; the rest live in your store.</p>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Each one links out to where people buy it. They show on the Shop page of your profile.</p>
               <div className="space-y-4 max-w-[720px]">
                 {products.map((p, i) => (
                   <div key={i} className={`p-[18px] border ${p.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
@@ -1335,7 +1364,7 @@ function PhotoFramer({ url, pos, zoom, onPos, onZoom }: { url: string; pos: { x:
         ref={frame}
         role="img"
         aria-label="Header photo. Drag to reposition."
-        className="w-[200px] aspect-[4/5] overflow-hidden border border-[#E1DED7] bg-[#ECEAE3] shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+        className="w-[200px] aspect-square overflow-hidden border border-[#E1DED7] bg-[#ECEAE3] shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
         onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = { px: e.clientX, py: e.clientY, x: pos.x, y: pos.y }; }}
         onPointerMove={(e) => {
           const d = drag.current; if (!d) return;
