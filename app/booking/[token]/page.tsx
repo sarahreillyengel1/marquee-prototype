@@ -6,7 +6,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
-type Booking = { status: string; offer: string; with: string; username: string; visitorName: string; when: string; meetingLink: string; paid: string; canCancel: boolean; refundIfCancelled: boolean; freeCancelHours: number };
+type Booking = { status: string; offer: string; with: string; username: string; visitorName: string; when: string; startsAt?: string; endsAt?: string; meetingLink: string; paid: string; canCancel: boolean; refundIfCancelled: boolean; freeCancelHours: number };
+
+// Add to calendar: Google opens with the details filled in; Apple and Outlook open a calendar file.
+const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+const icsText = (t: string) => t.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+function calendarFor(b: Booking, token: string, pageUrl: string) {
+  if (!b.startsAt || !b.endsAt) return null;
+  const title = `${b.offer} with ${b.with}`;
+  const details = `${b.meetingLink ? `Join: ${b.meetingLink}\n\n` : ""}Booked through Marquee. See or cancel this booking: ${pageUrl}`;
+  const google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${stamp(b.startsAt)}/${stamp(b.endsAt)}&details=${encodeURIComponent(details)}${b.meetingLink ? `&location=${encodeURIComponent(b.meetingLink)}` : ""}`;
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Marquee//Booking//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT", `UID:${token.slice(0, 24)}@marquee.bio`, `DTSTAMP:${stamp(new Date().toISOString())}`, `DTSTART:${stamp(b.startsAt)}`, `DTEND:${stamp(b.endsAt)}`, `SUMMARY:${icsText(title)}`, `DESCRIPTION:${icsText(details)}`, ...(b.meetingLink ? [`LOCATION:${icsText(b.meetingLink)}`] : []), "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  return { google, file: `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`, name: `${title.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "")}.ics` };
+}
 
 export default function ManageBooking() {
   const { token } = useParams() as { token: string };
@@ -43,6 +55,10 @@ export default function ManageBooking() {
   };
 
   const label = "font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6E6A62] mb-1";
+  const [pageUrl, setPageUrl] = useState("");
+  useEffect(() => { setPageUrl(window.location.origin + window.location.pathname); }, []);
+  const cal = b && b.status === "confirmed" ? calendarFor(b, token, pageUrl) : null;
+  const calBtn = "border border-[#E1DED7] bg-white font-sans text-[13.5px] font-semibold py-[11px] px-[18px] hover:border-brand-ink transition-colors";
   return (
     <main className="min-h-screen bg-brand-paper font-inter text-brand-ink px-5 py-10">
       <div className="max-w-[520px] mx-auto">
@@ -64,6 +80,16 @@ export default function ManageBooking() {
               {b.meetingLink && (<><div className={label}>Where</div><div className="text-[16px] mb-4 break-all"><a href={b.meetingLink} className="underline underline-offset-2">{b.meetingLink}</a></div></>)}
               {b.paid && (<><div className={label}>Paid</div><div className="text-[16px] mb-1">{b.paid}</div></>)}
             </div>
+            {cal && (
+              <div className="mt-6">
+                <div className={label}>Add to calendar</div>
+                <div className="flex flex-wrap gap-3 mt-2">
+                  <a href={cal.google} target="_blank" rel="noopener noreferrer" className={calBtn}>Google</a>
+                  <a href={cal.file} download={cal.name} className={calBtn}>Apple</a>
+                  <a href={cal.file} download={cal.name} className={calBtn}>Outlook</a>
+                </div>
+              </div>
+            )}
             {msg && <p className="text-[14.5px] mt-4" role="status">{msg}</p>}
             {b.canCancel && !confirming && <button onClick={() => setConfirming(true)} className="mt-6 font-sans text-[13.5px] font-semibold underline underline-offset-4">Cancel this booking</button>}
             {b.canCancel && confirming && (

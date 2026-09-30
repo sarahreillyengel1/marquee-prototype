@@ -23,6 +23,8 @@ export async function GET(req: Request) {
   return NextResponse.json({
     status: b.status, offer: b.offer_title, with: owner?.name || b.username, username: b.username, visitorName: b.visitor_name,
     when: b.starts_at && b.ends_at ? whenLabel(b.starts_at, b.ends_at, b.visitor_timezone || settings.timezone) : "",
+    // exact start and end, so a confirmed booking can be added to the visitor's calendar
+    startsAt: b.status === "confirmed" ? b.starts_at || "" : "", endsAt: b.status === "confirmed" ? b.ends_at || "" : "",
     // the link is only shown to someone who holds a confirmed booking
     meetingLink: b.status === "confirmed" ? settings.meeting_link : "",
     paid: b.price_cents > 0 && b.stripe_payment_intent ? money(b.price_cents) : "",

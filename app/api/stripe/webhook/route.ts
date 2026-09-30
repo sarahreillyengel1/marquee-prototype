@@ -4,7 +4,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { mailFor, originOf, type BookingRow } from "@/lib/booking-server";
 import { sendBookingConfirmed, sendMembershipWelcome } from "@/lib/email";
 import { PLANS, isPlan } from "@/lib/membership";
-import { stripe, stripeReady } from "@/lib/stripe";
+import { payoutAccountReady, stripe, stripeReady } from "@/lib/stripe";
 
 // Stripe tells us here when a booking has been paid (or the checkout was abandoned).
 // Set this URL in Stripe: https://marquee.bio/api/stripe/webhook
@@ -53,8 +53,9 @@ export async function POST(req: Request) {
       if (u.user) await db.auth.admin.updateUserById(userId, { app_metadata: { ...(u.user.app_metadata || {}), subscription_status: status } });
     }
   } else if (event.type === "account.updated") {
+    // payout accounts are checked with Stripe's newer API, so ask Stripe rather than trust this older message's fields
     const a = event.data.object as Stripe.Account;
-    await db.from("booking_settings").update({ stripe_ready: !!a.charges_enabled && !!a.payouts_enabled }).eq("stripe_account_id", a.id);
+    try { await db.from("booking_settings").update({ stripe_ready: await payoutAccountReady(a.id) }).eq("stripe_account_id", a.id); } catch (e) { console.error("Payout status check failed:", e); }
   }
   return NextResponse.json({ received: true });
 }
