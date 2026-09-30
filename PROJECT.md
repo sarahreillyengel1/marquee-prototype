@@ -14,7 +14,7 @@ Personal brand platform for professionals — a dynamic, AI-generated profile th
 | **Live URL** | https://marquee.bio |
 | **Demo profile** | https://marquee.bio/demo |
 | **Stage** | Beta (invite-only) |
-| **Pricing** | **Founding Member (open now, first 250): $20/mo or $200/yr, price locked while active. Marquee Pro (opens Dec 1): $29/mo or $279/yr.** Marquee keeps 8% of bookings. (Sarah, 2026-09-29; replaces $299/yr) |
+| **Pricing** | **Founding Member (open now, first 250): $20/mo or $200/yr, price locked while active. Marquee Pro (opens Dec 1): $29/mo or $279/yr.** Marquee takes 5% on paid bookings, plus standard payment processing of 2.9% + 30¢ (Sarah, 2026-09-30; replaces the 8% all-in fee). (Sarah, 2026-09-29; replaces $299/yr) |
 
 ## Tech stack
 

@@ -17,8 +17,8 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 
 const RAIL = [
   { label: null, steps: ["Resume"] },
-  { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Shop", "Long Bio"] },
+  { label: "Build your profile", steps: ["About You", "Long Bio", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
+  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Shop"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
 const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
@@ -26,7 +26,7 @@ const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impac
 const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", Actions: "actions" };
 const LOOKS = [
   { key: "classic", name: "Classic", note: "Black, white, beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
-  { key: "warm", name: "Warm", note: "Paper, sage, sky", sw: ["#F7F6F2", "#73926A", "#A8CFFF", "#EED0BF"] },
+  { key: "warm", name: "Warm", note: "Paper, sage, sky", sw: ["#F7F6F2", "#670821", "#A8CFFF", "#EED0BF"] },
   { key: "mono", name: "Mono", note: "Stone, light to dark", sw: ["#F7F6F2", "#E2DED5", "#CFC9BE", "#2E2C28"] },
   { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
 ];
@@ -52,7 +52,7 @@ const TOUR_HINTS: Record<string, string> = {
   "Shop": "Productize your expertise — templates, guides, courses.",
   "Long Bio": "The full narrative, in your own words.",
 };
-const RELATIONSHIPS = ["Manager", "Peer", "Direct report", "Client", "Mentor", "Partner", "Investor"];
+const RELATIONSHIPS = ["Manager", "Peer", "Direct report", "Client", "Mentor", "Partner", "Investor", "Me"]; // "Me" = a quote in your own words
 const STORE_KINDS = ["Template", "Guide", "Course", "Ebook", "Download"];
 const MEDIA_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video", "Deck"];
 const MEDIA_FEATURED = 4;
@@ -464,8 +464,11 @@ export default function BuildPreview() {
       // On a load failure, STOP: never hydrate BLANK (autosave would then overwrite the real draft).
       if (error) { setLoadErr("Couldn't load your saved draft. Refresh to try again — nothing has been changed."); return; }
       const saved = data?.data as Partial<typeof BLANK> | undefined;
-      // "Returning" means they've actually entered something — an autosaved empty row is still a new user.
-      const hasDraft = !!(saved && ((saved.name || "").trim() || (saved.headline || "").trim() || (saved.entries?.length ?? 0) > 0 || (saved.skills?.length ?? 0) > 0));
+      // "Returning" means they've actually entered something — an autosaved empty row is still a new user,
+      // and so is a row holding only the name we filled in from their account.
+      const accountName = String((user.user_metadata as { full_name?: string } | null)?.full_name || "").trim();
+      const typedName = (saved?.name || "").trim();
+      const hasDraft = !!(saved && ((typedName && typedName !== accountName) || (saved.headline || "").trim() || (saved.bio || "").trim() || (saved.entries?.length ?? 0) > 0 || (saved.skills?.length ?? 0) > 0));
       hydrate(saved && Object.keys(saved).length ? saved : BLANK);
       // First visit → Resume step + welcome tour. Returning → straight into editing, no tour.
       if (hasDraft) { setActive("About You"); setTour(null); } else { setActive("Resume"); setTour("welcome"); }
@@ -517,7 +520,7 @@ export default function BuildPreview() {
   const stepNo = ALL_STEPS.indexOf(active);
 
   if (loadErr) return <div className="font-inter bg-brand-paper min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center"><div className="font-sans text-[15px] text-brand-ink max-w-[46ch]">{loadErr}</div><button onClick={() => window.location.reload()} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[10px] px-5">Refresh</button></div>;
-  if (!loaded) return <div className="font-inter bg-brand-paper min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#73926A] border-t-transparent rounded-full animate-spin" /></div>;
+  if (!loaded) return <div className="font-inter bg-brand-paper min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#670821] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="font-inter text-brand-ink bg-brand-paper min-h-screen grid" style={{ gridTemplateColumns: "248px 1fr" }}>
@@ -531,15 +534,15 @@ export default function BuildPreview() {
               const isActive = s === active, done = s === "Resume" || (BUILT.has(s) && s !== active);
               const n = s === "Resume" ? "✓" : ALL_STEPS.indexOf(s);
               return (
-                <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EAF1E6]" : "hover:bg-[#faf9fc]"}`}>
-                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#73926A] border-[#73926A] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
-                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#73926A] font-semibold" : "text-[#3a352f]"}`}>{s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Imported</span> : null}</span>
+                <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
+                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
+                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Imported</span> : null}</span>
                 </div>
               );
             })}
           </div>
         ))}
-        {(() => { const parts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()]; const pct = Math.round((parts.filter(Boolean).length / parts.length) * 100); const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#73926A] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
+        {(() => { const parts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()]; const pct = Math.round((parts.filter(Boolean).length / parts.length) * 100); const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#670821] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
       </aside>
 
       {/* ── MAIN ── */}
@@ -553,11 +556,11 @@ export default function BuildPreview() {
         </div>
 
         <main className="p-[40px_48px] flex-1 max-w-[820px]">
-          <div className="flex items-center justify-between mb-4 max-w-[720px] gap-3 flex-wrap">
-            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#73926A] bg-[#EAF1E6] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
+          <div className="flex items-center justify-between mb-4 max-w-[980px] gap-3 flex-wrap">
+            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#670821] bg-[#EDE7FF] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
             {HIDEABLE[active] && (
               <button onClick={() => toggleHidden(HIDEABLE[active])} className="inline-flex items-center gap-2 font-sans text-[12px] text-[#57524c] hover:text-brand-ink">
-                <span className={`w-[34px] h-[19px] rounded-full relative transition-colors ${hidden.includes(HIDEABLE[active]) ? "bg-[#d8d4cc]" : "bg-[#73926A]"}`}><span className={`absolute top-[2px] w-[15px] h-[15px] bg-white rounded-full transition-all ${hidden.includes(HIDEABLE[active]) ? "left-[2px]" : "left-[17px]"}`} /></span>
+                <span className={`w-[34px] h-[19px] rounded-full relative transition-colors ${hidden.includes(HIDEABLE[active]) ? "bg-[#d8d4cc]" : "bg-[#670821]"}`}><span className={`absolute top-[2px] w-[15px] h-[15px] bg-white rounded-full transition-all ${hidden.includes(HIDEABLE[active]) ? "left-[2px]" : "left-[17px]"}`} /></span>
                 {hidden.includes(HIDEABLE[active]) ? "Hidden from your profile" : "Showing on your profile"}
               </button>
             )}
@@ -572,19 +575,19 @@ export default function BuildPreview() {
                 <button onClick={() => setResumeMode("text")} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === "text" ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>Paste text</button>
               </div>
               {resumeMode === "file" ? (
-                <label className={`block max-w-[560px] border-[1.5px] border-dashed p-[40px] text-center cursor-pointer ${parsing ? "border-[#73926A] bg-[#EAF1E6]" : "border-[#E1DED7] hover:border-brand-ink"}`}>
+                <label className={`block max-w-[760px] border-[1.5px] border-dashed p-[40px] text-center cursor-pointer ${parsing ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] hover:border-brand-ink"}`}>
                   <input type="file" accept=".pdf,.txt,.md,.doc,.docx" disabled={parsing} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) parseResume(f); }} />
-                  <div className="w-[44px] h-[44px] rounded-full bg-[#EAF6E4] mx-auto mb-3 flex items-center justify-center text-[18px] text-[#4f7a43]">⭱</div>
+                  <div className="w-[44px] h-[44px] rounded-full bg-[#EDE7FF] mx-auto mb-3 flex items-center justify-center text-[18px] text-[#670821]">⭱</div>
                   <div className="font-sans text-[15px] font-semibold">{parsing ? "Reading your resume…" : "Drop your resume here, or click to browse"}</div>
                   <div className="text-[12.5px] text-[#7d7a74] mt-1">PDF or text file</div>
                 </label>
               ) : (
-                <div className="max-w-[560px]">
+                <div className="max-w-[760px]">
                   <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} rows={10} placeholder="Paste your resume text here…" className="w-full font-inter text-[13.5px] py-[12px] px-[14px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                   <button onClick={() => parseResume()} disabled={parsing || !resumeText.trim()} className="mt-3 font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 disabled:opacity-40">{parsing ? "Reading…" : "Read my resume →"}</button>
                 </div>
               )}
-              {parseErr && <div className="text-[13px] text-brand-orange mt-3 max-w-[560px]">{parseErr}</div>}
+              {parseErr && <div className="text-[13px] text-[#AB0000] mt-3 max-w-[760px]">{parseErr}</div>}
               <button onClick={() => setActive("About You")} className="block mt-6 font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip — I&apos;ll build from scratch →</button>
             </>
           )}
@@ -597,7 +600,7 @@ export default function BuildPreview() {
                 <label className="font-sans text-[13px] font-semibold block mb-1">What kind of professional are you?</label>
                 <p className="text-[13px] text-[#7d7a74] mb-3">Pick up to 3. This shapes how your profile is laid out.</p>
                 <div className="flex flex-wrap gap-[10px]">
-                  {TYPES.map((t) => { const on = types.includes(t); return <button key={t} onClick={() => toggleType(t)} className={`font-sans text-[14px] font-medium py-[11px] px-[18px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#3a352f]"}`}>{t}</button>; })}
+                  {TYPES.map((t) => { const on = types.includes(t); return <button key={t} onClick={() => toggleType(t)} className={`font-sans text-[14px] font-medium py-[11px] px-[18px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#3a352f]"}`}>{t}</button>; })}
                 </div>
               </div>
               <div className="mb-6">
@@ -607,8 +610,8 @@ export default function BuildPreview() {
                     {photoUrl ? <img src={photoUrl} alt="" className="w-full h-full object-cover" /> : <span>Add<br />photo</span>}
                     <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, "avatar"); if (url) setPhotoUrl(url); } e.currentTarget.value = ""; }} />
                   </label>
-                  {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
-                  {uploading && <span className="font-sans text-[12px] text-[#73926A]">Uploading…</span>}
+                  {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>}
+                  {uploading && <span className="font-sans text-[12px] text-[#670821]">Uploading…</span>}
                 </div>
                 {photoUrl && <PhotoFramer url={photoUrl} pos={photoPos} zoom={photoZoom} onPos={setPhotoPos} onZoom={setPhotoZoom} />}
               </div>
@@ -639,7 +642,7 @@ export default function BuildPreview() {
                   ))}
                 </div>
               </div>
-              <div className="mt-6"><label className="font-sans text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-sans text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
+              <div className="mt-6"><label className="font-sans text-[13px] font-semibold block mb-2">Preferred Work Location</label><div className="flex gap-[10px]">{WORK_LOC.map((w) => <button key={w} onClick={() => setLoc(w)} className={`font-sans text-[13px] py-[9px] px-[16px] border-[1.5px] ${loc === w ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{w}</button>)}</div></div>
               <label className="flex items-center gap-[10px] mt-[18px] cursor-pointer"><input type="checkbox" checked={openNow} onChange={() => setOpenNow(!openNow)} /><span className="font-sans text-[14px]">Open to opportunities now <span className="text-[#7d7a74]">· shows a small line above your name</span></span></label>
               <div className="mt-6 max-w-[600px]"><label className="font-sans text-[13px] font-semibold block mb-2">Links</label><div className="grid grid-cols-2 gap-[12px]">
                 <SocialField label="Website" v={socials.website} on={(x) => setSocials((s) => ({ ...s, website: x }))} ph="yoursite.com" />
@@ -661,12 +664,12 @@ export default function BuildPreview() {
 
               <div className="font-sans text-[13px] font-semibold mb-1">Timeline</div>
               <p className="text-[12.5px] text-[#7d7a74] mb-3">Add your roles (full-time jobs) and your projects (consulting or client engagements). Both sit on your timeline. Star the ones to feature.</p>
-              <div className="space-y-4 max-w-[720px]">
+              <div className="space-y-4 max-w-[980px]">
                 {entries.map((e, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[18px]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#EAF1E6] text-[#73926A]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.kind === "role" ? "Role" : "Project"}</span>
-                      <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
+                      <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#EDE7FF] text-[#670821]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.kind === "role" ? "Role" : "Project"}</span>
+                      <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="flex-none flex flex-col items-center gap-[4px]">
@@ -674,7 +677,7 @@ export default function BuildPreview() {
                           {e.logo ? <img src={e.logo} alt="" className="w-full h-full object-contain p-[4px]" /> : <span className="text-[9px] text-[#7d7a74] leading-tight">Add<br />logo</span>}
                           <input type="file" accept="image/*" className="hidden" onChange={async (ev) => { const f = ev.target.files?.[0]; if (f) { const url = await uploadImg(f, "logo"); if (url) upEntry(i, { logo: url }); } ev.currentTarget.value = ""; }} />
                         </label>
-                        {e.logo && <button onClick={() => upEntry(i, { logo: "" })} className="font-sans text-[10px] text-[#7d7a74] hover:text-brand-orange">Remove</button>}
+                        {e.logo && <button onClick={() => upEntry(i, { logo: "" })} className="font-sans text-[10px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>}
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-[12px]">
                         <input value={e.primary} placeholder={e.kind === "role" ? "Company" : e.ptype === "Client" ? "Client name" : e.ptype === "Accelerator" || e.ptype === "Program" ? "Program name" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
@@ -708,7 +711,7 @@ export default function BuildPreview() {
                         <div className="flex flex-wrap gap-[6px]">{COMPANY_STAGES.map((st) => <button key={st} onClick={() => upEntry(i, { stage: e.stage === st ? "" : st })} aria-pressed={e.stage === st} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${e.stage === st ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{st}</button>)}</div>
                       </div>
                     </div>
-                    <div className="text-right mt-2"><button onClick={() => rmEntry(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <div className="text-right mt-2"><button onClick={() => rmEntry(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button></div>
                   </div>
                 ))}
                 <datalist id="industry-suggestions">{INDUSTRY_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
@@ -730,7 +733,7 @@ export default function BuildPreview() {
                 <p className="text-[12.5px] text-[#7d7a74] mb-3">Pick up to 4.</p>
                 <div className="grid grid-cols-2 gap-[10px] max-w-[620px]">
                   {ARCHETYPES.map((a) => { const on = arch.includes(a.name); return (
-                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
+                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
                       <div className="font-sans text-[15px] font-semibold">{a.name}</div>
                       <div className="text-[12px] text-[#7d7a74] mt-0.5">{a.desc}</div>
                     </button>
@@ -752,7 +755,7 @@ export default function BuildPreview() {
               <div>
                 <label className="font-sans text-[13px] font-semibold block mb-2">Have you led a team?</label>
                 <div className="flex gap-[10px] mb-4">
-                  {[true, false].map((v) => <button key={String(v)} onClick={() => setLedTeam(v)} className={`font-sans text-[13px] py-[9px] px-[20px] border-[1.5px] ${ledTeam === v ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{v ? "Yes" : "No"}</button>)}
+                  {[true, false].map((v) => <button key={String(v)} onClick={() => setLedTeam(v)} className={`font-sans text-[13px] py-[9px] px-[20px] border-[1.5px] ${ledTeam === v ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{v ? "Yes" : "No"}</button>)}
                 </div>
                 {ledTeam && (
                   <div className="border border-[#E1DED7] p-[18px] max-w-[500px]">
@@ -773,9 +776,9 @@ export default function BuildPreview() {
           {active === "Actions" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four actions.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
               <datalist id="action-types">{ACTION_TYPES.map((t) => <option key={t} value={t} />)}</datalist>
-              <div className="space-y-3 max-w-[720px]">
+              <div className="space-y-3 max-w-[980px]">
                 {actions.map((a, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[14px]">
                     <div className="grid grid-cols-[130px_1fr] gap-[10px] mb-2">
@@ -785,7 +788,7 @@ export default function BuildPreview() {
                     <div className="grid grid-cols-[220px_1fr_auto] gap-[10px] items-center">
                       <select value={a.dest} onChange={(e) => upAction(i, { dest: e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{ACTION_DESTS.map((d) => <option key={d.v} value={d.v}>{d.label}</option>)}</select>
                       {a.dest === "link" ? <input value={a.url} onChange={(e) => upAction(i, { url: e.target.value })} placeholder="https://…" className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /> : <span className="text-[12px] text-[#a8a29a]">No link needed</span>}
-                      <button onClick={() => rmAction(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-brand-orange">Remove</button>
+                      <button onClick={() => rmAction(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-[#AB0000]">Remove</button>
                     </div>
                   </div>
                 ))}
@@ -801,10 +804,10 @@ export default function BuildPreview() {
 
 
               {/* Full-time */}
-              <div className="border border-[#E1DED7] p-[18px] mb-4 max-w-[720px]">
+              <div className="border border-[#E1DED7] p-[18px] mb-4 max-w-[980px]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${ftEnabled ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{ftEnabled ? "✓" : "+"}</span>
+                    <span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${ftEnabled ? "bg-[#670821] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{ftEnabled ? "✓" : "+"}</span>
                     <div><div className="font-sans text-[15px] font-semibold">Full-time</div><div className="text-[12.5px] text-[#7d7a74]">Open to the right full-time role.</div></div>
                   </div>
                   <label className="flex items-center gap-[7px] text-[12.5px] font-sans cursor-pointer"><input type="checkbox" checked={ftEnabled} onChange={() => setFtEnabled(!ftEnabled)} /> Open</label>
@@ -813,7 +816,7 @@ export default function BuildPreview() {
               </div>
 
               {/* Offerings grid */}
-              <div className="grid grid-cols-2 gap-3 max-w-[720px]">
+              <div className="grid grid-cols-2 gap-3 max-w-[980px]">
                 {offers.map((o) => {
                   const isOpen = expanded === o.key;
                   if (isOpen) {
@@ -824,14 +827,14 @@ export default function BuildPreview() {
                     const lab = "font-sans text-[12px] text-[#7d7a74] block mb-1";
                     const rateCell = o.key === "advisory" ? null : (
                       <div>
-                        <div className="flex items-center justify-between mb-1"><label className="font-sans text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <button onClick={() => upOffer(o.key, { showRate: !o.showRate })} className="font-sans text-[11px] text-[#73926A]">{o.showRate ? "Hide, take requests" : "Set a rate"}</button>}</div>
+                        <div className="flex items-center justify-between mb-1"><label className="font-sans text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <button onClick={() => upOffer(o.key, { showRate: !o.showRate })} className="font-sans text-[11px] text-[#670821]">{o.showRate ? "Hide, take requests" : "Set a rate"}</button>}</div>
                         {showRate ? <div className="flex items-center gap-2"><input value={o.rate} onChange={(e) => upOffer(o.key, { rate: e.target.value })} placeholder="Amount" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /><select value={o.unit} onChange={(e) => upOffer(o.key, { unit: e.target.value })} className="w-[128px] font-inter text-[12.5px] py-[9px] px-[8px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{UNITS.map((u) => <option key={u}>{u}</option>)}</select></div> : <div className="text-[12.5px] text-[#7d7a74] py-[9px]">People request, you quote later.</div>}
                       </div>
                     );
                     return (
                     <div key={o.key} className="col-span-2 border border-[#E1DED7] p-[20px] shadow-[0_4px_22px_rgba(30,26,20,0.07)]">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3"><span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${o.added ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span><div><div className="font-sans text-[15px] font-semibold">{o.title}</div><div className="text-[12.5px] text-[#7d7a74]">{o.blurb}</div></div></div>
+                        <div className="flex items-center gap-3"><span className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] ${o.added ? "bg-[#670821] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span><div><div className="font-sans text-[15px] font-semibold">{o.title}</div><div className="text-[12.5px] text-[#7d7a74]">{o.blurb}</div></div></div>
                         <button onClick={() => setExpanded("")} className="text-[#7d7a74] text-[16px]">⌃</button>
                       </div>
 
@@ -895,19 +898,19 @@ export default function BuildPreview() {
                           </div>
                           <div className="mt-[14px]"><label className={lab}>Company stage <span className="text-[#a8a29a]">· select any</span></label>
                             <div className="flex flex-wrap gap-[8px]">
-                              {STAGES.map((s) => { const sel = (o.stage || "").split(", ").filter(Boolean); const on = sel.includes(s); return <button key={s} onClick={() => upOffer(o.key, { stage: (on ? sel.filter((x) => x !== s) : [...sel, s]).join(", ") })} className={`font-sans text-[12.5px] py-[7px] px-[13px] border-[1.5px] ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{s}</button>; })}
+                              {STAGES.map((s) => { const sel = (o.stage || "").split(", ").filter(Boolean); const on = sel.includes(s); return <button key={s} onClick={() => upOffer(o.key, { stage: (on ? sel.filter((x) => x !== s) : [...sel, s]).join(", ") })} className={`font-sans text-[12.5px] py-[7px] px-[13px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f]"}`}>{s}</button>; })}
                             </div>
                           </div>
                         </>
                       )}
                       {o.key === "content" && (
-                        <div className="text-[12.5px] text-[#3a352f] bg-[#F4F2EF] p-[12px]">This opens your <b>media kit</b>, a rate card with your platforms, audience, deliverables and prices. <button onClick={() => setActive("Reach")} className="text-[#73926A] font-medium cursor-pointer">Build media kit →</button></div>
+                        <div className="text-[12.5px] text-[#3a352f] bg-[#F4F2EF] p-[12px]">This opens your <b>media kit</b>, a rate card with your platforms, audience, deliverables and prices. <button onClick={() => setActive("Reach")} className="text-[#670821] font-medium cursor-pointer">Build media kit →</button></div>
                       )}
 
                       <div className="mt-[14px]">
                         <label className={lab}>{KEYWORD_LABEL[o.key]} <span className="text-[#a8a29a]">· searchable tags, help people find you</span></label>
                         <div className="flex flex-wrap gap-[6px] items-center border border-[#E1DED7] py-[7px] px-[9px] bg-white">
-                          {offerTags(o.keywords).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF1E6] text-[#4f7a43]">{t}<button onClick={() => rmOfferTag(o.key, o.keywords, t)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
+                          {offerTags(o.keywords).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EDE7FF] text-[#670821]">{t}<button onClick={() => rmOfferTag(o.key, o.keywords, t)} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
                           <input value={tagDraft} onChange={(e) => setTagDraft(e.target.value)} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === ",") && tagDraft.trim()) { e.preventDefault(); addOfferTag(o.key, o.keywords, tagDraft); } }} placeholder={offerTags(o.keywords).length ? "add another…" : "Type a tag, press Enter"} className="flex-1 min-w-[130px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
                         </div>
                       </div>
@@ -918,7 +921,7 @@ export default function BuildPreview() {
                       {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#F1EEE8] p-[11px]">People pick from the dates and times you set under <b>Booking times</b>, below your offers. Set a length and a price here. If you have no open times, this offer uses Send request.</div>}
                       <div className="flex items-center justify-between mt-4">
                         <button onClick={() => upOffer(o.key, { added: !o.added })} className="flex items-center gap-2 font-sans text-[12.5px] font-medium text-brand-ink">
-                          <span className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center text-[11px] ${o.added ? "bg-[#73926A] border-[#73926A] text-white" : "border-[#C7C2B8] text-transparent"}`}>✓</span>
+                          <span className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center text-[11px] ${o.added ? "bg-[#670821] border-[#670821] text-white" : "border-[#C7C2B8] text-transparent"}`}>✓</span>
                           {o.added ? "Showing on your profile" : "Show on my profile"}
                         </button>
                         <button onClick={() => setExpanded("")} className="font-sans border border-[#E1DED7] text-brand-ink text-[12.5px] font-medium py-[8px] px-[16px] hover:border-brand-ink">Done</button>
@@ -928,7 +931,7 @@ export default function BuildPreview() {
                   }
                   return (
                     <div key={o.key} onClick={() => setExpanded(o.key)} className="border border-[#E1DED7] p-[16px] flex items-center gap-3 cursor-pointer hover:border-[#3a352f]">
-                      <span onClick={(e) => { e.stopPropagation(); upOffer(o.key, { added: !o.added }); }} title={o.added ? "Showing on your profile — click to hide" : "Show on my profile"} className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] cursor-pointer ${o.added ? "bg-[#73926A] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span>
+                      <span onClick={(e) => { e.stopPropagation(); upOffer(o.key, { added: !o.added }); }} title={o.added ? "Showing on your profile — click to hide" : "Show on my profile"} className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[13px] cursor-pointer ${o.added ? "bg-[#670821] text-white" : "bg-[#F4F2EF] text-[#7d7a74]"}`}>{o.added ? "✓" : "+"}</span>
                       <div className="flex-1"><div className="font-sans text-[14px] font-semibold">{o.title}</div><div className="text-[12px] text-[#7d7a74]">{o.blurb}</div></div>
                       <span className="text-[#7d7a74] text-[15px]">{o.added ? "⌄" : "›"}</span>
                     </div>
@@ -939,7 +942,7 @@ export default function BuildPreview() {
               {/* Booking times sit under the offers, and only matter for offers set to "Book instantly" */}
               <div className="mt-6"><BookingSetup username={pubUsername || ""} forOffers={offers.filter((o) => o.added && o.booking === "book").map((o) => o.title)} /></div>
 
-              <div className="mt-6 flex items-center gap-2 text-[12.5px] text-[#7d7a74] max-w-[720px]">🔒 You control what's visible. You can hide or edit any offering at any time.</div>
+              <div className="mt-6 flex items-center gap-2 text-[12.5px] text-[#7d7a74] max-w-[980px]">🔒 You control what's visible. You can hide or edit any offering at any time.</div>
             </>
           )}
 
@@ -947,10 +950,10 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your impact.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Add up to 4 career highlights. Not job duties, the moments something measurably changed because you were there.</p>
-              <div className="space-y-4 max-w-[720px]">
+              <div className="space-y-4 max-w-[980px]">
                 {impacts.map((im, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[18px]">
-                    <div className="flex justify-between items-center mb-3"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Highlight {i + 1}</span><button onClick={() => rmImpact(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <div className="flex justify-between items-center mb-3"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Highlight {i + 1}</span><button onClick={() => rmImpact(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button></div>
                     <input value={im.headline} onChange={(e) => upImpact(i, { headline: e.target.value })} placeholder="Headline, e.g. Scaled pipeline 3× in 9 months" className="w-full font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <input value={im.context} onChange={(e) => upImpact(i, { context: e.target.value })} placeholder="Company / context, e.g. Meridian · 2024" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <textarea value={im.story} onChange={(e) => upImpact(i, { story: e.target.value })} rows={2} placeholder="What you did, what changed, why it mattered." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
@@ -964,7 +967,7 @@ export default function BuildPreview() {
           {active === "Skills" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your skills.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Your skills, how deep they run, and what you&apos;re growing into. Star up to 5 to lead your profile, then slide to set how deep each one runs. We sort them into categories for you.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Your skills, how deep they run, and what you&apos;re growing into. Star up to 5 to lead your profile, then slide to set how deep each one runs. We sort them into categories for you.</p>
 
               <div className="mb-8 max-w-[680px]">
                 <div className="flex items-center gap-3 mb-4">
@@ -977,11 +980,11 @@ export default function BuildPreview() {
                       return (
                         <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-[#E1DED7] shadow-[0_8px_24px_rgba(30,26,20,0.1)] max-h-[280px] overflow-y-auto">
                           {matches.map((s) => (
-                            <button key={s.name} onClick={() => addSkill(s.name)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EAF1E6] flex items-center justify-between gap-3">
+                            <button key={s.name} onClick={() => addSkill(s.name)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EDE7FF] flex items-center justify-between gap-3">
                               <span>{s.name}</span><span className="text-[10.5px] text-[#a8a29a] shrink-0">{s.category}</span>
                             </button>
                           ))}
-                          {!exists && <button onClick={() => addSkill(skillQuery)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EAF1E6] text-[#73926A] font-medium">+ Add &ldquo;{skillQuery.trim()}&rdquo;</button>}
+                          {!exists && <button onClick={() => addSkill(skillQuery)} className="w-full text-left font-inter text-[13px] py-[8px] px-[11px] hover:bg-[#EDE7FF] text-[#670821] font-medium">+ Add &ldquo;{skillQuery.trim()}&rdquo;</button>}
                           {matches.length === 0 && exists && <div className="font-inter text-[12.5px] py-[8px] px-[11px] text-[#a8a29a]">Already in your list.</div>}
                         </div>
                       );
@@ -999,13 +1002,13 @@ export default function BuildPreview() {
                         <div className="space-y-2">
                           {rows.map(({ s, i }) => (
                             <div key={i} className="flex items-center gap-3 border border-[#E1DED7] py-[7px] px-[10px]">
-                              <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
+                              <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#670821]" : "text-[#d8d4cc] hover:text-[#670821]"}`}>★</button>
                               <input value={s.name} onChange={(e) => upSkillField(i, { name: e.target.value })} className="flex-1 min-w-0 font-inter text-[13.5px] py-[4px] focus:outline-none" />
                               <div className="w-[150px] shrink-0">
-                                <input type="range" min={1} max={4} step={1} value={SKILL_LEVELS.indexOf(s.level) + 1} onChange={(e) => upSkillField(i, { level: SKILL_LEVELS[+e.target.value - 1] })} className="w-full accent-[#73926A] cursor-pointer" />
+                                <input type="range" min={1} max={4} step={1} value={SKILL_LEVELS.indexOf(s.level) + 1} onChange={(e) => upSkillField(i, { level: SKILL_LEVELS[+e.target.value - 1] })} className="w-full accent-[#670821] cursor-pointer" />
                                 <div className="font-sans text-[10px] text-[#7d7a74] text-right -mt-[2px]">{s.level}</div>
                               </div>
-                              <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-brand-orange text-[15px] shrink-0">×</button>
+                              <button onClick={() => rmSkill(i)} className="text-[#7d7a74] hover:text-[#AB0000] text-[15px] shrink-0">×</button>
                             </div>
                           ))}
                         </div>
@@ -1015,10 +1018,10 @@ export default function BuildPreview() {
                 </div>
               </div>
 
-              <div className="mb-8 max-w-[560px]">
+              <div className="mb-8 max-w-[760px]">
                 <label className="font-sans text-[13px] font-semibold block mb-1">Currently learning <span className="font-normal text-[#a8a29a]">· the top skills you&apos;re building right now</span></label>
                 <div className="flex flex-wrap gap-[6px] items-center border border-[#E1DED7] py-[7px] px-[9px]">
-                  {learning.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF6E4] text-[#4f7a43]">{k}<button onClick={() => rmLearn(k)} className="text-[#4f7a43]/60 hover:text-[#4f7a43]">×</button></span>)}
+                  {learning.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EDE7FF] text-[#670821]">{k}<button onClick={() => rmLearn(k)} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
                   <input value={learnDraft} onChange={(e) => setLearnDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLearn())} placeholder="add a skill…" className="flex-1 min-w-[100px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
                 </div>
               </div>
@@ -1029,8 +1032,8 @@ export default function BuildPreview() {
                   <span className="text-[11px] text-[#7d7a74]">{industries.length}/{IND_MAX}</span>
                 </div>
                 <div className="flex flex-wrap gap-[8px] mb-3">
-                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); const full = !on && industries.length >= IND_MAX; return <button key={t} disabled={full} onClick={() => toggleIndustry(t)} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
-                  {industries.filter((t) => !SKILL_INDUSTRIES.includes(t)).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[13px] py-[7px] px-[13px] border border-[#73926A] bg-[#EAF1E6] text-[#73926A]">{t}<button onClick={() => toggleIndustry(t)} className="text-[#73926A]/60 hover:text-[#73926A]">×</button></span>)}
+                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); const full = !on && industries.length >= IND_MAX; return <button key={t} disabled={full} onClick={() => toggleIndustry(t)} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
+                  {industries.filter((t) => !SKILL_INDUSTRIES.includes(t)).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[13px] py-[7px] px-[13px] border border-[#670821] bg-[#EDE7FF] text-[#670821]">{t}<button onClick={() => toggleIndustry(t)} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
                 </div>
                 {industries.length < IND_MAX && (
                   <input value={indDraft} onChange={(e) => setIndDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addIndustry())} placeholder="Add your own industry…" className="max-w-[280px] w-full font-inter text-[12.5px] py-[8px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
@@ -1042,23 +1045,23 @@ export default function BuildPreview() {
           {active === "Superpowers" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your superpowers.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">The things you&apos;re uniquely great at — in your own words. Write it like you&apos;d say it out loud. Your profile showcases your top {SP_SHOWCASE}; the rest live in your bio. We pull the keywords that make you findable.</p>
-              <div className="space-y-4 max-w-[720px]">
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-6">The things you&apos;re uniquely great at — in your own words. Write it like you&apos;d say it out loud. Your profile showcases your top {SP_SHOWCASE}; the rest live in your bio. We pull the keywords that make you findable.</p>
+              <div className="space-y-4 max-w-[980px]">
                 {powers.map((p, i) => (
-                  <div key={i} className={`p-[18px] border ${i < SP_SHOWCASE ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                  <div key={i} className={`p-[18px] border ${i < SP_SHOWCASE ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="font-sans text-[12px] font-semibold text-[#73926A]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
-                      <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                      <span className="font-sans text-[12px] font-semibold text-[#670821]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
+                      <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>
                     </div>
                     <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-sans font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                     <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Short description (optional) — what this looks like in practice. Mention companies or keywords if you like." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-sans text-[11.5px] font-semibold text-[#7d7a74]">Search keywords <span className="font-normal text-[#a8a29a]">· helps people find you · never shown on your profile</span></span>
-                        <button onClick={() => suggestKw(i)} className="font-sans text-[11px] text-[#73926A] hover:underline">↻ Suggest from text</button>
+                        <button onClick={() => suggestKw(i)} className="font-sans text-[11px] text-[#670821] hover:underline">↻ Suggest from text</button>
                       </div>
                       <div className="flex flex-wrap gap-[6px] items-center">
-                        {p.keywords.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EAF1E6] text-[#73926A]">{k}<button onClick={() => rmKw(i, k)} className="text-[#73926A]/50 hover:text-[#73926A]">×</button></span>)}
+                        {p.keywords.map((k) => <span key={k} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EDE7FF] text-[#670821]">{k}<button onClick={() => rmKw(i, k)} className="text-[#670821]/50 hover:text-[#670821]">×</button></span>)}
                         <input value={kwDraft[i] || ""} onChange={(e) => setKwDraft((d) => ({ ...d, [i]: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addKw(i))} placeholder="add…" className="font-inter text-[12px] py-[4px] px-[8px] border border-[#E1DED7] w-[80px] focus:outline-none focus:border-brand-ink" />
                       </div>
                     </div>
@@ -1072,26 +1075,26 @@ export default function BuildPreview() {
           {active === "Values" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your values.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to 12, then feature the 4 that matter most — they lead your profile; the rest live in your bio.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to 12, then feature the 4 that matter most — they lead your profile; the rest live in your bio.</p>
 
-              <div className="mb-8 max-w-[720px]">
+              <div className="mb-8 max-w-[980px]">
                 <div className="flex items-baseline justify-between mb-2">
                   <label className="font-sans text-[13px] font-semibold">Your values</label>
                   <span className="text-[11px] text-[#7d7a74]">{vals.length}/{VAL_MAX}</span>
                 </div>
                 <div className="flex flex-wrap gap-[8px]">
-                  {VALUES.map((v) => { const on = vals.includes(v); const full = !on && vals.length >= VAL_MAX; return <button key={v} disabled={full} onClick={() => toggleVal(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{v}</button>; })}
+                  {VALUES.map((v) => { const on = vals.includes(v); const full = !on && vals.length >= VAL_MAX; return <button key={v} disabled={full} onClick={() => toggleVal(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{v}</button>; })}
                 </div>
               </div>
 
               {vals.length > 0 && (
-                <div className="max-w-[720px]">
+                <div className="max-w-[980px]">
                   <div className="flex items-baseline justify-between mb-2">
                     <label className="font-sans text-[13px] font-semibold">Core Values <span className="font-normal text-[#a8a29a]">· star up to {VAL_FEATURED}. These show on your home page.</span></label>
                     <span className="text-[11px] text-[#7d7a74]">★ {vFeatured.length}/{VAL_FEATURED}</span>
                   </div>
                   <div className="flex flex-wrap gap-[8px]">
-                    {vals.map((v) => { const on = vFeatured.includes(v); const full = !on && vFeatured.length >= VAL_FEATURED; return <button key={v} disabled={full} onClick={() => toggleVFeatured(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#73926A] bg-[#73926A] text-white" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "★ " : ""}{v}</button>; })}
+                    {vals.map((v) => { const on = vFeatured.includes(v); const full = !on && vFeatured.length >= VAL_FEATURED; return <button key={v} disabled={full} onClick={() => toggleVFeatured(v)} className={`font-sans text-[13px] py-[7px] px-[13px] border transition-colors ${on ? "border-[#670821] bg-[#670821] text-white" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "★ " : ""}{v}</button>; })}
                   </div>
                 </div>
               )}
@@ -1101,22 +1104,22 @@ export default function BuildPreview() {
           {active === "Media" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your media.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Press, talks, writing, podcasts, portfolio — the work that shows what you do. Star up to {MEDIA_FEATURED} to feature in your gallery; the rest live in your bio.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Press, talks, writing, podcasts, portfolio — the work that shows what you do. Star up to {MEDIA_FEATURED} to feature in your gallery; the rest live in your bio.</p>
               <SiteScan website={socials.website} have={media.map((m) => m.url).filter(Boolean)}
                 emptySocials={(["linkedin", "instagram", "x", "tiktok", "youtube", "substack"] as const).filter((k) => !socials[k].trim())}
                 onAdd={(items) => setMedia((m) => [...m.filter((x) => x.title.trim() || x.url.trim()), ...items])}
                 onSocials={(found) => setSocials((c) => ({ ...c, ...found }))} />
-              <div className="space-y-4 max-w-[720px]">
+              <div className="space-y-4 max-w-[980px]">
                 {media.map((m, i) => (
-                  <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                  <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex flex-wrap gap-[6px]">
-                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => toggleMediaFeatured(i)} className={`font-sans text-[11.5px] font-medium py-[4px] px-[10px] border ${m.featured ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] text-[#7d7a74] hover:border-brand-ink hover:text-brand-ink"}`}>{m.featured ? "★ Featured" : "☆ Feature"}</button>
+                        <button onClick={() => toggleMediaFeatured(i)} className={`font-sans text-[11.5px] font-medium py-[4px] px-[10px] border ${m.featured ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] text-[#7d7a74] hover:border-brand-ink hover:text-brand-ink"}`}>{m.featured ? "★ Featured" : "☆ Feature"}</button>
                         <span className="w-px h-[16px] bg-[#E1DED7] mx-1" />
-                        <button onClick={() => rmMedia(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-brand-orange">Remove</button>
+                        <button onClick={() => rmMedia(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-[#AB0000]">Remove</button>
                       </div>
                     </div>
                     <input value={m.title} onChange={(e) => upMedia(i, { title: e.target.value })} placeholder="Title, e.g. The operators rebuilding personal branding" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
@@ -1128,7 +1131,7 @@ export default function BuildPreview() {
                       {m.img ? "Replace cover image" : "+ Upload cover image (optional)"}
                       <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, `media-${i}`); if (url) upMedia(i, { img: url }); } e.currentTarget.value = ""; }} />
                     </label>
-                    {m.img && <div className="mt-2 flex items-center gap-2"><img src={m.img} alt="" className="w-[72px] h-[46px] object-cover border border-[#E1DED7]" /><button onClick={() => upMedia(i, { img: "" })} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove cover</button></div>}
+                    {m.img && <div className="mt-2 flex items-center gap-2"><img src={m.img} alt="" className="w-[72px] h-[46px] object-cover border border-[#E1DED7]" /><button onClick={() => upMedia(i, { img: "" })} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove cover</button></div>}
                   </div>
                 ))}
                 <button onClick={addMedia} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add media</button>
@@ -1139,18 +1142,18 @@ export default function BuildPreview() {
           {active === "Testimonials" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Testimonials.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-6">Words from people you&apos;ve worked with. Star up to 2 to feature on your profile; the rest live in your bio.</p>
-              <div className="space-y-4 max-w-[720px]">
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-6">Words from people you&apos;ve worked with, or a quote of your own. Star up to 2 to feature on your profile; the rest live in your bio. For your own words, choose &ldquo;Me&rdquo; and it shows as a Quote.</p>
+              <div className="space-y-4 max-w-[980px]">
                 {testis.map((t, i) => (
-                  <div key={i} className={`p-[18px] border ${t.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                  <div key={i} className={`p-[18px] border ${t.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex justify-between items-center mb-3">
-                      <button onClick={() => toggleTestiFeatured(i)} className={`flex items-center gap-1.5 font-sans text-[12px] font-semibold ${t.featured ? "text-[#73926A]" : "text-[#a8a29a] hover:text-[#73926A]"}`}><span className="text-[15px] leading-none">★</span>{t.featured ? "Featured" : "Feature"}</button>
-                      <button onClick={() => rmTesti(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                      <button onClick={() => toggleTestiFeatured(i)} className={`flex items-center gap-1.5 font-sans text-[12px] font-semibold ${t.featured ? "text-[#670821]" : "text-[#a8a29a] hover:text-[#670821]"}`}><span className="text-[15px] leading-none">★</span>{t.featured ? "Featured" : "Feature"}</button>
+                      <button onClick={() => rmTesti(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>
                     </div>
-                    <textarea value={t.quote} onChange={(e) => upTesti(i, { quote: e.target.value })} rows={2} placeholder="What they said about working with you." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 resize-none focus:outline-none focus:border-brand-ink" />
+                    <textarea value={t.quote} onChange={(e) => upTesti(i, { quote: e.target.value })} rows={2} placeholder={t.relationship === "Me" ? "Something you believe, in your own words." : "What they said about working with you."} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 resize-none focus:outline-none focus:border-brand-ink" />
                     <div className="flex gap-2">
-                      <input value={t.author} onChange={(e) => upTesti(i, { author: e.target.value })} placeholder="Name" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-                      <input value={t.role} onChange={(e) => upTesti(i, { role: e.target.value })} placeholder="Role, Company" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                      <input value={t.relationship === "Me" ? name : t.author} readOnly={t.relationship === "Me"} onChange={(e) => upTesti(i, { author: e.target.value })} placeholder="Name" className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                      <input value={t.role} onChange={(e) => upTesti(i, { role: e.target.value })} placeholder={t.relationship === "Me" ? "Optional, e.g. Founder, Marquee" : "Role, Company"} className="flex-1 min-w-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       <select value={t.relationship} onChange={(e) => upTesti(i, { relationship: e.target.value })} className="shrink-0 font-sans text-[12px] py-[8px] px-[7px] border border-[#E1DED7] bg-white focus:outline-none">
                         {RELATIONSHIPS.map((r) => <option key={r}>{r}</option>)}
                       </select>
@@ -1165,11 +1168,11 @@ export default function BuildPreview() {
           {active === "Education" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Education.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Schools, degrees, and the certifications that back up your expertise.</p>
-              <div className="space-y-3 max-w-[720px]">
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Schools, degrees, and the certifications that back up your expertise.</p>
+              <div className="space-y-3 max-w-[980px]">
                 {edu.map((e, i) => (
                   <div key={i} className="p-[16px] border border-[#E1DED7]">
-                    <div className="flex justify-between items-center mb-2"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Education {i + 1}</span><button onClick={() => rmEdu(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                    <div className="flex justify-between items-center mb-2"><span className="font-sans text-[12px] font-semibold text-[#7d7a74]">Education {i + 1}</span><button onClick={() => rmEdu(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button></div>
                     <input value={e.school} onChange={(ev) => upEdu(i, { school: ev.target.value })} placeholder="School / institution" className="w-full font-sans font-semibold text-[14px] py-[8px] px-[10px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <div className="flex gap-2">
                       <input value={e.degree} onChange={(ev) => upEdu(i, { degree: ev.target.value })} placeholder="Degree" className="w-[110px] shrink-0 font-inter text-[13px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
@@ -1180,17 +1183,17 @@ export default function BuildPreview() {
                 ))}
                 <button onClick={addEdu} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add education</button>
               </div>
-              <div className="mt-6 max-w-[720px]">
+              <div className="mt-6 max-w-[980px]">
                 <label className="font-sans text-[13px] font-semibold block mb-2">Certifications <span className="font-normal text-[#a8a29a]">· add one at a time</span></label>
                 <div className="space-y-2">
                   {certs.map((c, i) => (
                     <div key={i} className="flex gap-2">
                       <input value={c} onChange={(ev) => upCert(i, ev.target.value)} placeholder="e.g. Google Analytics IQ" className="flex-1 min-w-0 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
-                      <button onClick={() => rmCert(i)} aria-label="Remove certification" className="shrink-0 w-[38px] font-sans text-[15px] text-[#a8a29a] border border-[#E1DED7] hover:border-brand-orange hover:text-brand-orange">×</button>
+                      <button onClick={() => rmCert(i)} aria-label="Remove certification" className="shrink-0 w-[38px] font-sans text-[15px] text-[#a8a29a] border border-[#E1DED7] hover:border-[#AB0000] hover:text-[#AB0000]">×</button>
                     </div>
                   ))}
                 </div>
-                <button onClick={addCert} className="mt-2 font-sans text-[13px] text-[#73926A] font-medium hover:underline">+ Add certification</button>
+                <button onClick={addCert} className="mt-2 font-sans text-[13px] text-[#670821] font-medium hover:underline">+ Add certification</button>
               </div>
             </>
           )}
@@ -1200,20 +1203,20 @@ export default function BuildPreview() {
             return (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your reach.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">For creators &amp; public figures — your audience across platforms. This powers your media kit. Leave it empty and it won&apos;t show on your profile.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">For creators &amp; public figures — your audience across platforms. This powers your media kit. Leave it empty and it won&apos;t show on your profile.</p>
 
-              <div className="mb-6 max-w-[720px]">
+              <div className="mb-6 max-w-[980px]">
                 <label className="font-sans text-[13px] font-semibold block mb-2">Platforms <span className="font-normal text-[#a8a29a]">· pick the ones you&apos;re on</span></label>
                 <div className="flex flex-wrap gap-[8px]">
-                  {REACH_PLATFORMS.map((p) => { const on = reach.some((x) => x.key === p); return <button key={p} onClick={() => (on ? rmReach(p) : addReach(p))} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "✓ " : "+ "}{p}</button>; })}
+                  {REACH_PLATFORMS.map((p) => { const on = reach.some((x) => x.key === p); return <button key={p} onClick={() => (on ? rmReach(p) : addReach(p))} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{on ? "✓ " : "+ "}{p}</button>; })}
                 </div>
               </div>
 
               {reach.length > 0 && (
-                <div className="space-y-3 max-w-[720px] mb-8">
+                <div className="space-y-3 max-w-[980px] mb-8">
                   {reach.map((p) => (
                     <div key={p.key} className="border border-[#E1DED7] p-[14px]">
-                      <div className="flex items-center justify-between mb-2"><span className="font-sans text-[14px] font-semibold">{p.key}</span><button onClick={() => rmReach(p.key)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button></div>
+                      <div className="flex items-center justify-between mb-2"><span className="font-sans text-[14px] font-semibold">{p.key}</span><button onClick={() => rmReach(p.key)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button></div>
                       <div className="grid grid-cols-2 gap-[10px]">
                         <input value={p.handle} onChange={(e) => upReach(p.key, { handle: e.target.value })} placeholder="@handle" className={ri} />
                         <input value={p.followers} onChange={(e) => upReach(p.key, { followers: e.target.value })} placeholder="Followers (e.g. 128K)" className={ri} />
@@ -1225,7 +1228,7 @@ export default function BuildPreview() {
                 </div>
               )}
 
-              <div className="max-w-[720px]">
+              <div className="max-w-[980px]">
                 <label className="font-sans text-[13px] font-semibold block mb-2">Audience demographics <span className="font-normal text-[#a8a29a]">· optional, great for brand deals</span></label>
                 <div className="grid grid-cols-3 gap-[10px]">
                   <input value={audAge} onChange={(e) => setAudAge(e.target.value)} placeholder="Top age (e.g. 25–40)" className={ri} />
@@ -1240,17 +1243,17 @@ export default function BuildPreview() {
           {active === "Shop" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Each one links out to where people buy it. They show on the Shop page of your profile.</p>
-              <div className="space-y-4 max-w-[720px]">
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Each one links out to where people buy it. They show on the Shop page of your profile.</p>
+              <div className="space-y-4 max-w-[980px]">
                 {products.map((p, i) => (
-                  <div key={i} className={`p-[18px] border ${p.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FBFAF8]"}`}>
+                  <div key={i} className={`p-[18px] border ${p.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex justify-between items-start gap-3 mb-3">
                       <div className="flex flex-wrap gap-[6px]">
-                        {STORE_KINDS.map((k) => <button key={k} onClick={() => upProduct(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${p.kind === k ? "border-[#73926A] bg-[#EAF1E6] text-[#73926A]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                        {STORE_KINDS.map((k) => <button key={k} onClick={() => upProduct(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${p.kind === k ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => toggleProductFeatured(i)} title="Feature" className={`text-[16px] leading-none ${p.featured ? "text-[#73926A]" : "text-[#d8d4cc] hover:text-[#73926A]"}`}>★</button>
-                        <button onClick={() => rmProduct(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-brand-orange">Remove</button>
+                        <button onClick={() => toggleProductFeatured(i)} title="Feature" className={`text-[16px] leading-none ${p.featured ? "text-[#670821]" : "text-[#d8d4cc] hover:text-[#670821]"}`}>★</button>
+                        <button onClick={() => rmProduct(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>
                       </div>
                     </div>
                     <input value={p.title} onChange={(e) => upProduct(i, { title: e.target.value })} placeholder="Title, e.g. The GTM Launch Kit" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
@@ -1270,8 +1273,8 @@ export default function BuildPreview() {
           {active === "Long Bio" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your long bio.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[56ch] leading-[1.5] mb-7">The full narrative, in your own words. This is also where the &ldquo;see all&rdquo; overflow from Superpowers, Values, and Media lives.</p>
-              <div className="max-w-[720px]">
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The full narrative, in your own words. This is also where the &ldquo;see all&rdquo; overflow from Superpowers, Values, and Media lives.</p>
+              <div className="max-w-[980px]">
                 <textarea value={longBio} onChange={(e) => setLongBio(e.target.value)} rows={12} className="w-full font-inter text-[14.5px] leading-[1.6] py-[14px] px-[16px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                 <div className="flex justify-between text-[11px] text-[#a8a29a] mt-1"><span>Write like you talk — a few short paragraphs beats one long one.</span><span>{longBio.length} chars</span></div>
               </div>
@@ -1281,11 +1284,11 @@ export default function BuildPreview() {
           {!BUILT.has(active) && (
             <div className="mt-10 text-[14px] text-[#7d7a74]">"{active}" is next in the step-by-step build. Building it once you've signed off on this step.</div>
           )}
-          <div className="flex items-center justify-between mt-14 pt-6 border-t border-[#ECEAE4] max-w-[720px]">
+          <div className="flex items-center justify-between mt-14 pt-6 border-t border-[#ECEAE4] max-w-[980px]">
             <button onClick={() => { const i = ALL_STEPS.indexOf(active); if (i > 0) setActive(ALL_STEPS[i - 1]); window.scrollTo(0, 0); }} disabled={ALL_STEPS.indexOf(active) <= 0} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink disabled:opacity-30 disabled:cursor-default">← Back</button>
             {ALL_STEPS.indexOf(active) < ALL_STEPS.length - 1
               ? <button onClick={() => { const i = ALL_STEPS.indexOf(active); setActive(ALL_STEPS[i + 1]); window.scrollTo(0, 0); }} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-6">Next →</button>
-              : <button onClick={() => setShowPublish(true)} className="font-sans bg-[#73926A] text-white text-[13px] font-medium py-[11px] px-6">{claimed ? "Update my profile →" : "Publish my profile →"}</button>}
+              : <button onClick={() => setShowPublish(true)} className="font-sans bg-[#670821] text-white text-[13px] font-medium py-[11px] px-6">{claimed ? "Update my profile →" : "Publish my profile →"}</button>}
           </div>
         </main>
       </div>
@@ -1295,10 +1298,10 @@ export default function BuildPreview() {
       {tour === "welcome" && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white max-w-[440px] w-full p-8 text-center">
-            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">Welcome</div>
+            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#670821] mb-3">Welcome</div>
             <h2 className="font-sans text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Let’s build your Marquee.</h2>
             <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">We’ll walk through it together — your profile first, then your brand. Everything stays editable, and you can skip anything and come back.</p>
-            <button onClick={startTour} className="w-full font-sans bg-[#73926A] text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-[#5f8257]">Start building →</button>
+            <button onClick={startTour} className="w-full font-sans bg-[#670821] text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-[#4E0619]">Start building →</button>
             <button onClick={() => setTour(null)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">I’ll explore on my own</button>
           </div>
         </div>
@@ -1308,17 +1311,17 @@ export default function BuildPreview() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[55] w-[min(560px,92vw)] bg-white border border-[#E1DED7] shadow-[0_18px_44px_rgba(20,10,60,0.18)] p-[18px_20px]">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#73926A]">{tourGroup(tour)} · {tour + 1} of 13</div>
+              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#670821]">{tourGroup(tour)} · {tour + 1} of 13</div>
               <div className="font-sans text-[15px] font-semibold mt-0.5">{TOUR_STEPS[tour]}</div>
               <div className="text-[12.5px] text-[#7d7a74] mt-0.5 leading-snug">{TOUR_HINTS[TOUR_STEPS[tour]]}</div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {tour > 0 && <button onClick={() => tourGo(tour - 1)} className="font-sans text-[13px] text-[#7d7a74] px-3 py-2 hover:text-brand-ink">Back</button>}
-              <button onClick={() => tourGo(tour + 1)} className="font-sans bg-[#73926A] text-white text-[13px] font-semibold px-5 py-[10px] hover:bg-[#5f8257]">{tour === TOUR_STEPS.length - 1 ? "Finish →" : "Next →"}</button>
+              <button onClick={() => tourGo(tour + 1)} className="font-sans bg-[#670821] text-white text-[13px] font-semibold px-5 py-[10px] hover:bg-[#4E0619]">{tour === TOUR_STEPS.length - 1 ? "Finish →" : "Next →"}</button>
             </div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#73926A] transition-all" style={{ width: `${((tour + 1) / 13) * 100}%` }} /></div>
+            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#670821] transition-all" style={{ width: `${((tour + 1) / 13) * 100}%` }} /></div>
             <button onClick={() => setTour(null)} className="font-sans text-[12px] text-[#a8a29a] hover:text-[#7d7a74] shrink-0">Skip tour</button>
           </div>
         </div>
@@ -1327,7 +1330,7 @@ export default function BuildPreview() {
       {tour === "done" && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white max-w-[440px] w-full p-8 text-center">
-            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">That’s your Marquee</div>
+            <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#670821] mb-3">That’s your Marquee</div>
             <h2 className="font-sans text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Looking good.</h2>
             <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">Edit any section from the left rail anytime. Ready to publish your profile?</p>
             <button onClick={() => { setTour(null); setShowPublish(true); }} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-black">Generate my profile →</button>
@@ -1341,9 +1344,9 @@ export default function BuildPreview() {
           <div className="bg-white max-w-[440px] w-full p-8">
             {pubResult?.ok ? (
               <div className="text-center">
-                <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#73926A] mb-3">{claimed ? "Updated" : "Published"}</div>
+                <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#670821] mb-3">{claimed ? "Updated" : "Published"}</div>
                 <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">You&apos;re live.</h2>
-                <a href={`/${pubResult.msg}`} target="_blank" rel="noopener" className="block font-sans text-[15px] font-semibold text-[#73926A] mb-6 hover:underline">marquee.bio/{pubResult.msg} ↗</a>
+                <a href={`/${pubResult.msg}`} target="_blank" rel="noopener" className="block font-sans text-[15px] font-semibold text-[#670821] mb-6 hover:underline">marquee.bio/{pubResult.msg} ↗</a>
                 <button onClick={() => { setShowPublish(false); window.location.href = `/${pubResult.msg}`; }} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px]">See my profile →</button>
                 <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 mt-1 hover:text-brand-ink">Keep editing</button>
               </div>
@@ -1351,8 +1354,8 @@ export default function BuildPreview() {
               <>
                 <h2 className="font-lora text-[27px] mb-2 leading-[1.1]">Publish your updates</h2>
                 <p className="text-[14px] text-[#57524c] leading-[1.55] mb-4">Your changes will go live at your profile — same link as always.</p>
-                <div className="font-sans text-[15px] font-semibold text-[#73926A] mb-5">marquee.bio/{pubUsername}</div>
-                {pubResult && !pubResult.ok && <div className="text-[13px] text-brand-orange mb-3">{pubResult.msg}</div>}
+                <div className="font-sans text-[15px] font-semibold text-[#670821] mb-5">marquee.bio/{pubUsername}</div>
+                {pubResult && !pubResult.ok && <div className="text-[13px] text-[#AB0000] mb-3">{pubResult.msg}</div>}
                 <button onClick={publish} disabled={publishing} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 disabled:opacity-40">{publishing ? "Publishing…" : "Update my profile →"}</button>
                 <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Cancel</button>
               </>
@@ -1364,7 +1367,7 @@ export default function BuildPreview() {
                   <span className="text-[13px] text-[#7d7a74] pl-3 shrink-0">marquee.bio/</span>
                   <input value={pubUsername} onChange={(e) => setPubUsername(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="yourname" className="flex-1 min-w-0 font-sans text-[14px] py-[11px] px-1 focus:outline-none" />
                 </div>
-                {pubResult && !pubResult.ok && <div className="text-[13px] text-brand-orange mb-3">{pubResult.msg}</div>}
+                {pubResult && !pubResult.ok && <div className="text-[13px] text-[#AB0000] mb-3">{pubResult.msg}</div>}
                 <button onClick={publish} disabled={publishing || !pubUsername.trim()} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 disabled:opacity-40">{publishing ? "Publishing…" : "Publish my profile →"}</button>
                 <button onClick={() => setShowPublish(false)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Cancel</button>
               </>

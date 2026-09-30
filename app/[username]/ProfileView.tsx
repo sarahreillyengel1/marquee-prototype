@@ -83,7 +83,7 @@ const P: Record<string, string> = {
   globe2: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/>',
 };
 
-function Icon({ name, className = "ic", fill = false, style }: { name: string; className?: string; fill?: boolean; style?: CSSProperties }) {
+export function Icon({ name, className = "ic", fill = false, style }: { name: string; className?: string; fill?: boolean; style?: CSSProperties }) {
   return (
     <svg className={className + (fill ? " fill" : "")} viewBox="0 0 24 24" style={style}
       dangerouslySetInnerHTML={{ __html: P[name] || "" }} />
@@ -707,26 +707,35 @@ function ProfilePage() {
         {showVals && (
         <div className="card col">
           <BlockHead title="Core Values" link={profile.singlePage ? undefined : "See all values"} onLink={() => gotoSection("values")} />
-          <div className="vlist">
-          {starFirst(profile.values).slice(0, 6).map((v) => (
-            <div key={v.name} className="xtile"><div className="xtile-t">{v.name}</div>{v.blurb && <div className="xtile-d">{v.blurb}</div>}</div>
-          ))}
+          <div className="vchips">
+          {starFirst(profile.values).slice(0, 6).map((v, i) => <span key={v.name} className={"hd-chip c" + ((i % 4) + 1)}>{v.name}</span>)}
           </div>
         </div>
         )}
       </section>
       )}
 
-      {on("testimonials") && profile.testimonial && (
-        <section className="smt">
-          <BlockHead title={profile.testimonial.who === profile.name ? "Quote" : "Testimonials"} />
-          <div className="card" style={{ padding: "34px 30px 30px", textAlign: "center" }}>
+      {on("testimonials") && (profile.testimonial || profile.quote) && (() => {
+        // a testimonial whose author is the person themself is a quote too (showcase profiles do this)
+        const own = profile.quote || (profile.testimonial && profile.testimonial.who === profile.name ? { text: profile.testimonial.quote, who: profile.testimonial.who } : undefined);
+        const said = profile.testimonial && profile.testimonial.who !== profile.name ? profile.testimonial : undefined;
+        const Card = ({ text, who }: { text: string; who: string }) => (
+          <div className="card" style={{ padding: "34px 30px 30px", textAlign: "center", flex: 1 }}>
             <div aria-hidden style={{ fontFamily: "var(--font-canela), var(--font-lora), Georgia, serif", fontSize: 48, lineHeight: 0.6, color: "var(--bar)" }}>&ldquo;</div>
-            <p style={{ fontFamily: "var(--font-canela), var(--font-lora), Georgia, serif", fontSize: 20, lineHeight: 1.55, color: "var(--ink)", margin: "12px auto 20px", maxWidth: 720 }}>{profile.testimonial.quote}</p>
-            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gray2)" }}>{profile.testimonial.who}</div>
+            <p style={{ fontFamily: "var(--font-canela), var(--font-lora), Georgia, serif", fontSize: 20, lineHeight: 1.55, color: "var(--ink)", margin: "12px auto 20px", maxWidth: 720 }}>{text}</p>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gray2)" }}>{who}</div>
           </div>
-        </section>
-      )}
+        );
+        return (
+          <section className="smt">
+            <BlockHead title={said && own ? "Testimonials & Quotes" : said ? "Testimonials" : "Quote"} />
+            <div className="qrow">
+              {said && <Card text={said.quote} who={said.who} />}
+              {own && <Card text={own.text} who={own.who} />}
+            </div>
+          </section>
+        );
+      })()}
 
       {on("superpowers") && has(profile.superpowers) && (
         <section className="smt">
@@ -1005,8 +1014,8 @@ function ExperiencePage() {
       {profile.values.length > 0 && (
         <XSec id="values" title="Values" total={profile.values.length} preview={6}>
           {(all) => (
-            <div className="xvals">
-              {(all ? allValues : allValues.slice(0, 6)).map((v) => <div key={v.name} className="xtile"><div className="xtile-t">{v.name}</div>{v.blurb && <div className="xtile-d">{v.blurb}</div>}</div>)}
+            <div className="vchips">
+              {(all ? allValues : allValues.slice(0, 6)).map((v, i) => <span key={v.name} className={"hd-chip " + (v.featured ? "c" + ((i % 4) + 1) : "plain")}>{v.name}</span>)}
             </div>
           )}
         </XSec>

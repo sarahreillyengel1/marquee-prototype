@@ -34,8 +34,8 @@ export async function createCheckoutSession(
 
 /* ── Booking payments (Stripe Connect) ──
    Each person connects their own Stripe account. A visitor pays at booking; the money goes
-   to that person, and Marquee keeps its fee. Stripe's processing fee is paid from Marquee's
-   fee, so the person receives exactly price minus 8%. */
+   to that person, and Marquee holds back 5% plus the card processing cost (2.9% + 30¢).
+   Stripe charges Marquee for the card payment, so Marquee's own take is the 5%. */
 export const stripeReady = () => { const k = process.env.STRIPE_SECRET_KEY || ""; return /^(sk|rk)_(test|live)_/.test(k) && !/placeholder/i.test(k); };
 export const stripe = () => getStripe();
 

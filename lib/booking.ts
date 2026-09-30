@@ -2,9 +2,14 @@
 //
 // A person opens times on the dates they choose, in their own timezone. A visitor sees them in the
 // visitor's timezone, picks one, and (when the offer has a price and payments are
-// connected) pays at booking. Marquee keeps 8%; Stripe's processing fee comes out of that.
+// connected) pays at booking. Marquee takes 5% of each paid booking, plus standard payment
+// processing of 2.9% + 30¢ (what Stripe charges Marquee for the card payment). The rest is the person's.
 
-export const FEE_RATE = 0.08;
+export const MARQUEE_RATE = 0.05;
+export const PROCESSING_RATE = 0.029;
+export const PROCESSING_FIXED_CENTS = 30;
+/** @deprecated kept for older imports; the fee is now MARQUEE_RATE plus processing */
+export const FEE_RATE = MARQUEE_RATE;
 export const PENDING_HOLD_MIN = 35; // an unpaid checkout holds its slot this long
 
 // Availability is set date by date: on a given day a person can open one time range or
@@ -64,7 +69,10 @@ export function proRataDollars(baseDollars: number, baseMin: number, min: number
   if (!(baseDollars > 0) || !(baseMin > 0)) return 0;
   return Math.max(5, Math.round((baseDollars * min) / baseMin / 5) * 5);
 }
-export const feeCents = (priceCents: number) => Math.round(priceCents * FEE_RATE);
+/** Everything held back from a paid booking: Marquee's 5% plus the card processing cost. */
+export const feeCents = (priceCents: number) => priceCents <= 0 ? 0 : Math.round(priceCents * MARQUEE_RATE) + Math.round(priceCents * PROCESSING_RATE + PROCESSING_FIXED_CENTS);
+/** What the person receives from a paid booking. */
+export const payoutCents = (priceCents: number) => Math.max(0, priceCents - feeCents(priceCents));
 export const money = (cents: number) => (cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`);
 
 /* ── timezones, without a library ── */

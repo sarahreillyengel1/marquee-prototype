@@ -157,7 +157,11 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     note: [o.duration || o.length || o.cadence].filter(Boolean).join(""), visible: true,
   }));
 
-  const featuredTesti = (s.testis || []).find((t) => t.featured && t.quote?.trim()) || (s.testis || []).find((t) => t.quote?.trim());
+  const others = (s.testis || []).filter((t) => t.relationship !== "Me" && t.quote?.trim());
+  const featuredTesti = others.find((t) => t.featured) || others[0];
+  // "Me" entries are the person's own words: the first starred one (or the first) becomes the Quote
+  const mine = (s.testis || []).filter((t) => t.relationship === "Me" && t.quote?.trim());
+  const ownQuote = mine.find((t) => t.featured) || mine[0];
 
   const bioLong = (s.longBio || "").split("\n").map((p) => p.trim()).filter(Boolean);
 
@@ -220,6 +224,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     bookedFor: [],
     highlights: [],
     testimonial: !hide.has("testimonials") && featuredTesti ? { quote: featuredTesti.quote, who: [featuredTesti.author, featuredTesti.role].filter(Boolean).join(", ") } : undefined,
+    quote: !hide.has("testimonials") && ownQuote ? { text: ownQuote.quote.trim(), who: [s.name || "", ownQuote.role].filter(Boolean).join(", ") } : undefined,
     socials,
     openTo: hide.has("workwith") ? [] : openTo,
     engagements: hide.has("workwith") ? [] : engagements,

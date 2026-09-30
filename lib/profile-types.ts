@@ -207,6 +207,8 @@ export interface Profile {
   highlights: string[]
   rating?: { stars: number; count: number; label: string }
   testimonial?: { quote: string; who: string }
+  /** A quote in the person's own words, shown beside testimonials */
+  quote?: { text: string; who: string }
 
   socials: Social[]
   openTo: OpenToItem[]

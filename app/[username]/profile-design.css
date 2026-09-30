@@ -781,3 +781,12 @@
 .mq-root .wwp-more{ font:inherit; font-family:var(--font-poppins),'Inter',sans-serif; font-size:12.5px; font-weight:600; color:var(--ink); background:transparent; border:1px solid var(--line2); padding:4px 10px; cursor:pointer; }
 .mq-root .wwp-more:hover{ border-color:var(--ink); }
 .mq-root .wwp-more:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+/* values as chips (same chips as Known for); starred ones carry a colour, the rest stay plain */
+.mq-root .vchips{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; }
+.mq-root .col > .vchips{ flex:1; align-content:center; gap:10px; }
+.mq-root .col > .vchips .hd-chip{ font-size:15px; padding:11px 18px; }
+.mq-root .vchips .hd-chip.plain{ background:transparent; border-color:var(--line, #E1DED7); }
+/* a testimonial and a quote side by side */
+.mq-root .qrow{ display:flex; gap:14px; align-items:stretch; }
+@media (max-width:900px){ .mq-root .qrow{ flex-direction:column; } }
