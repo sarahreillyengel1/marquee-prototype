@@ -1,5 +1,7 @@
 export interface WorkHistoryItem {
   id?: string;
+  /** What kind of entry this is: Role, Board, Advisor, Client, Accelerator, Program or Project */
+  kind?: string;
   role_title: string;
   company: string;
   start_date: string;

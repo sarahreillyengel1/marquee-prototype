@@ -36,6 +36,7 @@ const P: Record<string, string> = {
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
   star: '<path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.3 6.8 19l1-5.8L3.6 9.1l5.8-.8z"/>',
+  award: '<circle cx="12" cy="8.5" r="5.5"/><path d="M8.5 13.2L7 22l5-3 5 3-1.5-8.8"/>',
   "trending-up": '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   zap: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
   bolt: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
@@ -189,7 +190,9 @@ function EngageFlow({ e, name, back }: { e: Engagement; name: string; back?: () 
       {back && <button className="ww-back" onClick={back}><Icon name="arrow-left" /> All ways to work</button>}
       {e.blurb && <p className="lead">{e.blurb}</p>}
       <Topics e={e} />
-      {wantsBooking && !slots ? <p className="lead">Checking open times…</p>
+      {e.flow === "link" && e.url ? (
+          <a className="msub" href={e.url} target="_blank" rel="noopener" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>{e.urlLabel || "Learn more"} →</a>
+        ) : wantsBooking && !slots ? <p className="lead">Checking open times…</p>
         : bookable ? <BookingPicker username={profile.slug} offer={e.title} ownerFirst={name} slots={slots!} onClose={close} />
         : wantsBooking && profile.calLink ? (
           <>
@@ -379,7 +382,8 @@ const photoStyle = (pos?: { x: number; y: number }, zoom?: number): CSSPropertie
   return { objectPosition: at, transformOrigin: at, transform: zoom && zoom > 1 ? `scale(${zoom})` : undefined };
 };
 const nameSize = (n: string) => (n.length <= 12 ? 56 : n.length <= 22 ? 48 : 40);
-const focusSize = (f: string) => (f.length <= 80 ? 24 : f.length <= 120 ? 21 : 19);
+// Currently can run to 240 characters: the longer it is, the smaller it sets
+const focusSize = (f: string) => (f.length <= 80 ? 21 : f.length <= 140 ? 19 : 17.5);
 
 function Hero() {
   const { profile } = useStore();
@@ -390,10 +394,11 @@ function Hero() {
   // (showcase profiles are written in code, not by a member, so theirs is set there)
   const showcase = !!DEMO_PROFILES[profile.slug];
   const [founding, setFounding] = useState(showcase && !!profile.foundingMember);
+  const [verified, setVerified] = useState(!!profile.verified);
   useEffect(() => {
     if (showcase) return;
     let live = true;
-    fetch(`/api/member-badges?username=${encodeURIComponent(profile.slug)}`).then((r) => r.json()).then((j) => { if (live) setFounding(!!j.founding); }).catch(() => {});
+    fetch(`/api/member-badges?username=${encodeURIComponent(profile.slug)}&me=1`).then((r) => r.json()).then((j) => { if (live) { setFounding(!!j.founding); if (j.verified) setVerified(true); } }).catch(() => {});
     return () => { live = false; };
   }, [profile.slug, showcase]);
   const gotoSection = useGotoSection();
@@ -412,10 +417,10 @@ function Hero() {
       <div className="hd-grid">
         <div className="hd-l">
           <div className="hd-top">
-          {(profile.verified || founding) && (
+          {(verified || founding) && (
             <div className="hd-badges">
-              {profile.verified && <span className="hd-ver"><Icon name="check" /> Verified</span>}
-              {founding && <span className="hd-fm"><Icon name="star" /> Founding Member</span>}
+              {verified && <span className="hd-ver"><Icon name="check" /> Verified</span>}
+              {founding && <span className="hd-fm"><Icon name="award" /> Founding Member</span>}
             </div>
           )}
           {profile.available && profile.availableLabel && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
@@ -661,7 +666,7 @@ function ProfilePage() {
             {starFirst(profile.roles).slice(0, 3).map((r) => (
               <div key={r.id} className="fc" onClick={() => goto("experience")}>
                 <div className="fctop"><LogoTile cls="fclogo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="fcco">{r.company.toUpperCase()}</div><div className="fcrole">{r.role}</div></div></div>
-                <div className="fbadges">{r.kind === "project" && <span className="fb ser">{r.label || "Project"}</span>}<span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
+                <div className="fbadges">{(r.kind === "project" || r.label) && <span className="fb ser">{r.label || "Project"}</span>}<span className="fb">{r.dates}</span>{r.badge && <span className="fb ser">{r.badge}</span>}</div>
                 <p>{r.blurb}</p>
                 <div className="fres">{r.metrics?.[0]?.value ? <span className="m"><Icon name="trending-up" />{r.metrics[0].value} <span className="u">{(r.metrics[0].label || "").toLowerCase()}</span></span> : <span />}<span className="go"><Icon name="arrow-up-right" style={{ width: 16, height: 16 }} /></span></div>
               </div>
@@ -912,7 +917,9 @@ function ExperiencePage() {
   const meta = profile.leadershipMeta;
   const degrees = profile.education.filter(isDegree);
   const certs = profile.education.filter((c) => !isDegree(c));
-  const jobs = profile.roles.filter((r) => r.kind !== "project");
+  const timeline = profile.roles.filter((r) => r.kind !== "project");
+  const jobs = timeline.filter((r) => !r.label);                 // jobs
+  const seats = timeline.filter((r) => !!r.label);               // board and advisory seats
   const projects = profile.roles.filter((r) => r.kind === "project");
   // "Clients & Accelerators", "Projects"… named after what the person actually added
   const kinds = Array.from(new Set(projects.map((p) => PLURAL[p.label || "Project"] || "Projects")));
@@ -953,7 +960,19 @@ function ExperiencePage() {
                 ? <ul className="xbul">{r.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>
                 : r.blurb && <p>{r.blurb}</p>}
               {r.metrics && r.metrics.length > 0 && <div className="xmetrics">{r.metrics.map((m, i) => <div key={i} className="xm"><div className="v">{m.value}</div><div className="l">{m.label}</div></div>)}</div>}
-              {(r.stage || (r.industries && r.industries.length > 0)) && <div className="xtags">{r.stage && <span className="xtag st">{r.stage}</span>}{(r.industries || []).map((t) => <span key={t} className="xtag">{t}</span>)}</div>}
+              {r.industries && r.industries.length > 0 && <div className="xtags">{r.industries.map((t) => <span key={t} className="xtag">{t}</span>)}</div>}
+            </div>
+          ))}
+        </XSec>
+      )}
+
+      {seats.length > 0 && (
+        <XSec id="board" title="Board & Advisory" bare total={seats.length} preview={4}>
+          {(all) => (all ? seats : seats.slice(0, 4)).map((r) => (
+            <div key={r.id} className="card xrole">
+              <div className="xrole-top"><LogoTile cls="xrole-logo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="xrole-role">{r.role}</div><div className="xrole-co">{r.company} · {r.label}</div></div><div className="xrole-dates">{r.dates}</div></div>
+              {r.highlights ? <ul className="xbul">{r.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul> : r.blurb && <p>{r.blurb}</p>}
+              {r.industries && r.industries.length > 0 && <div className="xtags">{r.industries.map((t) => <span key={t} className="xtag">{t}</span>)}</div>}
             </div>
           ))}
         </XSec>
@@ -969,7 +988,7 @@ function ExperiencePage() {
                   <div className="xproj-top"><LogoTile cls="xrole-logo" letter={r.logoLetter} logoUrl={r.logoUrl} /><div><div className="xproj-t">{r.company}</div>{r.role && <div className="xproj-o">{r.role}</div>}</div></div>
                   {r.blurb && <p>{r.blurb}</p>}
                   {r.metrics && r.metrics.length > 0 && r.metrics[0].value && <div className="xproj-r">{r.metrics[0].value}</div>}
-                  <div className="xproj-f">{r.dates && <span>{r.dates}</span>}{r.stage && <span>{r.stage}</span>}{(r.industries || []).map((t) => <span key={t}>{t}</span>)}</div>
+                  <div className="xproj-f">{r.dates && <span>{r.dates}</span>}{(r.industries || []).map((t) => <span key={t}>{t}</span>)}</div>
                 </div>
               ))}
             </div>
@@ -1075,7 +1094,9 @@ function OfferCard({ e, onOpen }: { e: Engagement; onOpen: () => void }) {
       {e.blurb && <p className="wwp-d">{e.blurb}</p>}
       {multi && <div className="wwp-len">{e.sessions!.map((x) => <span key={x.minutes}><b>{x.minutes} min</b>{x.priceCents > 0 ? ` ${cents(x.priceCents)}` : ""}</span>)}</div>}
       <Topics e={e} teaser />
-      <button type="button" className="wwp-btn" onClick={onOpen}>{bookable ? "Book a time" : "Send request"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>
+      {e.flow === "link" && e.url
+        ? <a className="wwp-btn" href={e.url} target="_blank" rel="noopener" style={{ textDecoration: "none" }}>{e.urlLabel || "Learn more"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></a>
+        : <button type="button" className="wwp-btn" onClick={onOpen}>{bookable ? "Book a time" : "Send request"} <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>}
     </div>
   );
 }

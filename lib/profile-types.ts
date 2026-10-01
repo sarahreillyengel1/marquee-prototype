@@ -23,8 +23,11 @@ export interface Engagement {
   blurb: string
   /** owner can hide an engagement entirely (e.g. not open to Fractional) */
   visible: boolean
-  /** which flow the CTA opens */
-  flow: 'book' | 'proposal' | 'availability' | 'message'
+  /** which flow the CTA opens; "link" sends people to the person's own page for this offer */
+  flow: 'book' | 'proposal' | 'availability' | 'message' | 'link'
+  /** where "link" goes, and what its button says */
+  url?: string
+  urlLabel?: string
   /** What this offer covers, in the person's words (e.g. "Raising capital", "GTM"). Shown on Work with Me. */
   topics?: string[]
   topicsLabel?: string
@@ -71,7 +74,7 @@ export interface Role {
   /** Accomplishment bullets shown on the Experience page (full-resume detail). */
   highlights?: string[]
   metrics?: { value: string; label: string }[]
-  /** A job, or a project. Projects carry a label (Client, Accelerator, Program, Project) and are drawn differently. */
+  /** A job, or a project. Projects carry a label (Client, Program, Project); roles may carry Board or Advisor and are drawn differently. */
   kind?: 'role' | 'project'
   label?: string
   /** Searchable company tags: up to 3 industries and one stage or type (Seed, Growth, Professional firm…). */

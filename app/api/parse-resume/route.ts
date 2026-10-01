@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Resume appears empty" }, { status: 400 });
   }
 
-  const prompt = `You are parsing a professional resume. Extract and return ONLY valid JSON — no preamble, no markdown fences.
+  const prompt = `You are parsing a professional resume, a LinkedIn profile saved as PDF, or the text of a person's own website. Extract and return ONLY valid JSON — no preamble, no markdown fences. Never invent facts: leave a field empty or null when the text does not say.
 
 Return this exact structure:
 {
@@ -54,14 +54,15 @@ Return this exact structure:
   "career_assessment": "2-3 sentences in second person ('You've spent...') describing the through-line of this person's career. Specific, not generic.",
   "work_history": [
     {
+      "kind": "exactly one of: Role (a job, full-time or interim), Board (board member or board observer), Advisor (advisor, advisory board, mentor), Client (consulting or agency work for a client), Program (an accelerator, fellowship, residency, cohort or course they ran or joined), Project (a side project, venture, or one-off piece of work)",
       "role_title": "string",
       "company": "string",
       "start_date": "YYYY-MM or 'Present'",
       "end_date": "YYYY-MM or 'Present'",
       "is_current": boolean,
       "bullets": ["original bullet strings from resume"],
-      "sector": "inferred sector e.g. B2B SaaS, Consumer, HealthTech, FinTech, Creator Economy, Agency, etc.",
-      "stage": "inferred stage e.g. Seed, Series A, Series B, Growth, Enterprise, Public"
+      "sector": "the company's sector ONLY when the text makes it clear, else null",
+      "stage": "the company's stage ONLY when the text makes it clear (Seed, Series A, Growth, Public…), else null"
     }
   ],
   "education": [

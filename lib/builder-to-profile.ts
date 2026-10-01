@@ -20,7 +20,7 @@ export interface BuilderSnapshot {
   arch: string[]; mbti: string; enn: string; ennWing?: string; disc: string;
   ledTeam: boolean; yearsLed: string; largestTeam: string; orgs: string; philosophy: string;
   ftEnabled: boolean; ftRoles: string;
-  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; duration: string; length: string; cadence: string; keywords?: string; extra?: { min: number; price: string }[] }[];
+  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; url?: string; urlLabel?: string; duration: string; length: string; cadence: string; keywords?: string; extra?: { min: number; price: string }[] }[];
   impacts: { headline: string; context: string; story: string }[];
   skills: { name: string; level: string; top: boolean }[];
   industries: string[]; learning: string[];
@@ -44,7 +44,7 @@ export interface BuilderSnapshot {
 }
 
 // How each offer's topics are introduced on the public profile.
-const TOPICS_LABEL: Record<string, string> = { office: "What I can help with", coaching: "What I coach on", fractional: "Roles I take", project: "Types of projects", speaking: "Topics I speak on", advisory: "Companies I advise", content: "Content I make" };
+const TOPICS_LABEL: Record<string, string> = { office: "What I can help with", coaching: "What I coach on", fractional: "Roles I take", project: "Types of projects", speaking: "Topics I speak on", advisory: "Industries I advise in", content: "Content I make" };
 // Bookable lengths for an offer: the main one, plus any extra lengths the person added.
 const sessionsOf = (o: { booking: string; length: string; rate: string; showRate: boolean; extra?: { min: number; price: string }[] }) => {
   if (o.booking !== "book") return undefined;
@@ -73,7 +73,7 @@ const OFFER_ICON: Record<string, string> = {
 };
 const FLOW: Record<string, Engagement["flow"]> = {
   book: "book", proposal: "proposal", availability: "availability", approval: "availability",
-  request: "message", message: "message",
+  request: "message", message: "message", link: "link",
 };
 const initials = (s: string) => (s.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("") || "•").toUpperCase();
 // Outbound links must be absolute — "linkedin.com/in/x" would otherwise resolve relative to the profile URL and 404.
@@ -92,7 +92,8 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "", featured: !!e.featured,
     metrics: e.result ? [{ value: e.result, label: "" }] : [],
     kind: e.kind === "project" ? "project" : "role",
-    label: e.kind === "project" ? (e.ptype || "Project") : undefined,
+    // projects always carry their label; a role only when it is a board or advisory seat
+    label: e.kind === "project" ? (e.ptype === "Accelerator" ? "Program" : e.ptype || "Project") : e.ptype && e.ptype !== "Role" ? e.ptype : undefined,
     industries: (e.industries || []).map((t) => t.trim()).filter(Boolean).slice(0, 3),
     stage: e.stage || undefined,
   }));
@@ -147,7 +148,9 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     rateDisplay: o.showRate && o.rate ? "show" : "contact",
     blurb: o.desc || o.blurb || "",
     visible: true,
-    flow: flowFor(o.booking),
+    flow: o.booking === "link" && absUrl(o.url) ? "link" : o.booking === "link" ? "message" : flowFor(o.booking),
+    url: o.booking === "link" ? absUrl(o.url) : undefined,
+    urlLabel: o.booking === "link" ? (o.urlLabel || "").trim() || undefined : undefined,
     topics: (o.keywords || "").split(",").map((t) => t.trim()).filter(Boolean),
     topicsLabel: TOPICS_LABEL[o.key],
     sessions: sessionsOf(o),

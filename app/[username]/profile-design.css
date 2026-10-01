@@ -170,9 +170,10 @@
 .mq-root .hd{ background:var(--h-ground); border-color:var(--h-edge); padding:44px 52px 36px; box-shadow:none; }
 /* The photo card is a FIXED size (320 wide, photo a 320 square) at every window width, so every profile's photo renders the same. */
 /* The left column is as tall as the card: its text sits centred, and its bottom row lines up with the bottom of the card. */
-.mq-root .hd-grid{ display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:64px; align-items:stretch; }
-.mq-root .hd-l{ min-width:0; display:flex; flex-direction:column; }
-.mq-root .hd-top{ margin:auto 0; }
+.mq-root .hd-grid{ display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:64px; align-items:start; }
+.mq-root .hd-l{ min-width:0; display:flex; flex-direction:column; justify-content:flex-start; }
+.mq-root .hd-top{ margin:0; }                 /* the name block starts at the top on every profile */
+.mq-root .hd-foot{ margin-top:28px; }         /* bio · location · socials follow the content */
 .mq-root .hd-title, .mq-root .hd-lbl, .mq-root .hd-chip, .mq-root .hd-btn, .mq-root .hd-ver, .mq-root .hd-fm, .mq-root .hd-prev, .mq-root .hd-ot h4, .mq-root .hd-row .t, .mq-root .hd-bar{ font-family:var(--font-poppins),'Inter',system-ui,sans-serif; }
 .mq-root .hd-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
 .mq-root .hd-ver, .mq-root .hd-fm{ display:inline-flex; align-items:center; gap:7px; font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:5px 10px; border:1px solid; }
@@ -186,7 +187,7 @@
 .mq-root .hd-title{ font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--h-accent); line-height:1.6; margin-bottom:14px; max-width:46ch; }
 .mq-root .hd-facts{ font-size:15px; line-height:1.6; color:var(--ink2); margin-bottom:24px; max-width:34em; white-space:pre-line; display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .mq-root .hd-lbl{ font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
-.mq-root .hd-focus{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:var(--focus-size,21px); line-height:1.26; letter-spacing:-.01em; color:var(--ink); margin-bottom:28px; max-width:30em; text-wrap:pretty; }
+.mq-root .hd-focus{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:var(--focus-size,19px); line-height:1.3; letter-spacing:-.01em; color:var(--ink); margin-bottom:26px; max-width:34em; text-wrap:pretty; }
 .mq-root .hd-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 26px; }
 .mq-root .hd-chip{ font-size:13.5px; font-weight:500; color:var(--h-chip-ink); border:1px solid var(--h-chip-line); padding:7px 13px; border-radius:var(--r); }
 .mq-root .hd-chip.c1{ background:var(--h-chip1); } .mq-root .hd-chip.c2{ background:var(--h-chip2); } .mq-root .hd-chip.c3{ background:var(--h-chip3); } .mq-root .hd-chip.c4{ background:var(--h-chip4); }
@@ -203,7 +204,7 @@
 .mq-root .hd-soc a{ width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--ink2); border:1px solid var(--h-line); border-radius:var(--r); background:var(--card); transition:border-color .15s, color .15s; }
 .mq-root .hd-soc a:hover{ border-color:var(--ink); color:var(--ink); }
 
-.mq-root .hd-card{ align-self:center; width:320px; max-width:100%; background:var(--card); border:var(--h-card-bw) solid var(--h-card-line); box-shadow:var(--h-shadow); min-width:0; }
+.mq-root .hd-card{ align-self:start; width:320px; max-width:100%; background:var(--card); border:var(--h-card-bw) solid var(--h-card-line); box-shadow:var(--h-shadow); min-width:0; }
 .mq-root .hd-ph{ position:relative; aspect-ratio:1/1; overflow:hidden; background:radial-gradient(120% 100% at 50% 0%, #F3F1EC 0%, #EAE7E0 60%, #E2DED5 100%); }
 .mq-root .hd-ph img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 25%; }
 .mq-root .hd-ot{ padding:20px 22px 22px; }
@@ -715,7 +716,7 @@
 .mq-root .xlbl{ font-family:var(--font-poppins),'Inter',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gray); margin-bottom:12px; }
 
 /* ── EXPERIENCE: bio + company tags ── */
-.mq-root .xbio p{ font-size:16px; line-height:1.7; color:var(--ink2); max-width:72ch; margin-bottom:14px; }
+.mq-root .xbio p{ font-size:16px; line-height:1.7; color:var(--ink2); max-width:none; margin-bottom:14px; }   /* fills the card, like the sections around it */
 .mq-root .xbio p:last-child{ margin-bottom:0; }
 .mq-root .xtags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
 .mq-root .xtag{ font-family:var(--font-poppins),'Inter',sans-serif; font-size:11.5px; font-weight:500; color:var(--ink2); background:var(--lav2); padding:4px 10px; }
@@ -784,8 +785,7 @@
 
 /* values as chips (same chips as Known for); starred ones carry a colour, the rest stay plain */
 .mq-root .vchips{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; }
-.mq-root .col > .vchips{ flex:1; align-content:center; gap:10px; }
-.mq-root .col > .vchips .hd-chip{ font-size:15px; padding:11px 18px; }
+.mq-root .col > .vchips{ flex:1; align-content:flex-start; gap:8px; }   /* same chips as Known for, same size */
 .mq-root .vchips .hd-chip.plain{ background:transparent; border-color:var(--line, #E1DED7); }
 /* a testimonial and a quote side by side */
 .mq-root .qrow{ display:flex; gap:14px; align-items:stretch; }

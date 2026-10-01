@@ -13,13 +13,16 @@ const SOCIAL_LABEL: Record<string, string> = { linkedin: "LinkedIn", instagram: 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } };
 const same = (a: string, b: string) => a.replace(/\/$/, "").toLowerCase() === b.replace(/\/$/, "").toLowerCase();
 
-export function SiteScan({ website, have, emptySocials, onAdd, onSocials }: {
+export function SiteScan({ website, have, emptySocials, onAdd, onSocials, mode = "media" }: {
   website: string;                      // from About You, as a starting point
-  have: string[];                       // links already in the person's media
+  have: string[];                       // links already in the person's media (or shop)
   emptySocials: string[];               // social links the person hasn't filled in
   onAdd: (items: NewMedia[]) => void;
   onSocials: (found: Record<string, string>) => void;
+  mode?: "media" | "shop";              // shop: look for products for sale instead of media
 }) {
+  const shop = mode === "shop";
+  const noun = shop ? "product" : "piece", nouns = shop ? "products" : "pieces", where = shop ? "shop" : "media";
   const [url, setUrl] = useState(website);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -33,7 +36,7 @@ export function SiteScan({ website, have, emptySocials, onAdd, onSocials }: {
     if (!url.trim()) { setErr("Add your website address first."); return; }
     setBusy(true);
     try {
-      const r = await fetch("/api/scan-site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+      const r = await fetch("/api/scan-site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, mode }) });
       const j = await r.json();
       if (!r.ok) { setErr(j.error || "We couldn't read that website. Please try again."); return; }
       setFound(j);
@@ -52,8 +55,8 @@ export function SiteScan({ website, have, emptySocials, onAdd, onSocials }: {
 
   return (
     <div className="border border-[#E1DED7] bg-[#FFFFFF] p-[18px] mb-6 max-w-[980px]">
-      <div className="font-sans text-[14px] font-semibold mb-1">Find my media</div>
-      <p className="text-[13px] text-[#7d7a74] leading-[1.5] mb-3">Enter your website and we&apos;ll look for your press, talks, podcasts, writing and videos. You choose what gets added.</p>
+      <div className="font-sans text-[14px] font-semibold mb-1">{shop ? "Find my products" : "Find my media"}</div>
+      <p className="text-[13px] text-[#7d7a74] leading-[1.5] mb-3">{shop ? "Enter your website and we'll look for the things you sell: books, courses, templates, guides and downloads, including on Amazon, Gumroad and the like. You choose what gets added." : "Enter your website and we'll look for your press, talks, podcasts, writing and videos. You choose what gets added."}</p>
       <div className="flex gap-[8px]">
         <label htmlFor="scan-url" className="sr-only">Your website</label>
         <input id="scan-url" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !busy) scan(); }} placeholder="yoursite.com" className="flex-1 min-w-0 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
@@ -65,9 +68,9 @@ export function SiteScan({ website, have, emptySocials, onAdd, onSocials }: {
       {found && !busy && (
         <div className="mt-4">
           {fresh.length === 0 ? (
-            <p className="text-[13px] text-[#3a352f] leading-[1.5]">{already > 0 ? `We found ${already} ${already === 1 ? "piece" : "pieces"}, and ${already === 1 ? "it is" : "they are all"} already in your media.` : `We read ${found.pages.length} ${found.pages.length === 1 ? "page" : "pages"} on ${host(found.site)} and didn't find media links. You can add pieces by hand below.`}</p>
+            <p className="text-[13px] text-[#3a352f] leading-[1.5]">{already > 0 ? `We found ${already} ${already === 1 ? noun : nouns}, and ${already === 1 ? "it is" : "they are all"} already in your ${where}.` : `We read ${found.pages.length} ${found.pages.length === 1 ? "page" : "pages"} on ${host(found.site)} and didn't find ${shop ? "products" : "media links"}. You can add ${nouns} by hand below.`}</p>
           ) : added > 0 ? (
-            <p className="text-[13px] text-[#3a352f] leading-[1.5]" role="status">Added {added} {added === 1 ? "piece" : "pieces"} to your media below. Check each title, then star your best.</p>
+            <p className="text-[13px] text-[#3a352f] leading-[1.5]" role="status">Added {added} {added === 1 ? noun : nouns} to your {where} below. Check each title{shop ? " and add the price" : ""}, then star your best.</p>
           ) : (
             <>
               <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
@@ -91,12 +94,12 @@ export function SiteScan({ website, have, emptySocials, onAdd, onSocials }: {
                 ))}
               </div>
               <div className="flex items-center gap-[12px] mt-3">
-                <button onClick={add} disabled={picked.length === 0} className="bg-brand-ink text-white font-sans text-[13px] font-semibold py-[9px] px-[16px] disabled:opacity-40">Add {picked.length} to my media</button>
+                <button onClick={add} disabled={picked.length === 0} className="bg-brand-ink text-white font-sans text-[13px] font-semibold py-[9px] px-[16px] disabled:opacity-40">Add {picked.length} to my {where}</button>
                 <span className="text-[12px] text-[#7d7a74]">You can edit or remove anything after.</span>
               </div>
             </>
           )}
-          {newSocials.length > 0 && (
+          {!shop && newSocials.length > 0 && (
             <div className="mt-4 pt-3 border-t border-[#ECEAE4] flex flex-wrap items-center gap-[10px]">
               {socialsAdded
                 ? <span className="text-[12.5px] text-[#3a352f]" role="status">Added. You&apos;ll find {newSocials.length === 1 ? "it" : "them"} under Links in About You, and as {newSocials.length === 1 ? "an icon" : "icons"} in your profile header.</span>

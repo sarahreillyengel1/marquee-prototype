@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import { scanSite } from "@/lib/site-scan";
+import { siteText } from "@/lib/site-scan";
 
-// POST /api/scan-site { url, mode? } -> { site, siteTitle, pages, items, socials }   mode: "media" (default) or "shop"
-// Signed-in members only. Reads the person's website and returns the media found on it.
-// Nothing is saved here: the builder shows the list and the person chooses what to add.
+// POST /api/site-text { url } -> { site, siteTitle, pages, text }
+// Signed-in members only. The person's own website as plain text, so the builder can read it
+// the way it reads a resume. Nothing is saved here.
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -15,13 +15,13 @@ export async function POST(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const url = String(body.url || "").trim().slice(0, 300);
-  const mode = body.mode === "shop" ? "shop" : "media";
   if (!url) return NextResponse.json({ error: "Add your website address first." }, { status: 400 });
   try {
-    return NextResponse.json(await scanSite(url, mode));
+    const r = await siteText(url);
+    if (r.text.length < 200) return NextResponse.json({ error: "We opened the site but found very little to read. Try pasting your bio and roles as text instead." }, { status: 422 });
+    return NextResponse.json(r);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "";
-    // our own messages are written for people; anything else gets a plain fallback
-    return NextResponse.json({ error: /website|address|scanned/i.test(msg) ? msg : "We couldn't read that website. Please try again." }, { status: 422 });
+    return NextResponse.json({ error: /website|address/i.test(msg) ? msg : "We couldn't read that website. Please try again." }, { status: 422 });
   }
 }

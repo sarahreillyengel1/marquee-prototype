@@ -8,7 +8,8 @@ import { ARCHETYPES } from "@/lib/archetypes";
 import { BookingSetup } from "./BookingSetup";
 import { SiteScan } from "./SiteScan";
 import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
-import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES } from "@/lib/company-tags";
+import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES, ROLE_TYPES, ENTRY_KINDS } from "@/lib/company-tags";
+import type { WorkHistoryItem } from "@/types";
 import { Logo } from "@/components/Logo";
 import { createBrowserSupabase } from "@/lib/supabase";
 import type { ResumeParseResult } from "@/types";
@@ -18,19 +19,19 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Long Bio", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["Actions", "Work With Me", "Media", "Reach", "Shop"] },
+  { label: "Build your brand", steps: ["CTA", "Work With Me", "Media", "Reach", "Shop"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "Actions", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
+const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "CTA", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
-const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", Actions: "actions" };
+const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", CTA: "actions" };
 const LOOKS = [
   { key: "classic", name: "Classic", note: "Black, white, beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
   { key: "warm", name: "Warm", note: "Paper, sage, sky", sw: ["#F7F6F2", "#670821", "#A8CFFF", "#EED0BF"] },
   { key: "mono", name: "Mono", note: "Stone, light to dark", sw: ["#F7F6F2", "#E2DED5", "#CFC9BE", "#2E2C28"] },
   { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
 ];
-const ACTION_TYPES = ["Contact", "Hire", "Book", "Partner", "Sponsor", "Read", "Listen", "Watch", "Attend", "Join", "Apply", "Buy", "Shop", "Invest", "Donate", "Follow"];
+const ACTION_TYPES = ["Contact", "Hire", "Book", "Partner", "Sponsor", "Read", "Listen", "Watch", "Learn", "Explore", "Attend", "Join", "Apply", "Buy", "Shop", "Invest", "Donate", "Follow"];
 const ACTION_DESTS = [{ v: "contact", label: "Opens Work with me" }, { v: "media", label: "My Media page" }, { v: "bio", label: "My full bio" }, { v: "experience", label: "My Experience page" }, { v: "work-with-me", label: "My Work with Me page" }, { v: "shop", label: "My Shop page" }, { v: "link", label: "A link (URL)" }];
 const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack", "X", "Podcast", "Facebook"];
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
@@ -53,7 +54,7 @@ const TOUR_HINTS: Record<string, string> = {
   "Long Bio": "The full narrative, in your own words.",
 };
 const RELATIONSHIPS = ["Manager", "Peer", "Direct report", "Client", "Mentor", "Partner", "Investor", "Me"]; // "Me" = a quote in your own words
-const STORE_KINDS = ["Template", "Guide", "Course", "Ebook", "Download"];
+const STORE_KINDS = ["Template", "Guide", "Course", "Ebook", "Book", "Download"];
 const MEDIA_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video", "Deck"];
 const MEDIA_FEATURED = 4;
 // Branded fallback colors when a media item has no cover image (never gray).
@@ -61,9 +62,8 @@ const MEDIA_COLORS: Record<string, string> = {
   Press: "#E6E2D0", Talk: "#C0DDFB", Podcast: "#A9C89A", Writing: "#D6E27B",
   Portfolio: "#B9E3A5", Video: "#FF5436", Deck: "#DBCDC4",
 };
-const VALUES = ["Integrity", "Directness", "Curiosity", "Craft", "Ownership", "Empathy", "Ambition", "Candor", "Autonomy", "Impact", "Growth", "Transparency", "Resilience", "Kindness", "Rigor", "Creativity", "Collaboration", "Humility", "Optimism", "Pragmatism", "Trust", "Courage", "Discipline", "Generosity", "Focus", "Adaptability", "Accountability", "Vision", "Inclusion", "Balance", "Independence", "Boldness", "Patience", "Gratitude", "Fairness", "Simplicity", "Authenticity", "Service"];
+const VALUES = ["Accountability", "Adaptability", "Ambition", "Authenticity", "Autonomy", "Balance", "Boldness", "Candor", "Collaboration", "Courage", "Craft", "Creativity", "Curiosity", "Directness", "Discipline", "Efficiency", "Empathy", "Ethics", "Excellence", "Fairness", "Focus", "Generosity", "Gratitude", "Growth mindset", "Humility", "Impact", "Inclusion", "Independence", "Integrity", "Kindness", "Optimism", "Ownership", "Patience", "Pragmatism", "Resilience", "Rigor", "Service", "Simplicity", "Transparency", "Trust", "Vision"];
 const VAL_MAX = 12, VAL_FEATURED = 6;
-const SKILL_INDUSTRIES = ["SaaS", "Fintech", "Healthcare", "Consumer", "Marketplaces", "AI", "Media", "E-commerce"];
 const SKILL_LEVELS = ["Foundational", "Proficient", "Advanced", "Expert"];
 // Ordered categories + auto-classification. In the real product this classification is done for the
 // user (lookup + AI) so they never tag hard/soft or pick a category — they only set proficiency.
@@ -109,19 +109,22 @@ function extractKeywords(text: string): string[] {
   return out;
 }
 
-type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; extra?: { min: number; price: string }[]; keywords: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
+type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; extra?: { min: number; price: string }[]; keywords: string; keywordsAuto?: boolean; url?: string; urlLabel?: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
 const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Public"];
+const LINK_OPT = { v: "link", label: "Open a link" }; // your own page, form, store or booking tool
 const BOOKING_OPTS: Record<string, { v: string; label: string }[]> = {
-  office: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }],
-  coaching: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }],
-  fractional: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
-  project: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
-  speaking: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }],
-  advisory: [{ v: "request", label: "Send request" }],
-  content: [{ v: "request", label: "Send request" }],
+  office: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }, LINK_OPT],
+  coaching: [{ v: "book", label: "Book instantly" }, { v: "request", label: "Send request" }, LINK_OPT],
+  fractional: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }, LINK_OPT],
+  project: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }, LINK_OPT],
+  speaking: [{ v: "request", label: "Send request" }, { v: "proposal", label: "Request a proposal" }, LINK_OPT],
+  advisory: [{ v: "request", label: "Send request" }, LINK_OPT],
+  content: [{ v: "request", label: "Send request" }, LINK_OPT],
 };
-const KEYWORD_LABEL: Record<string, string> = { office: "Things I can advise on", coaching: "What I coach on", fractional: "Roles you're open to", project: "Types of projects", speaking: "Topics", advisory: "Types of companies you advise", content: "Content types" };
+const KEYWORD_LABEL: Record<string, string> = { office: "Things I can advise on", coaching: "What I coach on", fractional: "Roles you're open to", project: "Types of projects", speaking: "Topics", advisory: "Industries", content: "Content types" };
+// Offers whose tags mean the same thing ("what I can help with"): tags typed into one are offered to the others.
+const SHARED_TOPIC_OFFERS = ["office", "coaching", "speaking", "project", "advisory"];
 const bookLabel = (b: string) => (b === "book" ? "Book time" : b === "proposal" ? "Request a proposal" : "Send request");
 
 // Blank canvas for a new user (no draft yet) — the 7 offering types available but none added.
@@ -237,8 +240,15 @@ export default function BuildPreview() {
   const upOffer = (k: string, patch: Partial<Offer>) => setOffers((o) => o.map((x) => (x.key === k ? { ...x, ...patch } : x)));
   const [tagDraft, setTagDraft] = useState("");
   const offerTags = (kw: string) => (kw || "").split(",").map((t) => t.trim()).filter(Boolean);
-  const addOfferTag = (key: string, kw: string, tag: string) => { const t = tag.trim(); if (t && !offerTags(kw).some((x) => x.toLowerCase() === t.toLowerCase())) upOffer(key, { keywords: [...offerTags(kw), t].join(", ") }); setTagDraft(""); };
-  const rmOfferTag = (key: string, kw: string, tag: string) => upOffer(key, { keywords: offerTags(kw).filter((x) => x !== tag).join(", ") });
+  const setOfferTags = (key: string, tags: string[]) => setOffers((o) => {
+    const kw = tags.join(", ");
+    const share = SHARED_TOPIC_OFFERS.includes(key);
+    return o.map((x) => x.key === key ? { ...x, keywords: kw, keywordsAuto: false }
+      // sibling offers that only ever had copied tags (or none) keep matching this one
+      : share && SHARED_TOPIC_OFFERS.includes(x.key) && (x.keywordsAuto || !x.keywords.trim()) ? { ...x, keywords: kw, keywordsAuto: true } : x);
+  });
+  const addOfferTag = (key: string, kw: string, tag: string) => { const t = tag.trim(); if (t && !offerTags(kw).some((x) => x.toLowerCase() === t.toLowerCase())) setOfferTags(key, [...offerTags(kw), t]); setTagDraft(""); };
+  const rmOfferTag = (key: string, kw: string, tag: string) => setOfferTags(key, offerTags(kw).filter((x) => x !== tag));
 
   // Impact
   const [impacts, setImpacts] = useState<{ headline: string; context: string; story: string }[]>([
@@ -368,6 +378,8 @@ export default function BuildPreview() {
   const upAction = (i: number, patch: Partial<ActionRow>) => setActions((a) => a.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const addAction = () => setActions((a) => (a.length < 4 ? [...a, { type: "Contact", label: "", dest: "contact", url: "" }] : a));
   const rmAction = (i: number) => setActions((a) => a.filter((_, j) => j !== i));
+  const moveAction = (i: number, d: -1 | 1) => setActions((a) => { const j = i + d; if (j < 0 || j >= a.length) return a; const c = [...a]; [c[i], c[j]] = [c[j], c[i]]; return c; });
+  const moveSkill = (i: number, j: number) => setSkills((a) => { if (j < 0 || j >= a.length) return a; const c = [...a]; [c[i], c[j]] = [c[j], c[i]]; return c; });
   const rmProduct = (i: number) => setProducts((m) => m.filter((_, j) => j !== i));
   const toggleProductFeatured = (i: number) => setProducts((m) => m.map((x, j) => { if (j !== i) return x; if (!x.featured && m.filter((y) => y.featured).length >= 3) return x; return { ...x, featured: !x.featured }; }));
 
@@ -396,38 +408,63 @@ export default function BuildPreview() {
   const [loaded, setLoaded] = useState(false);
   const [loadErr, setLoadErr] = useState("");
   // Resume step (Milestone 2)
-  const [resumeMode, setResumeMode] = useState<"file" | "text">("file");
+  const [resumeMode, setResumeMode] = useState<"file" | "linkedin" | "website" | "text">("file");
   const [resumeText, setResumeText] = useState("");
+  const [siteUrl, setSiteUrl] = useState("");
+  const [photoSmall, setPhotoSmall] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parseErr, setParseErr] = useState("");
+  // What the reader found, waiting for the person to tick what goes in and say what each thing is.
+  type Found = { w: WorkHistoryItem; on: boolean; kind: string };
+  const [found, setFound] = useState<{ items: Found[]; skills: number; edu: number } | null>(null);
   const applyParsed = (p: ResumeParseResult) => {
     if (p.full_name) setName(p.full_name);
     if (p.current_title) setHeadline(p.current_title);
     if (p.location) setCity(p.location);
     if (p.linkedin_url) setSocials((s) => ({ ...s, linkedin: p.linkedin_url as string }));
-    if (p.work_history?.length) setEntries(p.work_history.map((w, i) => ({
-      kind: "role" as const, primary: w.company || "", secondary: w.role_title || "",
-      dates: [w.start_date, w.end_date].filter(Boolean).join(" – "),
-      desc: Array.isArray(w.bullets) ? w.bullets.join(" ") : "", result: "", featured: i === 0,
-    })));
     if (p.skills_extracted?.length) setSkills(p.skills_extracted.slice(0, 20).map((n, i) => ({ name: n, level: "Proficient", top: i < 5 })));
     if (p.education?.length) setEdu(p.education.map((e) => ({ school: e.institution || "", degree: e.degree || "", field: "", year: e.graduation_year ? String(e.graduation_year) : "" })));
+    const items = (p.work_history || []).filter((w) => (w.company || w.role_title || "").trim()).map((w) => ({ w, on: true, kind: ENTRY_KINDS.includes(w.kind || "") ? (w.kind as string) : "Role" }));
+    setFound({ items, skills: p.skills_extracted?.length || 0, edu: p.education?.length || 0 });
   };
-  const parseResume = async (file?: File) => {
+  const addFound = () => {
+    if (!found) return;
+    const picked = found.items.filter((f) => f.on);
+    setEntries((cur) => [...cur.filter((x) => x.primary.trim() || x.secondary.trim()), ...picked.map((f, i) => ({
+      kind: (ROLE_TYPES.includes(f.kind) ? "role" : "project") as "role" | "project", ptype: f.kind,
+      primary: f.w.company || "", secondary: f.w.role_title || "",
+      dates: [f.w.start_date, f.w.end_date].filter(Boolean).join(" – "),
+      desc: Array.isArray(f.w.bullets) ? f.w.bullets.join(" ") : "", result: "", featured: i === 0 && f.kind === "Role",
+    }))]);
+    setFound(null); setActive("About You");
+  };
+  const parseResume = async (file?: File, textOverride?: string) => {
     setParseErr(""); setParsing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setParseErr("Please log in first."); setParsing(false); return; }
       const fd = new FormData();
-      if (file) fd.append("file", file); else fd.append("text", resumeText);
+      if (file) fd.append("file", file); else fd.append("text", textOverride ?? resumeText);
       fd.append("userId", user.id);
       const res = await fetch("/api/parse-resume", { method: "POST", body: fd });
       const json = await res.json();
       if (!res.ok) { setParseErr(json.error || "Couldn't read that — try pasting the text instead."); setParsing(false); return; }
       applyParsed(json.parsed as ResumeParseResult);
-      setActive("About You");
     } catch { setParseErr("Something went wrong. Try again."); }
     setParsing(false);
+  };
+  // No resume? Their own website is read the same way.
+  const parseWebsite = async () => {
+    const url = siteUrl.trim();
+    if (!url) { setParseErr("Add your website address first."); return; }
+    setParseErr(""); setParsing(true);
+    try {
+      const r = await fetch("/api/site-text", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+      const j = await r.json();
+      if (!r.ok) { setParseErr(j.error || "We couldn't read that website."); setParsing(false); return; }
+      setSocials((x) => ({ ...x, website: x.website || (j.site as string) }));
+      await parseResume(undefined, `Website: ${j.site}\nSite title: ${j.siteTitle}\n${j.text}`);
+    } catch { setParseErr("Something went wrong. Try again."); setParsing(false); }
   };
   const snapshot = () => ({ types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
@@ -445,12 +482,13 @@ export default function BuildPreview() {
   const hydrate = (d: Partial<typeof BLANK>) => {
     setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
     setCity(d.city ?? ""); setLoc(d.loc ?? "Remote"); setOpenNow(d.openNow ?? true); setDob(d.dob ?? "");
-    setSocials(d.socials ?? BLANK.socials); setFocus(d.focus ?? ""); setEntries(d.entries ?? []);
+    setSocials(d.socials ?? BLANK.socials); setFocus(d.focus ?? ""); setEntries((d.entries ?? []).map((e) => (e.ptype === "Accelerator" ? { ...e, ptype: "Program" } : e)));
     setArch(d.arch ?? []); setMbti(d.mbti ?? ""); setEnn(d.enn ?? ""); setDisc(d.disc ?? "");
     setLedTeam(d.ledTeam ?? false); setYearsLed(d.yearsLed ?? ""); setLargestTeam(d.largestTeam ?? ""); setOrgs(d.orgs ?? ""); setPhilosophy(d.philosophy ?? "");
-    setFtEnabled(d.ftEnabled ?? false); setFtRoles(d.ftRoles ?? ""); setOffers(d.offers ?? BLANK_OFFERS);
+    setFtEnabled(d.ftEnabled ?? false); setFtRoles(d.ftRoles ?? ""); setOffers((d.offers ?? BLANK_OFFERS).map((o) => (o.key === "advisory" && !o.keywords?.trim() && (o.industries || "").trim() ? { ...o, keywords: o.industries as string, industries: "" } : o)));
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
-    setVals(d.vals ?? []); setVFeatured(d.vFeatured ?? []); setMedia(d.media ?? []); setTestis(d.testis ?? []);
+    const gm = (xs: string[]) => Array.from(new Set(xs.map((v) => (v === "Growth" ? "Growth mindset" : v))));
+    setVals(gm(d.vals ?? [])); setVFeatured(gm(d.vFeatured ?? [])); setMedia(d.media ?? []); setTestis(d.testis ?? []);
     setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
     setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoPos(d.photoPos ?? { x: 50, y: 25 }); setPhotoZoom(d.photoZoom ?? 1); setEnnWing(d.ennWing ?? "");
   };
@@ -459,11 +497,12 @@ export default function BuildPreview() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { if (!cancelled) setLoaded(true); return; }
-      const { data, error } = await supabase.from("builder_drafts").select("data").eq("user_id", user.id).maybeSingle();
+      const { data, error } = await supabase.from("builder_drafts").select("data,updated_at").eq("user_id", user.id).maybeSingle();
       if (cancelled) return;
       // On a load failure, STOP: never hydrate BLANK (autosave would then overwrite the real draft).
       if (error) { setLoadErr("Couldn't load your saved draft. Refresh to try again — nothing has been changed."); return; }
       const saved = data?.data as Partial<typeof BLANK> | undefined;
+      if (data?.updated_at) setDraftAt(String(data.updated_at));
       // "Returning" means they've actually entered something — an autosaved empty row is still a new user,
       // and so is a row holding only the name we filled in from their account.
       const accountName = String((user.user_metadata as { full_name?: string } | null)?.full_name || "").trim();
@@ -472,8 +511,8 @@ export default function BuildPreview() {
       hydrate(saved && Object.keys(saved).length ? saved : BLANK);
       // First visit → Resume step + welcome tour. Returning → straight into editing, no tour.
       if (hasDraft) { setActive("About You"); setTour(null); } else { setActive("Resume"); setTour("welcome"); }
-      const { data: pub } = await supabase.from("published_profiles").select("username").eq("user_id", user.id).maybeSingle();
-      if (!cancelled && pub?.username) { setPubUsername(pub.username); setClaimed(true); }
+      const { data: pub } = await supabase.from("published_profiles").select("username,published_at").eq("user_id", user.id).maybeSingle();
+      if (!cancelled && pub?.username) { setPubUsername(pub.username); setClaimed(true); if (pub.published_at) setPublishedAt(String(pub.published_at)); }
       setLoaded(true);
     })();
     return () => { cancelled = true; };
@@ -486,13 +525,21 @@ export default function BuildPreview() {
     saveTimer.current = setTimeout(async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() });
+      setSaveState("saving");
+      const now = new Date().toISOString();
+      const { error } = await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: now });
+      if (!error) { setSaveState("saved"); setSavedAt(new Date()); setDraftAt(now); } else setSaveState("idle");
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
+  // Save bar: what autosave is doing, and whether the draft has moved past the live profile
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [draftAt, setDraftAt] = useState("");
+  const [publishedAt, setPublishedAt] = useState("");
   const [showPublish, setShowPublish] = useState(false);
   const [pubUsername, setPubUsername] = useState("");
   const [claimed, setClaimed] = useState(false);
@@ -512,7 +559,7 @@ export default function BuildPreview() {
       const profile = { ...builderToProfile(snapshot(), u), verified, inquiryEmail: user.email || undefined };
       const { error } = await supabase.from("published_profiles").upsert({ username: u, user_id: user.id, profile, published_at: new Date().toISOString() });
       if (error) setPubResult({ ok: false, msg: "That username may be taken — try another." });
-      else { setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); }
+      else { setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); setPublishedAt(new Date().toISOString()); }
     } catch { setPubResult({ ok: false, msg: "Couldn't publish — try again." }); }
     setPublishing(false);
   };
@@ -555,7 +602,7 @@ export default function BuildPreview() {
           <button onClick={() => setShowPublish(true)} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">{claimed ? "Update →" : "Publish →"}</button>
         </div>
 
-        <main className="p-[40px_48px] flex-1 max-w-[820px]">
+        <main className="p-[40px_48px_120px] flex-1 max-w-[1100px]">
           <div className="flex items-center justify-between mb-4 max-w-[980px] gap-3 flex-wrap">
             <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#670821] bg-[#EDE7FF] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
             {HIDEABLE[active] && (
@@ -568,13 +615,70 @@ export default function BuildPreview() {
 
           {active === "Resume" && (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Start with your resume.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">Upload it and we&apos;ll pre-fill your experience, skills, education and links — you can edit everything after. Or skip and build from scratch.</p>
-              <div className="inline-flex gap-1 bg-[#F4F2EF] p-1 mb-5">
-                <button onClick={() => setResumeMode("file")} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === "file" ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>Upload a file</button>
-                <button onClick={() => setResumeMode("text")} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === "text" ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>Paste text</button>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Start with what you have.</h1>
+              <p className="text-[15px] text-[#3a352f] max-w-[60ch] leading-[1.5] mb-7">A resume, your LinkedIn, or your own website. We read it and pre-fill your experience, skills, education and links; you can edit everything after. Or skip and build from scratch.</p>
+              {found ? (
+                <div className="max-w-[980px]">
+                  <div className="border border-[#E1DED7] bg-white p-[18px] mb-4">
+                    <div className="font-sans text-[14px] font-semibold mb-1">We found {found.items.length} {found.items.length === 1 ? "experience" : "experiences"}{found.skills ? `, ${found.skills} skills` : ""}{found.edu ? ` and ${found.edu} education ${found.edu === 1 ? "entry" : "entries"}` : ""}.</div>
+                    <p className="text-[13px] text-[#7d7a74] leading-[1.5]">Tick what belongs on your profile and say what each one is. Roles sit on your timeline, board and advisory seats get their own group, and clients, programs and projects show as tiles. Skills and education went straight in; you can edit them in their steps.</p>
+                  </div>
+                  {found.items.length > 0 && (
+                    <div className="border border-[#E1DED7] bg-white mb-4">
+                      {found.items.map((f, i) => (
+                        <div key={i} className={`flex items-center gap-[12px] py-[10px] px-[14px] border-b border-[#F1EEE8] last:border-b-0 ${f.on ? "" : "opacity-50"}`}>
+                          <input type="checkbox" checked={f.on} onChange={() => setFound((c) => c && { ...c, items: c.items.map((x, j) => (j === i ? { ...x, on: !x.on } : x)) })} />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-sans text-[13.5px] font-semibold truncate">{f.w.role_title || "—"}<span className="font-normal text-[#7d7a74]"> · {f.w.company || "—"}</span></div>
+                            <div className="text-[12px] text-[#7d7a74]">{[f.w.start_date, f.w.end_date].filter(Boolean).join(" – ")}</div>
+                          </div>
+                          <select value={f.kind} onChange={(e) => setFound((c) => c && { ...c, items: c.items.map((x, j) => (j === i ? { ...x, kind: e.target.value } : x)) })} className="font-inter text-[12.5px] py-[7px] px-[8px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">
+                            <optgroup label="On your timeline">{ROLE_TYPES.map((k) => <option key={k} value={k}>{k}</option>)}</optgroup>
+                            <optgroup label="Shown as tiles">{ENTRY_TYPES.map((k) => <option key={k} value={k}>{k}</option>)}</optgroup>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <button onClick={addFound} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5">Add {found.items.filter((f) => f.on).length} to my experience →</button>
+                    <button onClick={() => { setFound(null); setActive("About You"); }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip these</button>
+                    <button onClick={() => setFound(null)} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink ml-auto">Read something else</button>
+                  </div>
+                </div>
+              ) : (<>
+              <div className="inline-flex flex-wrap gap-1 bg-[#F4F2EF] p-1 mb-5">
+                {([["file", "Resume"], ["linkedin", "LinkedIn"], ["website", "My website"], ["text", "Paste text"]] as const).map(([k, t]) => (
+                  <button key={k} onClick={() => { setResumeMode(k); setParseErr(""); }} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === k ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>{t}</button>
+                ))}
               </div>
-              {resumeMode === "file" ? (
+              {resumeMode === "linkedin" ? (
+                <div className="max-w-[760px]">
+                  <div className="border border-[#E1DED7] bg-white p-[18px] mb-4">
+                    <div className="font-sans text-[14px] font-semibold mb-2">Get your LinkedIn as a file, in about 20 seconds</div>
+                    <ol className="text-[13.5px] text-[#3a352f] leading-[1.6] list-decimal pl-5 space-y-1">
+                      <li>Open <a href="https://www.linkedin.com/in/me/" target="_blank" rel="noopener" className="underline underline-offset-2">your LinkedIn profile</a> on a computer.</li>
+                      <li>Under your name, click the <b>More</b> button (or <b>Resources</b>).</li>
+                      <li>Choose <b>Save to PDF</b>. LinkedIn downloads your whole profile as one file.</li>
+                      <li>Drop that file here.</li>
+                    </ol>
+                    <p className="text-[12.5px] text-[#7d7a74] mt-3">LinkedIn doesn&apos;t let other sites read profiles directly, so the file is the fastest way.</p>
+                  </div>
+                  <label className={`block border-[1.5px] border-dashed p-[32px] text-center cursor-pointer ${parsing ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] hover:border-brand-ink"}`}>
+                    <input type="file" accept=".pdf" disabled={parsing} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) parseResume(f); }} />
+                    <div className="font-sans text-[15px] font-semibold">{parsing ? "Reading your LinkedIn…" : "Drop the LinkedIn PDF here, or click to browse"}</div>
+                  </label>
+                </div>
+              ) : resumeMode === "website" ? (
+                <div className="max-w-[760px]">
+                  <label htmlFor="site-url" className="block font-sans text-[13px] font-semibold mb-2">Your website</label>
+                  <div className="flex gap-[8px]">
+                    <input id="site-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !parsing) parseWebsite(); }} placeholder="yoursite.com" className="flex-1 min-w-0 font-inter text-[14px] py-[10px] px-[12px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+                    <button onClick={parseWebsite} disabled={parsing} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 whitespace-nowrap disabled:opacity-40">{parsing ? "Reading your site…" : "Read my site →"}</button>
+                  </div>
+                  <p className="text-[12.5px] text-[#7d7a74] mt-2">We read your home and about pages and pull out your roles, skills and links. Media and products come later, from their own scans.</p>
+                </div>
+              ) : resumeMode === "file" ? (
                 <label className={`block max-w-[760px] border-[1.5px] border-dashed p-[40px] text-center cursor-pointer ${parsing ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] hover:border-brand-ink"}`}>
                   <input type="file" accept=".pdf,.txt,.md,.doc,.docx" disabled={parsing} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) parseResume(f); }} />
                   <div className="w-[44px] h-[44px] rounded-full bg-[#EDE7FF] mx-auto mb-3 flex items-center justify-center text-[18px] text-[#670821]">⭱</div>
@@ -589,6 +693,7 @@ export default function BuildPreview() {
               )}
               {parseErr && <div className="text-[13px] text-[#AB0000] mt-3 max-w-[760px]">{parseErr}</div>}
               <button onClick={() => setActive("About You")} className="block mt-6 font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip — I&apos;ll build from scratch →</button>
+              </>)}
             </>
           )}
 
@@ -608,9 +713,10 @@ export default function BuildPreview() {
                 <div className="flex items-center gap-3">
                   <label className="w-[88px] h-[88px] rounded-full border-[1.5px] border-dashed border-[#E1DED7] flex items-center justify-center text-[12px] text-[#7d7a74] cursor-pointer text-center leading-tight overflow-hidden hover:border-brand-ink shrink-0">
                     {photoUrl ? <img src={photoUrl} alt="" className="w-full h-full object-cover" /> : <span>Add<br />photo</span>}
-                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, "avatar"); if (url) setPhotoUrl(url); } e.currentTarget.value = ""; }} />
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const url = await uploadImg(f, "avatar"); if (url) { setPhotoUrl(url); const im = new Image(); im.onload = () => setPhotoSmall(Math.min(im.naturalWidth, im.naturalHeight) < 700); im.src = url; } } e.currentTarget.value = ""; }} />
                   </label>
-                  {photoUrl && <button onClick={() => setPhotoUrl("")} className="font-sans text-[12px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>}
+                  {photoUrl && <button onClick={() => { setPhotoUrl(""); setPhotoSmall(false); }} className="font-sans text-[12px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>}
+                  {photoSmall && <span className="text-[12.5px] text-[#AB0000] max-w-[360px]">This photo is small, so it will look soft on your profile. Use one at least 700 pixels wide and tall, ideally 1000+.</span>}
                   {uploading && <span className="font-sans text-[12px] text-[#670821]">Uploading…</span>}
                 </div>
                 {photoUrl && <PhotoFramer url={photoUrl} pos={photoPos} zoom={photoZoom} onPos={setPhotoPos} onZoom={setPhotoZoom} />}
@@ -618,7 +724,7 @@ export default function BuildPreview() {
               <div className="grid grid-cols-2 gap-[18px] max-w-[600px]"><Field label="Name" value={name} onChange={setName} /><Field label="City / State" value={city} onChange={setCity} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /></div>
               <div className="max-w-[600px] mt-[18px]"><Field label="Quick facts" value={bio} onChange={setBio} max={200} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">Up to three short lines, shown under your title. Press Enter to start a new line.</p></div>
-              <div className="max-w-[600px] mt-[18px]"><Field label="Currently" value={focus} onChange={setFocus} max={160} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">One or two sentences on what you are doing now. Shown in your header under the label “Currently”.</p></div>
+              <div className="max-w-[600px] mt-[18px]"><Field label="Currently" value={focus} onChange={setFocus} max={240} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">One or two sentences on what you are doing now. Shown in your header under the label “Currently”.</p></div>
               <div className="max-w-[600px] mt-[18px]">
                 <div className="flex items-baseline justify-between mb-2"><label htmlFor="f-previous" className="font-sans text-[13px] font-semibold cursor-pointer">Previous</label><span className="text-[11px] text-[#7d7a74]">{previous.length} / {PREV_MAX}</span></div>
                 <div className="flex flex-wrap items-center gap-[6px] border border-[#E1DED7] bg-white py-[6px] px-[8px] focus-within:border-brand-ink">
@@ -668,7 +774,7 @@ export default function BuildPreview() {
                 {entries.map((e, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[18px]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#EDE7FF] text-[#670821]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.kind === "role" ? "Role" : "Project"}</span>
+                      <span className={`font-sans text-[10px] font-semibold uppercase tracking-[0.1em] py-[3px] px-[8px] ${e.kind === "role" ? "bg-[#EDE7FF] text-[#670821]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{e.ptype || (e.kind === "role" ? "Role" : "Project")}</span>
                       <button onClick={() => upEntry(i, { featured: !e.featured })} className={`font-sans text-[11px] font-semibold py-[7px] px-[11px] border-[1.5px] whitespace-nowrap ${e.featured ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] text-[#7d7a74]"}`}>{e.featured ? "★ Featured" : "☆ Feature"}</button>
                     </div>
                     <div className="flex items-start gap-3">
@@ -680,21 +786,25 @@ export default function BuildPreview() {
                         {e.logo && <button onClick={() => upEntry(i, { logo: "" })} className="font-sans text-[10px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>}
                       </div>
                       <div className="flex-1 grid grid-cols-2 gap-[12px]">
-                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : e.ptype === "Client" ? "Client name" : e.ptype === "Accelerator" || e.ptype === "Program" ? "Program name" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                        <input value={e.primary} placeholder={e.kind === "role" ? "Company" : e.ptype === "Client" ? "Client name" : e.ptype === "Program" ? "Program name" : "What was the project?"} onChange={(ev) => upEntry(i, { primary: ev.target.value })} className="font-sans font-semibold text-[15px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                         <input value={e.dates} placeholder="2020 – 2023" onChange={(ev) => upEntry(i, { dates: ev.target.value })} className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                       </div>
                     </div>
-                    <input value={e.secondary} placeholder={e.kind === "role" ? "Your title" : e.ptype === "Client" ? "What you did for them" : e.ptype === "Accelerator" || e.ptype === "Program" ? "Who ran it, or your role" : "Client (who it was for)"} onChange={(ev) => upEntry(i, { secondary: ev.target.value })} className="w-full font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
+                    <input value={e.secondary} placeholder={e.kind === "role" ? "Your title" : e.ptype === "Client" ? "What you did for them" : e.ptype === "Program" ? "Who ran it, or your role" : "Client (who it was for)"} onChange={(ev) => upEntry(i, { secondary: ev.target.value })} className="w-full font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
                     <textarea value={e.desc} placeholder="What you did and what changed." onChange={(ev) => upEntry(i, { desc: ev.target.value })} rows={2} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none mt-2 focus:outline-none focus:border-brand-ink" />
                     {e.kind === "project" && (
                       <input value={e.result} placeholder="Result (optional), e.g. 1.5M members" onChange={(ev) => upEntry(i, { result: ev.target.value })} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 focus:outline-none focus:border-brand-ink" />
                     )}
-                    {e.kind === "project" && (
+                    {(() => { const cur = e.ptype || (e.kind === "role" ? "Role" : "Project"); return (
                       <div className="mt-3">
-                        <label className="font-sans text-[12px] font-semibold block mb-[6px]">What is this? <span className="font-normal text-[#a8a29a]">· shown as a label, so it reads differently from a job</span></label>
-                        <div className="flex flex-wrap gap-[6px]">{ENTRY_TYPES.map((t) => <button key={t} onClick={() => upEntry(i, { ptype: t })} aria-pressed={(e.ptype || "Project") === t} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${(e.ptype || "Project") === t ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{t}</button>)}</div>
+                        <label className="font-sans text-[12px] font-semibold block mb-[6px]">What is this? <span className="font-normal text-[#a8a29a]">· roles sit on your timeline; board and advisory seats get their own group; the rest show as tiles</span></label>
+                        <div className="flex flex-wrap items-center gap-[6px]">
+                          {ROLE_TYPES.map((t) => <button key={t} onClick={() => upEntry(i, { ptype: t, kind: "role" })} aria-pressed={cur === t} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${cur === t ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{t}</button>)}
+                          <span className="w-px h-[18px] bg-[#E1DED7] mx-1" />
+                          {ENTRY_TYPES.map((t) => <button key={t} onClick={() => upEntry(i, { ptype: t, kind: "project" })} aria-pressed={cur === t} className={`font-sans text-[12.5px] py-[5px] px-[10px] border ${cur === t ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{t}</button>)}
+                        </div>
                       </div>
-                    )}
+                    ); })()}
                     <div className="mt-3 pt-3 border-t border-[#ECEAE4] grid sm:grid-cols-2 gap-[14px]">
                       <div>
                         <div className="flex items-baseline justify-between mb-[6px]"><label htmlFor={`f-ind-${i}`} className="font-sans text-[12px] font-semibold">Industries <span className="font-normal text-[#a8a29a]">· up to {COMPANY_INDUSTRY_MAX}</span></label><span className="text-[11px] text-[#7d7a74]">{(e.industries || []).length} / {COMPANY_INDUSTRY_MAX}</span></div>
@@ -717,7 +827,7 @@ export default function BuildPreview() {
                 <datalist id="industry-suggestions">{INDUSTRY_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
                 <div className="flex gap-3">
                   <button onClick={() => addEntry("role")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a role</button>
-                  <button onClick={() => addEntry("project")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a client, accelerator or project</button>
+                  <button onClick={() => addEntry("project")} className="flex-1 font-sans text-[13px] text-[#7d7a74] py-3 border-[2px] border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a client, program or project</button>
                 </div>
               </div>
             </>
@@ -773,26 +883,36 @@ export default function BuildPreview() {
             </>
           )}
 
-          {active === "Actions" && (
+          {active === "CTA" && (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four actions.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four CTAs.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
-              <datalist id="action-types">{ACTION_TYPES.map((t) => <option key={t} value={t} />)}</datalist>
               <div className="space-y-3 max-w-[980px]">
                 {actions.map((a, i) => (
                   <div key={i} className="border border-[#E1DED7] p-[14px]">
                     <div className="grid grid-cols-[130px_1fr] gap-[10px] mb-2">
-                      <input list="action-types" value={a.type} onChange={(e) => upAction(i, { type: e.target.value })} placeholder="Contact, Hire, Book…" className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+                      {ACTION_TYPES.includes(a.type) || !a.type ? (
+                        <select value={a.type || "Contact"} onChange={(e) => upAction(i, { type: e.target.value === "__own" ? "" : e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">
+                          {ACTION_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                          <option value="__own">My own word…</option>
+                        </select>
+                      ) : (
+                        <input autoFocus value={a.type} onChange={(e) => upAction(i, { type: e.target.value })} onBlur={(e) => { if (!e.target.value.trim()) upAction(i, { type: "Contact" }); }} placeholder="Your word, e.g. Explore" className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+                      )}
                       <input value={a.label} onChange={(e) => upAction(i, { label: e.target.value })} placeholder={a.type === "Contact" ? "Get in touch" : a.type === "Listen" ? "Your podcast name" : a.type === "Read" ? "Your newsletter" : "What they'll get"} className="font-inter text-[13.5px] font-semibold py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                     </div>
                     <div className="grid grid-cols-[220px_1fr_auto] gap-[10px] items-center">
                       <select value={a.dest} onChange={(e) => upAction(i, { dest: e.target.value })} className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{ACTION_DESTS.map((d) => <option key={d.v} value={d.v}>{d.label}</option>)}</select>
                       {a.dest === "link" ? <input value={a.url} onChange={(e) => upAction(i, { url: e.target.value })} placeholder="https://…" className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /> : <span className="text-[12px] text-[#a8a29a]">No link needed</span>}
-                      <button onClick={() => rmAction(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-[#AB0000]">Remove</button>
+                      <span className="flex items-center gap-2">
+                        <button onClick={() => moveAction(i, -1)} disabled={i === 0} aria-label="Move up" className="text-[11px] text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▲</button>
+                        <button onClick={() => moveAction(i, 1)} disabled={i === actions.length - 1} aria-label="Move down" className="text-[11px] text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▼</button>
+                        <button onClick={() => rmAction(i)} className="font-sans text-[11px] text-[#a8a29a] hover:text-[#AB0000]">Remove</button>
+                      </span>
                     </div>
                   </div>
                 ))}
-                {actions.length < 4 && <button onClick={addAction} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add an action ({actions.length}/4)</button>}
+                {actions.length < 4 && <button onClick={addAction} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a CTA ({actions.length}/4)</button>}
               </div>
             </>
           )}
@@ -894,7 +1014,7 @@ export default function BuildPreview() {
                         <>
                           <div className="grid grid-cols-2 gap-[14px]">
                             <div><label className={lab}>Availability</label><input value={o.cadence} onChange={(e) => upOffer(o.key, { cadence: e.target.value })} placeholder="e.g. 1 per quarter" className={inp} /></div>
-                            <div><label className={lab}>Industries</label><input value={o.industries || ""} onChange={(e) => upOffer(o.key, { industries: e.target.value })} placeholder="Fintech, SaaS, Consumer…" className={inp} /></div>
+                            {o.key !== "advisory" && <div><label className={lab}>Industries</label><input value={o.industries || ""} onChange={(e) => upOffer(o.key, { industries: e.target.value })} placeholder="Fintech, SaaS, Consumer…" className={inp} /></div>}
                           </div>
                           <div className="mt-[14px]"><label className={lab}>Company stage <span className="text-[#a8a29a]">· select any</span></label>
                             <div className="flex flex-wrap gap-[8px]">
@@ -913,14 +1033,22 @@ export default function BuildPreview() {
                           {offerTags(o.keywords).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[12px] py-[4px] px-[9px] bg-[#EDE7FF] text-[#670821]">{t}<button onClick={() => rmOfferTag(o.key, o.keywords, t)} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
                           <input value={tagDraft} onChange={(e) => setTagDraft(e.target.value)} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === ",") && tagDraft.trim()) { e.preventDefault(); addOfferTag(o.key, o.keywords, tagDraft); } }} placeholder={offerTags(o.keywords).length ? "add another…" : "Type a tag, press Enter"} className="flex-1 min-w-[130px] font-inter text-[12.5px] py-[4px] px-[6px] focus:outline-none" />
                         </div>
+                        {o.keywordsAuto && offerTags(o.keywords).length > 0 && <p className="text-[12px] text-[#7d7a74] mt-[6px]">Filled in from your other offers. Remove or add tags to make these this offer&apos;s own.</p>}
                       </div>
 
                       <div className="mt-[14px]"><label className={lab}>Description (optional)</label><textarea value={o.desc} onChange={(e) => upOffer(o.key, { desc: e.target.value })} rows={2} className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" /></div>
 
                       <div className="mt-[16px] pt-[14px] border-t border-[#ECEAE4]"><label className={lab}>How they reach you</label><select value={o.booking} onChange={(e) => upOffer(o.key, { booking: e.target.value })} className="max-w-[240px] font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{opts.map((op) => <option key={op.v} value={op.v}>{op.label}</option>)}</select></div>
                       {instant && <div className="mt-[12px] text-[12px] text-[#3a352f] bg-[#F1EEE8] p-[11px]">People pick from the dates and times you set under <b>Booking times</b>, below your offers. Set a length and a price here. If you have no open times, this offer uses Send request.</div>}
+                      {o.booking === "link" && (
+                        <div className="mt-[12px] grid sm:grid-cols-[1fr_220px] gap-[10px]">
+                          <div><label className={lab}>Where the button goes</label><input value={o.url || ""} onChange={(e) => upOffer(o.key, { url: e.target.value })} placeholder="https://… your form, store, Contra, Upwork, payment link" className={inp} /></div>
+                          <div><label className={lab}>Button text</label><input value={o.urlLabel || ""} onChange={(e) => upOffer(o.key, { urlLabel: e.target.value })} placeholder={o.key === "project" ? "Start a project" : "Learn more"} className={inp} /></div>
+                          <p className="text-[12px] text-[#7d7a74] sm:col-span-2">The button on your profile opens this address in a new tab. Without an address, the offer falls back to Send request.</p>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mt-4">
-                        <button onClick={() => upOffer(o.key, { added: !o.added })} className="flex items-center gap-2 font-sans text-[12.5px] font-medium text-brand-ink">
+                        <button onClick={() => { const src = !o.added && SHARED_TOPIC_OFFERS.includes(o.key) && !o.keywords.trim() ? offers.find((x) => x.key !== o.key && SHARED_TOPIC_OFFERS.includes(x.key) && x.keywords.trim()) : undefined; upOffer(o.key, { added: !o.added, ...(src ? { keywords: src.keywords, keywordsAuto: true } : {}) }); }} className="flex items-center gap-2 font-sans text-[12.5px] font-medium text-brand-ink">
                           <span className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center text-[11px] ${o.added ? "bg-[#670821] border-[#670821] text-white" : "border-[#C7C2B8] text-transparent"}`}>✓</span>
                           {o.added ? "Showing on your profile" : "Show on my profile"}
                         </button>
@@ -1000,8 +1128,12 @@ export default function BuildPreview() {
                       <div key={cat}>
                         <div className="font-sans text-[11px] font-semibold text-[#7d7a74] uppercase tracking-[0.08em] mb-2">{cat} <span className="font-normal text-[#a8a29a] normal-case tracking-normal">· {rows.length}</span></div>
                         <div className="space-y-2">
-                          {rows.map(({ s, i }) => (
+                          {rows.map(({ s, i }, r) => (
                             <div key={i} className="flex items-center gap-3 border border-[#E1DED7] py-[7px] px-[10px]">
+                              <span className="flex flex-col shrink-0 -my-1">
+                                <button onClick={() => r > 0 && moveSkill(i, rows[r - 1].i)} disabled={r === 0} aria-label="Move up" className="text-[10px] leading-none text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▲</button>
+                                <button onClick={() => r < rows.length - 1 && moveSkill(i, rows[r + 1].i)} disabled={r === rows.length - 1} aria-label="Move down" className="text-[10px] leading-none text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▼</button>
+                              </span>
                               <button onClick={() => toggleTop(i)} title="Feature in top 5" className={`text-[16px] leading-none shrink-0 ${s.top ? "text-[#670821]" : "text-[#d8d4cc] hover:text-[#670821]"}`}>★</button>
                               <input value={s.name} onChange={(e) => upSkillField(i, { name: e.target.value })} className="flex-1 min-w-0 font-inter text-[13.5px] py-[4px] focus:outline-none" />
                               <div className="w-[150px] shrink-0">
@@ -1032,12 +1164,13 @@ export default function BuildPreview() {
                   <span className="text-[11px] text-[#7d7a74]">{industries.length}/{IND_MAX}</span>
                 </div>
                 <div className="flex flex-wrap gap-[8px] mb-3">
-                  {SKILL_INDUSTRIES.map((t) => { const on = industries.includes(t); const full = !on && industries.length >= IND_MAX; return <button key={t} disabled={full} onClick={() => toggleIndustry(t)} className={`font-sans text-[13px] py-[7px] px-[13px] border ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : full ? "border-[#ECEAE4] bg-white text-[#c4bfb6] cursor-not-allowed" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-brand-ink"}`}>{t}</button>; })}
-                  {industries.filter((t) => !SKILL_INDUSTRIES.includes(t)).map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[13px] py-[7px] px-[13px] border border-[#670821] bg-[#EDE7FF] text-[#670821]">{t}<button onClick={() => toggleIndustry(t)} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
+                  {industries.length === 0 && <span className="text-[13px] text-[#a8a29a]">None yet. Type one below; suggestions appear as you type.</span>}
+                  {industries.map((t) => <span key={t} className="inline-flex items-center gap-1 font-sans text-[13px] py-[7px] px-[13px] border border-[#670821] bg-[#EDE7FF] text-[#670821]">{t}<button onClick={() => toggleIndustry(t)} aria-label={`Remove ${t}`} className="text-[#670821]/60 hover:text-[#670821]">×</button></span>)}
                 </div>
                 {industries.length < IND_MAX && (
-                  <input value={indDraft} onChange={(e) => setIndDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addIndustry())} placeholder="Add your own industry…" className="max-w-[280px] w-full font-inter text-[12.5px] py-[8px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                  <input value={indDraft} onChange={(e) => setIndDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addIndustry())} list="industry-suggestions" placeholder="Add an industry, e.g. Fintech…" className="max-w-[280px] w-full font-inter text-[12.5px] py-[8px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
                 )}
+                <datalist id="industry-suggestions">{INDUSTRY_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
               </div>
             </>
           )}
@@ -1244,6 +1377,9 @@ export default function BuildPreview() {
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Each one links out to where people buy it. They show on the Shop page of your profile.</p>
+              <SiteScan mode="shop" website={socials.website} have={products.map((p) => p.url || "").filter(Boolean)} emptySocials={[]}
+                onAdd={(items) => setProducts((m) => [...m.filter((x) => x.title.trim() || (x.url || "").trim()), ...items.map((it) => ({ kind: STORE_KINDS.includes(it.kind) ? it.kind : "Download", title: it.title, blurb: "", price: "", featured: false, url: it.url }))])}
+                onSocials={() => {}} />
               <div className="space-y-4 max-w-[980px]">
                 {products.map((p, i) => (
                   <div key={i} className={`p-[18px] border ${p.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
@@ -1339,6 +1475,25 @@ export default function BuildPreview() {
         </div>
       )}
 
+      {/* ── SAVE BAR: always in view, says what is saved and what is not live yet ── */}
+      {(() => {
+        const notLive = !claimed || (!!draftAt && (!publishedAt || draftAt > publishedAt));
+        const when = savedAt ? savedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+        return (
+          <div className="fixed bottom-0 right-0 left-[248px] z-30 bg-white border-t border-[#ECEAE4] px-10 py-[14px] flex items-center gap-5">
+            <div className="font-sans text-[13px] text-[#7d7a74] flex items-center gap-2">
+              <span className={`inline-block w-[8px] h-[8px] ${saveState === "saving" ? "bg-[#C7B5FF]" : "bg-[#670821]"}`} />
+              {saveState === "saving" ? "Saving…" : saveState === "saved" ? `Draft saved${when ? ` at ${when}` : ""}` : "Draft saves as you type"}
+            </div>
+            {notLive && <span className="font-sans text-[12px] font-semibold text-[#670821] bg-[#EDE7FF] py-[5px] px-[10px]">{claimed ? "Changes not on your live profile yet" : "Not published yet"}</span>}
+            <div className="ml-auto flex items-center gap-3">
+              <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
+              <button onClick={() => setShowPublish(true)} className={`font-sans text-white text-[14px] font-semibold py-[12px] px-6 ${notLive ? "bg-[#670821] hover:bg-[#4E0619]" : "bg-brand-ink"}`}>{claimed ? "Update live profile →" : "Publish profile →"}</button>
+            </div>
+          </div>
+        );
+      })()}
+
       {showPublish && (
         <div className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white max-w-[440px] w-full p-8">
@@ -1414,7 +1569,7 @@ function PhotoFramer({ url, pos, zoom, onPos, onZoom }: { url: string; pos: { x:
       </div>
       <div className="max-w-[260px]">
         <div className="font-sans text-[13px] font-semibold mb-1">Position your photo</div>
-        <p className="text-[12px] text-[#7d7a74] leading-[1.5] mb-3">Drag the photo to choose what shows in your header. This frame is the same shape as the one on your profile.</p>
+        <p className="text-[12px] text-[#7d7a74] leading-[1.5] mb-3">Drag the photo to choose what shows in your header. This frame is the same shape as the one on your profile. Every profile shows the photo as a 320-pixel square, so a sharp photo at least 1000 pixels wide and tall works best.</p>
         <label htmlFor="f-photo-zoom" className="font-sans text-[12px] text-[#7d7a74] block mb-1">Zoom</label>
         <input id="f-photo-zoom" type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => onZoom(Number(e.target.value))} className="w-[200px] accent-[#2E2C28]" />
         <div><button onClick={() => { onPos({ x: 50, y: 25 }); onZoom(1); }} className="font-sans text-[12px] text-[#7d7a74] underline underline-offset-2 hover:text-brand-ink mt-2">Reset</button></div>

@@ -10,7 +10,10 @@ import net from "node:net";
 import { callClaude, parseJSON } from "@/lib/claude";
 
 export const SCAN_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video"] as const;
-export type ScanKind = (typeof SCAN_KINDS)[number];
+/** What a shop scan sorts products into. Matches the kinds in the builder's Shop step. */
+export const SHOP_KINDS = ["Template", "Guide", "Course", "Ebook", "Book", "Download"] as const;
+export type ScanMode = "media" | "shop";
+export type ScanKind = (typeof SCAN_KINDS)[number] | (typeof SHOP_KINDS)[number];
 export interface ScanItem { kind: ScanKind; title: string; outlet: string; url: string; foundOn: string; /** the title was worked out from the web address, so the person should check it */ check?: boolean }
 export interface ScanResult { site: string; siteTitle: string; pages: string[]; items: ScanItem[]; socials: Partial<Record<"linkedin" | "instagram" | "x" | "tiktok" | "youtube" | "substack", string>> }
 
@@ -40,16 +43,16 @@ export async function safeUrl(raw: string): Promise<URL> {
   return u;
 }
 
-export async function getPage(start: string, maxBytes = MAX_BYTES): Promise<{ url: string; html: string } | null> {
+export async function getPage(start: string, maxBytes = MAX_BYTES, accept: RegExp = /html/i): Promise<{ url: string; html: string } | null> {
   let url = start;
   for (let hop = 0; hop < 5; hop++) {
     const u = await safeUrl(url);
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
     try {
-      const res = await fetch(u, { redirect: "manual", signal: ctl.signal, headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" } });
+      const res = await fetch(u, { redirect: "manual", signal: ctl.signal, headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,application/rss+xml,application/atom+xml,application/xml,text/xml" } });
       if (res.status >= 300 && res.status < 400) { const next = res.headers.get("location"); if (!next) return null; url = new URL(next, u).toString(); continue; }
-      if (!res.ok || !/html/i.test(res.headers.get("content-type") || "")) return null;
+      if (!res.ok || !accept.test(res.headers.get("content-type") || "")) return null;
       const reader = res.body?.getReader(); if (!reader) return null;
       const chunks: Uint8Array[] = []; let size = 0;
       for (;;) { const { done, value } = await reader.read(); if (done) break; size += value.length; chunks.push(value); if (size > maxBytes) { await reader.cancel(); break; } }
@@ -90,6 +93,8 @@ export function linksOf(html: string, pageUrl: string): Link[] {
 const SOCIAL: [keyof ScanResult["socials"], RegExp][] = [["linkedin", /linkedin\.com\/(in|company)\//i], ["instagram", /instagram\.com\/[^/?#]+/i], ["x", /(^|\.)(twitter|x)\.com\/[^/?#]+/i], ["tiktok", /tiktok\.com\/@/i], ["youtube", /youtube\.com\/(@|c\/|channel\/|user\/)/i], ["substack", /[a-z0-9-]+\.substack\.com\/?$/i]];
 const JUNK = /(\/(privacy|terms|cookie|login|signin|sign-in|signup|register|cart|checkout|account|wp-admin|wp-login|feed|tag|category|author)(\/|$|\?))|(\.(pdf|jpg|jpeg|png|gif|webp|zip|css|js)(\?|$))|(share(r)?\.php|\/intent\/tweet|\/sharing\/|pinterest\.com\/pin\/create)/i;
 const WORTH_A_LOOK = /(press|media|speak|talk|keynote|podcast|episode|writing|article|essay|blog|post|news|book|appearance|interview|feature|portfolio|work|project|case|video|watch|listen|newsletter|resource|about)/i;
+// pages likely to list things for sale
+const WORTH_A_LOOK_SHOP = /(shop|store|product|buy|course|class|workshop|template|guide|toolkit|kit|ebook|book|download|resource|digital|membership|program|offer|gumroad|teachable|kajabi|podia|thinkific|maven|stan\.store|lemonsqueezy|etsy|amazon)/i;
 const FILE_NAME = /\.(png|jpe?g|gif|webp|svg|avif)$/i;
 // link text that names the action, not the piece
 const GENERIC = /^((read|listen|watch|view|see|get|buy|order)( (it|more|now))?( (on|at|in) .{2,40})?|read more|read the (article|story|post)|listen|listen now|watch|watch now|view|view more|learn more|more|here|click here|link|see more|details|buy|buy now|order|get it|subscribe|play|episode|article|post|posts|popular posts|blog|press|media|podcast|video|videos|website|home)\.?$/i;
@@ -125,8 +130,38 @@ function titleFromAddress(url: string): string {
 const domainName = (url: string) => { const h = new URL(url).hostname.replace(/^www\./, ""); return h; };
 const sameSite = (a: string, b: string) => new URL(a).hostname.replace(/^www\./, "") === new URL(b).hostname.replace(/^www\./, "");
 
-/** Scan a website and return the media found on it. */
-export async function scanSite(raw: string): Promise<ScanResult> {
+/* ── RSS / Atom feeds ──
+   Substack, Medium and most blogs draw their post list with scripts, so the page itself holds
+   no post links. Their feed does, with real titles, so posts are read from there. */
+function feedUrlOf(html: string, base: string): string | null {
+  const tag = html.match(/<link[^>]+type\s*=\s*["']application\/(rss|atom)\+xml["'][^>]*>/i)?.[0];
+  const href = tag ? attr(tag, "href") : "";
+  try {
+    if (href) return new URL(href, base).toString();
+    const host = new URL(base).hostname;
+    if (/\.substack\.com$/i.test(host) || /medium\.com$/i.test(host)) return new URL("/feed", base).toString();
+  } catch { /* no feed */ }
+  return null;
+}
+type FeedItem = { title: string; url: string; audio: boolean };
+function parseFeed(xml: string): FeedItem[] {
+  const out: FeedItem[] = [];
+  const clean = (t: string) => text(t.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")).slice(0, 140);
+  for (const m of xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/gi)) {
+    const block = m[0];
+    const title = clean(block.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "");
+    let url = clean(block.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1] || "");
+    if (!url) { const l = block.match(/<link[^>]*href\s*=\s*["']([^"']+)["'][^>]*>/i); url = l ? l[1] : ""; }
+    if (!title || !/^https?:\/\//i.test(url)) continue;
+    out.push({ title, url, audio: /<enclosure[^>]+type\s*=\s*["']audio\//i.test(block) });
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
+/** Scan a website and return the media (or, in shop mode, the products) found on it. */
+export async function scanSite(raw: string, mode: ScanMode = "media"): Promise<ScanResult> {
+  const shop = mode === "shop";
   const home = await getPage((await safeUrl(raw)).toString());
   if (!home) throw new Error("We couldn't open that website. Check the address and try again.");
   const siteTitle = text(home.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "").slice(0, 120);
@@ -134,7 +169,7 @@ export async function scanSite(raw: string): Promise<ScanResult> {
 
   // follow the site's own pages that are likely to list media
   const seen = new Set([home.url.replace(/\/$/, "")]);
-  const more = first.filter((l) => sameSite(l.url, home.url) && !JUNK.test(l.url) && WORTH_A_LOOK.test(l.url + " " + l.text))
+  const more = first.filter((l) => sameSite(l.url, home.url) && !JUNK.test(l.url) && (shop ? WORTH_A_LOOK_SHOP : WORTH_A_LOOK).test(l.url + " " + l.text))
     .map((l) => l.url).filter((u) => { const k = u.replace(/\/$/, ""); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, MAX_PAGES - 1);
   const fetched = [home, ...(await Promise.all(more.map((u) => getPage(u)))).filter((p): p is { url: string; html: string } => !!p)];
   const pages = fetched.filter((p, i) => fetched.findIndex((x) => x.url.replace(/\/$/, "") === p.url.replace(/\/$/, "")) === i);
@@ -150,11 +185,38 @@ export async function scanSite(raw: string): Promise<ScanResult> {
     const had = byUrl.get(key);
     if (!had || (l.text.length > had.text.length && l.text.length < 140)) byUrl.set(key, l);
   }
+  // posts from the site's feed (Substack, Medium, blogs) — titles come from the feed itself
+  const fromFeed: ScanItem[] = [];
+  if (!shop) {
+    const feedUrl = feedUrlOf(home.html, home.url);
+    const feed = feedUrl ? await getPage(feedUrl, 800_000, /xml|rss|atom/i).catch(() => null) : null;
+    if (feed && /<(rss|feed|rdf:RDF)\b/i.test(feed.html)) {
+      const outlet = siteTitle.split(/\s[|·–-]\s/)[0].trim().slice(0, 60) || domainName(home.url);
+      for (const f of parseFeed(feed.html)) {
+        byUrl.delete(f.url.replace(/\/$/, ""));
+        fromFeed.push({ kind: f.audio ? "Podcast" : "Writing", title: f.title, outlet, url: f.url, foundOn: feedUrl! });
+      }
+    }
+  }
   const links = Array.from(byUrl.values()).filter((l) => (l.text + l.ctx).trim().length > 3).slice(0, MAX_LINKS);
-  if (!links.length) return { site: home.url, siteTitle, pages: pages.map((p) => p.url), items: [], socials };
+  if (!links.length) return { site: home.url, siteTitle, pages: pages.map((p) => p.url), items: fromFeed, socials };
 
   const list = links.map((l, n) => `${n} | ${l.text || "(no link text)"} | ${l.url} | before: ${l.ctx.slice(-110)}`).join("\n");
-  const prompt = `You are reading links taken from one person's own website (${home.url}, "${siteTitle}").
+  const prompt = shop ? `You are reading links taken from one person's own website (${home.url}, "${siteTitle}").
+Pick the ones that lead to a specific PRODUCT this person sells or gives away: a book (their own, on Amazon or elsewhere), a course or class, a template, a guide or toolkit, an ebook, a workshop, or a digital download. Product pages on other stores count (Amazon, Gumroad, Teachable, Kajabi, Podia, Thinkific, Maven, Etsy, Shopify, Lemon Squeezy, Stan).
+
+Judge each link mainly by its ADDRESS and the words before it. The link text is often only "Buy", "Get it", a logo, or empty, and that is fine: the real title is read from the page afterwards.
+
+Skip: articles, podcasts, talks, press, videos and other media; navigation, contact, cart and checkout pages, a whole shop's front page or category listing, social profiles, sign-ups, and anything not sold or made by this person.
+
+For each one you keep, return:
+- "n": the number at the start of its line
+- "kind": exactly one of ${SHOP_KINDS.map((k) => `"${k}"`).join(", ")}  (Book = a printed or Kindle book; Ebook = a PDF or digital book; Download = any other digital file)
+
+Return ONLY a JSON array, no other text. Example: [{"n":4,"kind":"Course"},{"n":9,"kind":"Book"}]
+
+LINKS (number | link text | address | words before the link):
+${list}` : `You are reading links taken from one person's own website (${home.url}, "${siteTitle}").
 Pick the ones that lead to this person's MEDIA: a specific piece of press coverage about them, a specific talk or speaking event, a specific podcast episode or show they host or appear on, a specific piece of their writing (article, essay, newsletter issue, book), a specific video, or a specific portfolio or case-study piece.
 
 Judge each link mainly by its ADDRESS and the words before it. The link text is often only "Read more", "Listen", a logo, or empty, and that is fine: the real title is read from the page afterwards. An address that clearly points to one article, episode, talk or video should be kept.
@@ -183,14 +245,15 @@ ${list}`;
   // text is used, as long as it names the piece. Nothing is ever made up.
   const chosen: { l: Link; kind: ScanKind }[] = []; const used = new Set<string>();
   for (const p of picked) {
-    const l = links[Number(p?.n)]; const kind = SCAN_KINDS.find((k) => k === p?.kind);
+    const l = links[Number(p?.n)]; const kind = (shop ? SHOP_KINDS : SCAN_KINDS).find((k) => k === p?.kind);
     if (!l || !kind || used.has(l.url)) continue;
     used.add(l.url); chosen.push({ l, kind });
     if (chosen.length >= MAX_ITEMS) break;
   }
   const read = await Promise.all(chosen.map((c) => titleOf(c.l.url).catch(() => null)));
-  const items: ScanItem[] = [];
+  const items: ScanItem[] = [...fromFeed];
   chosen.forEach((c, i) => {
+    if (items.some((x) => x.url.replace(/\/$/, "") === c.l.url.replace(/\/$/, ""))) return;
     const own = c.l.text.replace(/\s+/g, " ").trim();
     const ownOk = own.length >= 6 && !GENERIC.test(own);
     const found = read[i];
@@ -203,4 +266,23 @@ ${list}`;
     items.push({ kind: c.kind, title, outlet: found?.outlet || (external ? domainName(c.l.url) : ""), url: c.l.url, foundOn: c.l.page, ...(guess ? { check: true } : {}) });
   });
   return { site: home.url, siteTitle, pages: pages.map((p) => p.url), items, socials };
+}
+
+/* ── A person's site as plain text ──
+   For people who have no resume: the home page plus the pages most likely to describe them
+   (about, bio, work, experience) are read and handed to the same reader the resume goes through. */
+const ABOUT_PAGE = /(about|bio|story|me|who|work|experience|career|background|now|resume|cv)/i;
+export async function siteText(raw: string, maxChars = 14_000): Promise<{ site: string; siteTitle: string; pages: string[]; text: string }> {
+  const home = await getPage((await safeUrl(raw)).toString());
+  if (!home) throw new Error("We couldn't open that website. Check the address and try again.");
+  const siteTitle = text(home.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "").slice(0, 120);
+  const seen = new Set([home.url.replace(/\/$/, "")]);
+  const more = linksOf(home.html, home.url).filter((l) => sameSite(l.url, home.url) && !JUNK.test(l.url) && ABOUT_PAGE.test(l.url + " " + l.text))
+    .map((l) => l.url).filter((u) => { const k = u.replace(/\/$/, ""); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 4);
+  const pages = [home, ...(await Promise.all(more.map((u) => getPage(u)))).filter((p): p is { url: string; html: string } => !!p)];
+  // main content only: drop navigation, headers, footers and menus
+  const body = (html: string) => text(html.replace(/<(nav|header|footer|aside|form)[\s\S]*?<\/\1>/gi, " "));
+  let out = "";
+  for (const p of pages) { const t = body(p.html); if (t.length > 80) out += `\n\n[${p.url}]\n${t}`; if (out.length > maxChars) break; }
+  return { site: home.url, siteTitle, pages: pages.map((p) => p.url), text: out.trim().slice(0, maxChars) };
 }

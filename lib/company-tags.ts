@@ -18,4 +18,7 @@ export const INDUSTRY_SUGGESTIONS = [
   "Financial services", "Government", "Nonprofit", "Small business",
 ];
 // What a project entry is, so clients and accelerators read differently from jobs.
-export const PROJECT_TYPES = ["Client", "Accelerator", "Program", "Project"];
+export const PROJECT_TYPES = ["Client", "Program", "Project"]; // an accelerator is a Program
+/** Kinds of role that sit on the timeline. "Role" is a job; the others are drawn with a label. */
+export const ROLE_TYPES = ["Role", "Board", "Advisor"];
+export const ENTRY_KINDS = [...ROLE_TYPES, ...PROJECT_TYPES];
