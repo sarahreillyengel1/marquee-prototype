@@ -187,6 +187,16 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── PRICING (beige) ── */}
+      <section id="pricing" className={`${SECTION} bg-beige`}>
+        <div className={`${WRAP} text-center`}>
+          <div className={EYEBROW}>What it costs</div>
+          <h2 className={`${H2} mt-4`}>Pricing.</h2>
+          <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Join now as a Founding Member for $20/month, or get reminded when Marquee Pro opens December 1.</p>
+          <Pricing />
+        </div>
+      </section>
+
       {/* ── MONETIZE (white) ── */}
       <section id="earn" className={SECTION}>
         <div className={WRAP}>
@@ -261,16 +271,6 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── PRICING (beige) ── */}
-      <section id="pricing" className={`${SECTION} bg-beige`}>
-        <div className={`${WRAP} text-center`}>
-          <div className={EYEBROW}>What it costs</div>
-          <h2 className={`${H2} mt-4`}>Pricing.</h2>
-          <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Join now as a Founding Member for $20/month, or get reminded when Marquee Pro opens December 1.</p>
-          <Pricing />
         </div>
       </section>
 
@@ -356,9 +356,9 @@ export default function HomePage() {
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><a href="#what" className="hover:text-dred">What it is</a></li>
                 <li><a href="#how" className="hover:text-dred">How it works</a></li>
+                <li><a href="#pricing" className="hover:text-dred">Pricing</a></li>
                 <li><a href="#earn" className="hover:text-dred">Monetize your expertise</a></li>
                 <li><a href="#blueprint" className="hover:text-dred">Career Blueprint</a></li>
-                <li><a href="#pricing" className="hover:text-dred">Pricing</a></li>
                 <li><a href="#business" className="hover:text-dred">For businesses &amp; recruiters</a></li>
               </ul>
             </div>

@@ -11,22 +11,21 @@ const TAG = "inline-block text-[11.5px] font-bold tracking-[0.16em] uppercase px
 
 const PRO = [
   "Your own marquee.bio/username",
-  "Experience, impact, skills, media and work in one profile",
-  "Full-time, fractional, advisory, consulting, speaking and more",
-  "Rates and availability",
-  "Paid 1:1 calls and booking",
-  "Storefront for workshops, courses and digital downloads",
-  "Payments built in",
-  "Get discovered by businesses and people looking for experienced talent",
+  "Showcase your experience, impact, skills, work and media",
+  "Get hired for full-time, fractional, consulting and advisory work",
+  "Offer projects, speaking, coaching and 1:1 calls",
+  "Set your rates and availability and get paid through Marquee",
+  "Sell workshops, courses and downloads from your storefront",
+  "Get discovered, booked and hired by businesses and professionals",
 ];
 const FOUNDING = [
-  "Founding Member pricing for Marquee Pro",
-  "Founding Member badge",
-  "Early visibility in search and discovery",
-  "Opportunities to be featured in talent lists, editorial and social",
+  "Founding Member pricing, locked in",
+  "Founding Member badge on your profile",
+  "Priority visibility in search and discovery",
+  "Priority consideration for featured talent, editorial and social",
   "Private monthly member calls and guest conversations",
   "First access to new features",
-  "A place among the first 250 professionals on Marquee",
+  "Direct influence on the product roadmap",
 ];
 
 export default function Pricing() {
@@ -92,7 +91,7 @@ export default function Pricing() {
         </div>
         <div className="mt-4">
           <p className="text-[15px] font-semibold">Lock in ~30% off Marquee Pro.</p>
-          <p className="text-[14.5px] leading-[1.55] text-white/90 mt-2">Join the first 250 professionals on Marquee with full access to Marquee Pro now, plus:</p>
+          <p className="text-[14.5px] leading-[1.55] text-white/90 mt-2">Join the first 250 professionals on Marquee. Get full access to Marquee Pro now, plus:</p>
         </div>
         <ul className="list-none mt-4 mb-7">
           {FOUNDING.map((l) => <li key={l} className="text-[14.5px] leading-[1.45] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
