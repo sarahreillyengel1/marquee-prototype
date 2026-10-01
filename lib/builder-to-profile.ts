@@ -87,7 +87,14 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     .filter(([, url]) => url && url.trim())
     .map(([kind, url]) => ({ kind, url: absUrl(url as string) as string, visible: true }));
 
-  const roles: Role[] = (s.entries || []).map((e, i) => ({
+  // Jobs read newest first: by end date ("Present" first), then start date. Projects keep the order typed.
+  const when = (d: string) => { const m = (d || "").match(/(\d{4})(?:-(\d{1,2}))?/g) || []; const num = (x?: string) => { const mm = (x || "").match(/(\d{4})(?:-(\d{1,2}))?/); return mm ? Number(mm[1]) * 100 + Number(mm[2] || 6) : 0; }; return { start: num(m[0]), end: /present|now|current/i.test(d || "") ? 999999 : num(m[1] || m[0]) }; };
+  const all = s.entries || [];
+  const jobs = all.map((e, i) => ({ e, i })).filter((x) => x.e.kind !== "project")
+    .sort((a, b) => { const wa = when(a.e.dates), wb = when(b.e.dates); return wb.end - wa.end || wb.start - wa.start || a.i - b.i; }).map((x) => x.e);
+  let j = 0;
+  const ordered = all.map((e) => (e.kind === "project" ? e : jobs[j++]));
+  const roles: Role[] = ordered.map((e, i) => ({
     id: `r${i}`, company: e.primary || "", logoLetter: initials(e.primary || "?"), logoUrl: e.logo || undefined,
     role: e.secondary || "", dates: e.dates || "", blurb: e.desc || "", featured: !!e.featured,
     metrics: e.result ? [{ value: e.result, label: "" }] : [],
