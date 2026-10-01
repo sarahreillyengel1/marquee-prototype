@@ -201,7 +201,7 @@ export async function sendRequestEmails(m: { ownerName: string; ownerEmail: stri
 /** "Remind Me" — confirms we have their email and says what happens next. */
 export async function sendReminderConfirmation(to: string, about: "pro" | "founding") {
   const body = about === "pro"
-    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now, limited to the first 250 professionals.") + button("https://marquee.bio/join", "Become a Founding Member")
+    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now, with limited places.") + button("https://marquee.bio/join", "Become a Founding Member")
     : p("You asked about <strong>Founding Member</strong> sign-up.") + p("We will email you the moment it opens, with your link to join.");
   return sendEmail(to, about === "pro" ? "We'll remind you when Marquee Pro opens" : "We'll tell you when Founding Member sign-up opens", shell(p("Hi there,") + body, "Sent by Marquee"));
 }

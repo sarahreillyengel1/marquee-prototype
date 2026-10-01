@@ -49,7 +49,7 @@ export default function Join() {
 
         {closed ? (
           <div className="bg-white border border-hair rounded-[10px] p-7 mt-8">
-            <h2 className="font-lora text-[24px] leading-[1.2]">{closed === "full" ? "All 250 Founding Member places are taken." : "Founding Member sign-up opens shortly."}</h2>
+            <h2 className="font-lora text-[24px] leading-[1.2]">{closed === "full" ? "Founding Member places are all taken." : "Founding Member sign-up opens shortly."}</h2>
             {saved ? <p className="text-[15px] leading-[1.55] mt-3 font-semibold text-dred" role="status">Got it. We&apos;ll email you{closed === "full" ? " when Marquee Pro opens on December 1" : " the moment it opens"}.</p> : (
               <form onSubmit={notify} noValidate>
                 <p className="text-[15px] leading-[1.55] mt-3">{closed === "full" ? "Marquee Pro opens December 1. Leave your email and we'll remind you." : "Leave your email and we'll send your link the moment it opens."}</p>
@@ -79,7 +79,7 @@ export default function Join() {
             <button onClick={pay} disabled={busy} className="block w-full mt-6 px-6 py-[15px] text-[16px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{busy ? "Opening secure payment…" : "Continue to payment"}</button>
             {err && <p className="text-[13px] text-dred mt-3 text-center" role="alert">{err}</p>}
             <p className="text-[13px] leading-[1.55] text-ink/70 mt-4 text-center">You&apos;ll pay on Stripe&apos;s secure page, then create your account. Cancel anytime.</p>
-            <p className="text-[13px] leading-[1.55] text-ink/70 mt-6 text-center">For professionals with 5+ years of experience. Limited to 250 Founding Members.</p>
+            <p className="text-[13px] leading-[1.55] text-ink/70 mt-6 text-center">For professionals with 5+ years of experience. Founding Member places are limited.</p>
           </>
         )}
         <p className="text-[13px] mt-10 text-center"><Link href="/signup" className="underline underline-offset-2 hover:text-dred">Have an invite code?</Link> &nbsp;·&nbsp; <Link href="/login" className="underline underline-offset-2 hover:text-dred">Sign in</Link></p>

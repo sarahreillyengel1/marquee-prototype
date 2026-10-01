@@ -91,13 +91,13 @@ export default function Pricing() {
         </div>
         <div className="mt-4">
           <p className="text-[15px] font-semibold">Lock in ~30% off Marquee Pro.</p>
-          <p className="text-[14.5px] leading-[1.55] text-white/90 mt-2">Join the first 250 professionals on Marquee. Get full access to Marquee Pro now, plus:</p>
+          <p className="text-[14.5px] leading-[1.55] text-white/90 mt-2">Join the first professionals on Marquee. Get full access to Marquee Pro now, plus:</p>
         </div>
         <ul className="list-none mt-4 mb-7">
           {FOUNDING.map((l) => <li key={l} className="text-[14.5px] leading-[1.45] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
         </ul>
         <div>
-          <p className={`${TOP} text-[12.5px] leading-[1.45] text-white/85`}>For professionals with 5+ years of experience.<br />Limited to 250 Founding Members.</p>
+          <p className={`${TOP} text-[12.5px] leading-[1.45] text-white/85`}>For professionals with 5+ years of experience.<br />Founding Member places are limited.</p>
           <Link href="/join" className={`${BTN} bg-white text-dred hover:bg-beige block w-full mt-3`}>Sign Up Now</Link>
         </div>
       </div>

@@ -790,3 +790,44 @@
 /* a testimonial and a quote side by side */
 .mq-root .qrow{ display:flex; gap:14px; align-items:stretch; }
 @media (max-width:900px){ .mq-root .qrow{ flex-direction:column; } }
+
+/* shop: filter by kind, sort, then the same cards as Work with Me */
+.mq-root .shop-bar{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+.mq-root .shop-sort{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--gray); margin-left:auto; }
+.mq-root .shop-sort select{ font:inherit; font-weight:600; color:var(--ink); background:var(--card); border:1px solid var(--line2); border-radius:0; padding:7px 10px; cursor:pointer; }
+.mq-root .shop-sort select:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+/* Media page: the "My audience" button that opens Reach */
+.mq-root .aud-btn{ font:inherit; font-family:var(--font-poppins),'Inter',sans-serif; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:8px; margin-left:auto; padding:8px 14px; background:var(--h-bar); color:var(--h-bar-ink); border:1px solid transparent; cursor:pointer; }
+.mq-root .aud-btn.on{ background:var(--card); color:var(--ink); border-color:var(--ink); }
+.mq-root .aud-btn:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+/* ── Spotlight: the short, phone-first page ── */
+.mq-root.spot{ min-height:100vh; background:var(--page); display:flex; justify-content:center; padding:36px 18px 44px; }
+.mq-root .spot-in{ width:100%; max-width:440px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+.mq-root .spot-ph{ width:118px; height:118px; border-radius:50%; overflow:hidden; border:4px solid var(--card); box-shadow:0 6px 22px rgba(17,17,17,.14); background:var(--line); margin-bottom:14px; }
+.mq-root .spot-ph img{ width:100%; height:100%; object-fit:cover; display:block; }
+.mq-root .spot-ini{ display:flex; align-items:center; justify-content:center; font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-size:40px; color:var(--ink2); }
+.mq-root .spot-name{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:32px; line-height:1.08; letter-spacing:-.02em; color:var(--ink); text-wrap:balance; }
+.mq-root .spot-title{ font-family:var(--font-poppins),'Inter',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--h-accent); margin-top:10px; line-height:1.5; max-width:30ch; }
+.mq-root .spot-loc{ display:flex; align-items:center; gap:6px; font-size:14px; color:var(--gray); margin-top:8px; }
+.mq-root .spot-soc{ display:flex; gap:10px; margin-top:14px; }
+.mq-root .spot-soc a{ width:40px; height:40px; border-radius:50%; border:1px solid var(--line2); background:var(--card); color:var(--ink); display:flex; align-items:center; justify-content:center; }
+.mq-root .spot-soc a .ic{ width:17px; height:17px; }
+.mq-root .spot-links{ width:100%; display:flex; flex-direction:column; gap:10px; margin-top:24px; text-align:left; }
+.mq-root .spot-link{ display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--card); border:1px solid var(--line2); border-radius:14px; color:var(--ink); text-decoration:none; transition:transform .15s, box-shadow .2s; }
+.mq-root .spot-link:hover{ transform:translateY(-1px); box-shadow:var(--sh-sm); }
+.mq-root .spot-link:focus-visible, .mq-root .spot-pages a:focus-visible, .mq-root .spot-soc a:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+.mq-root .spot-link.hi{ background:var(--lav2); border-color:transparent; }
+.mq-root .spot-ic{ width:38px; height:38px; flex:0 0 38px; border-radius:10px; background:var(--line); color:var(--h-accent); display:flex; align-items:center; justify-content:center; }
+.mq-root .spot-link.hi .spot-ic{ background:var(--card); }
+.mq-root .spot-ic .ic{ width:18px; height:18px; }
+.mq-root .spot-tx{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.mq-root .spot-tx .t{ font-family:var(--font-poppins),'Inter',sans-serif; font-size:15.5px; font-weight:600; line-height:1.25; }
+.mq-root .spot-tx .s{ font-size:13px; color:var(--gray); margin-top:2px; line-height:1.35; }
+.mq-root .spot-pages{ width:100%; display:grid; grid-template-columns:repeat(var(--n,5),1fr); gap:8px; margin-top:18px; }
+.mq-root .spot-pages a{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px; background:var(--line); border-radius:10px; color:var(--ink); text-decoration:none; font-family:var(--font-poppins),'Inter',sans-serif; font-size:11px; font-weight:600; }
+.mq-root .spot-pages a .ic{ width:18px; height:18px; color:var(--h-accent); }
+.mq-root .spot-full{ margin-top:22px; font-size:13px; font-weight:600; color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+.mq-root .spot-brand{ display:inline-flex; flex-direction:column; align-items:center; gap:5px; margin-top:26px; padding:8px 14px; font-size:12px; font-weight:600; letter-spacing:.24em; color:var(--ink); text-decoration:none; }
+.mq-root .spot-brand span{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-style:italic; font-size:14px; letter-spacing:0; font-weight:400; color:var(--gray); }

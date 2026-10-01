@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   if (!stripeReady()) return NextResponse.json({ error: "Sign-up isn't switched on yet.", notOpen: true }, { status: 503 });
   try {
     const prices = await foundingPrices(stripe());
-    if ((await foundingCount(stripe(), prices)) >= FOUNDING_LIMIT) return NextResponse.json({ error: "All 250 Founding Member places are taken.", full: true }, { status: 409 });
+    if ((await foundingCount(stripe(), prices)) >= FOUNDING_LIMIT) return NextResponse.json({ error: "Founding Member places are all taken.", full: true }, { status: 409 });
     const origin = originOf(req);
     const session = await stripe().checkout.sessions.create({
       mode: "subscription",

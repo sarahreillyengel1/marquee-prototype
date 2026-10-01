@@ -28,7 +28,7 @@ import "./profile-design.css";
 import { ARCHETYPE_DESC } from "@/lib/archetypes";
 import { DEMO_PROFILES } from "@/lib/demo-profiles";
 import { BookingPicker, RequestForm, useSlots } from "./Booking";
-import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role } from "@/lib/profile-types";
+import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role, StoreItem } from "@/lib/profile-types";
 
 /* ─────────────── icons (ported from marquee-app/src/icons.tsx) ─────────────── */
 const P: Record<string, string> = {
@@ -37,6 +37,9 @@ const P: Record<string, string> = {
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
   star: '<path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.3 6.8 19l1-5.8L3.6 9.1l5.8-.8z"/>',
   award: '<circle cx="12" cy="8.5" r="5.5"/><path d="M8.5 13.2L7 22l5-3 5 3-1.5-8.8"/>',
+  rocket: '<path d="M5 15c-1.5 1.2-2 5-2 5s3.8-.5 5-2c.7-.8.7-2.1-.1-2.9a2.1 2.1 0 0 0-2.9-.1z"/><path d="M12 15l-3-3a22 22 0 0 1 2-4 12.9 12.9 0 0 1 11-6c0 2.7-.8 7.5-6 11a22 22 0 0 1-4 2z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0"/><path d="M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>',
+  bag: '<path d="M5 7h14l-1 13H6L5 7z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/>',
+  news: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M7 9h6M7 13h10M7 16h10"/><path d="M16 9h1"/>',
   "trending-up": '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   zap: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
   bolt: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
@@ -91,7 +94,7 @@ export function Icon({ name, className = "ic", fill = false, style }: { name: st
   );
 }
 
-const socialIcon: Record<string, string> = {
+export const socialIcon: Record<string, string> = {
   linkedin: "linkedin", instagram: "instagram", x: "xlogo", tiktok: "tiktok", website: "globe2",
 };
 
@@ -377,7 +380,7 @@ function Skills({ featured, limit = 8 }: { featured?: boolean; limit?: number } 
 // The header: text on the left, one card on the right (photo · Open to · Work with),
 // and the "Previous" brand row along the bottom. The Actions row is NOT part of it.
 // Shared with the builder's photo framer so what you drag is what the header shows.
-const photoStyle = (pos?: { x: number; y: number }, zoom?: number): CSSProperties => {
+export const photoStyle = (pos?: { x: number; y: number }, zoom?: number): CSSProperties => {
   const at = `${pos?.x ?? 50}% ${pos?.y ?? 25}%`;
   return { objectPosition: at, transformOrigin: at, transform: zoom && zoom > 1 ? `scale(${zoom})` : undefined };
 };
@@ -1106,8 +1109,6 @@ function WorkWithPage() {
   const { profile } = useStore();
   const engage = useEngage();
   const offers = profile.engagements.filter((e) => e.visible);
-  const total = fmtFollowers((profile.reach || []).reduce((a, p) => a + parseFollowers(p.followers), 0));
-  const aud = profile.audience;
   return (
     <div className="page on">
       <PageHead title="Work with Me" />
@@ -1116,26 +1117,31 @@ function WorkWithPage() {
           {offers.map((e) => <OfferCard key={e.key + e.title} e={e} onOpen={() => engage(e)} />)}
         </div>
       )}
-      {profile.reach && profile.reach.length > 0 && (
-        <section className="smt">
-          <BlockHead title="Reach" sub="Audience & platforms" />
-          <div className="card reach-card">
-            <div className="reach-total"><span className="reach-num">{total}</span><span className="reach-lbl">total followers</span></div>
-            <div className="reach-grid">
-              {profile.reach.map((p) => {
-                const inner = <><div className="reach-plat">{p.platform}</div><div className="reach-f">{p.followers}</div>{p.handle && <div className="reach-h">{p.handle}</div>}{p.engagement && <div className="reach-eng">{p.engagement} eng.</div>}</>;
-                return p.url ? <a key={p.platform} className="reach-tile" href={p.url} target="_blank" rel="noopener">{inner}</a> : <div key={p.platform} className="reach-tile">{inner}</div>;
-              })}
-            </div>
-            {aud && (aud.age || aud.gender || aud.geo) && (
-              <div className="reach-aud">
-                {aud.age && <div><span className="reach-aud-l">Top age</span><span className="reach-aud-v">{aud.age}</span></div>}
-                {aud.gender && <div><span className="reach-aud-l">Audience</span><span className="reach-aud-v">{aud.gender}</span></div>}
-                {aud.geo && <div><span className="reach-aud-l">Top geos</span><span className="reach-aud-v">{aud.geo}</span></div>}
-              </div>
-            )}
-          </div>
-        </section>
+    </div>
+  );
+}
+
+// Audience and platforms. Lives on the Media page, opened by the "My audience" button.
+function ReachCard() {
+  const { profile } = useStore();
+  const reach = profile.reach || [];
+  const total = fmtFollowers(reach.reduce((a, p) => a + parseFollowers(p.followers), 0));
+  const aud = profile.audience;
+  return (
+    <div className="card reach-card">
+      <div className="reach-total"><span className="reach-num">{total}</span><span className="reach-lbl">total followers</span></div>
+      <div className="reach-grid">
+        {reach.map((p) => {
+          const inner = <><div className="reach-plat">{p.platform}</div><div className="reach-f">{p.followers}</div>{p.handle && <div className="reach-h">{p.handle}</div>}{p.engagement && <div className="reach-eng">{p.engagement}{/^[\d.,]+%?$/.test(p.engagement.trim()) ? " eng." : ""}</div>}</>;
+          return p.url ? <a key={p.platform} className="reach-tile" href={p.url} target="_blank" rel="noopener">{inner}</a> : <div key={p.platform} className="reach-tile">{inner}</div>;
+        })}
+      </div>
+      {aud && (aud.age || aud.gender || aud.geo) && (
+        <div className="reach-aud">
+          {aud.age && <div><span className="reach-aud-l">Top age</span><span className="reach-aud-v">{aud.age}</span></div>}
+          {aud.gender && <div><span className="reach-aud-l">Audience</span><span className="reach-aud-v">{aud.gender}</span></div>}
+          {aud.geo && <div><span className="reach-aud-l">Top geos</span><span className="reach-aud-v">{aud.geo}</span></div>}
+        </div>
       )}
     </div>
   );
@@ -1143,13 +1149,21 @@ function WorkWithPage() {
 
 function MediaPage() {
   const { profile, goto } = useStore();
-  const types = ["All", "Project", "Podcast", "Newsletter", "Press", "Speaking", "Board", "Portfolio"];
+  const ORDER = ["Press", "Podcast", "Speaking", "Newsletter", "Video", "Portfolio", "Project", "Board"];
+  const types = ["All", ...ORDER.filter((t) => profile.media.some((m) => m.type === t))];
   const [f, setF] = useState("All");
   const items = profile.media.filter((m) => f === "All" || m.type === f);
+  const hasReach = !!profile.reach && profile.reach.length > 0;
+  const [audience, setAudience] = useState(false);
+  const total = hasReach ? fmtFollowers(profile.reach!.reduce((a, p) => a + parseFollowers(p.followers), 0)) : "";
   return (
     <div className="page on">
       <PageHead title="Media" />
-      <div className="mtabs">{types.map((t) => <div key={t} className={"mtab" + (t === f ? " on" : "")} onClick={() => setF(t)}>{t}</div>)}</div>
+      <div className="shop-bar">
+        <div className="mtabs" style={{ marginBottom: 0 }}>{types.length > 2 && types.map((t) => <div key={t} className={"mtab" + (t === f ? " on" : "")} role="button" aria-pressed={t === f} onClick={() => setF(t)}>{t}</div>)}</div>
+        {hasReach && <button type="button" className={"aud-btn" + (audience ? " on" : "")} aria-expanded={audience} onClick={() => setAudience((v) => !v)}><Icon name="users" style={{ width: 15, height: 15 }} /> My audience{total ? ` · ${total}` : ""}</button>}
+      </div>
+      {hasReach && audience && <div style={{ marginBottom: 22 }}><ReachCard /></div>}
       <div className="mgrid">{items.map((m, i) => <MediaCard key={m.id} m={m} i={i} onInternal={() => goto("portfolio")} />)}</div>
     </div>
   );
@@ -1201,26 +1215,59 @@ function ProjectPage() {
 }
 
 // Shop — things the person sells. Each item links out to where it is sold.
+const SHOP_ICON: Record<string, string> = { Book: "book", Ebook: "book", Course: "play-circle", Template: "grid", Guide: "file", Download: "file" };
 function ShopPage() {
   const { profile } = useStore();
-  const items = starFirst(profile.store || []);
+  const toast = useToast();
+  const openWorkWith = useWorkWith();
+  const all = profile.store || [];
+  const kinds = Array.from(new Set(all.map((p) => p.kind)));
+  const [kind, setKind] = useState("All");
+  const [sort, setSort] = useState<"featured" | "low" | "high" | "az">("featured");
+  const num = (p: StoreItem) => Number((p.price || "").replace(/[^0-9.]/g, "")) || 0;
+  const shown = all.filter((p) => kind === "All" || p.kind === kind);
+  const items = sort === "low" ? [...shown].sort((x, y) => num(x) - num(y))
+    : sort === "high" ? [...shown].sort((x, y) => num(y) - num(x))
+    : sort === "az" ? [...shown].sort((x, y) => x.title.localeCompare(y.title))
+    : starFirst(shown);
+  const first = profile.name.split(" ")[0] || profile.name;
   return (
     <div className="page on">
       <PageHead title="Shop" />
-      <div className="store-grid">
+      {all.length > 1 && (
+        <div className="shop-bar">
+          <div className="mtabs" style={{ marginBottom: 0 }}>
+            {kinds.length > 1 && ["All", ...kinds].map((k) => <div key={k} className={"mtab" + (k === kind ? " on" : "")} role="button" aria-pressed={k === kind} onClick={() => setKind(k)}>{k === "All" ? `All · ${all.length}` : k}</div>)}
+          </div>
+          <label className="shop-sort">Sort
+            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
+              <option value="featured">Featured first</option>
+              <option value="low">Price, low to high</option>
+              <option value="high">Price, high to low</option>
+              <option value="az">A to Z</option>
+            </select>
+          </label>
+        </div>
+      )}
+      <div className="wwp-grid">
         {items.map((p) => {
-          const priceLabel = p.price ? (p.price === "0" ? "Free" : `$${p.price.replace(/^\$+/, "")}`) : "";
-          const inner = (
-            <>
-              <div className="store-kind">{p.kind}</div>
-              <div className="store-title">{p.title}</div>
-              {p.blurb && <p className="store-blurb">{p.blurb}</p>}
-              <div className="store-foot"><span className="store-price">{priceLabel}</span>{p.url && <span className="store-go">View <Icon name="arrow-up-right" style={{ width: 13, height: 13 }} /></span>}</div>
-            </>
+          const free = p.price === "0";
+          const priceLabel = p.price ? (free ? "Free" : `$${Number(p.price.replace(/^\$+/, "").replace(/,/g, "")).toLocaleString("en-US")}`) : "";
+          const cta = free ? "Get it free" : priceLabel ? `Buy · ${priceLabel}` : "View";
+          return (
+            <div key={p.id} className="card wwp">
+              <div className="wwp-top">
+                <div className="ww-ic"><Icon name={SHOP_ICON[p.kind] || "file"} /></div>
+                <div><h3 className="wwp-t">{p.title}</h3><div className="wwp-p">{[p.kind, priceLabel].filter(Boolean).join(" · ")}</div></div>
+              </div>
+              {p.blurb && <p className="wwp-d">{p.blurb}</p>}
+              {p.url
+                ? <a className="wwp-btn" href={p.url} target="_blank" rel="noopener" style={{ textDecoration: "none" }}>{cta} <Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></a>
+                : profile.sample
+                  ? <button type="button" className="wwp-btn" onClick={() => toast("Sample profile: on a real profile this opens the checkout page.")}>{cta} <Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></button>
+                  : <button type="button" className="wwp-btn" onClick={openWorkWith}>Ask {first} about this <Icon name="arrow-right" style={{ width: 15, height: 15 }} /></button>}
+            </div>
           );
-          return p.url
-            ? <a key={p.id} className="store-card" href={p.url} target="_blank" rel="noopener">{inner}</a>
-            : <div key={p.id} className="store-card">{inner}</div>;
         })}
       </div>
     </div>
@@ -1231,8 +1278,8 @@ function ShopPage() {
 function PublicFooter() {
   // A profile is the member's surface — Marquee's presence is one discreet link out, nothing more.
   return (
-    <footer className="pubfoot public-only">
-      <a className="made" href="https://marquee.bio" target="_blank" rel="noopener">MARQUEE.BIO<span className="made-sub">claim yours</span></a>
+    <footer className="pubfoot">
+      <a className="made" href="https://marquee.bio">MARQUEE.BIO<span className="made-sub">claim yours</span></a>
     </footer>
   );
 }
@@ -1309,7 +1356,7 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
             <div className={"view-" + view}>
               {profile.sample && (
                 <div style={{ background: "#111111", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 500 }}>
-                  <span style={{ letterSpacing: ".16em", fontWeight: 700 }}>SAMPLE PROFILE</span> · {profile.name} is an invented person, here to show what a full Marquee can hold ·{" "}
+                  <span style={{ letterSpacing: ".16em", fontWeight: 700 }}>SAMPLE</span> · {profile.name} is a sample account to showcase capabilities of Marquee ·{" "}
                   <a href="https://marquee.bio/join" style={{ color: "#fff", textDecoration: "underline", fontWeight: 700 }}>Build yours →</a>
                 </div>
               )}

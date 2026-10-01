@@ -38,6 +38,7 @@ export interface BuilderSnapshot {
   calLink?: string;
   actions?: { type: string; label: string; dest: string; url: string }[];
   look?: string;
+  spotlight?: { phoneFirst?: boolean; socials?: boolean; location?: boolean; pages?: boolean; links?: { icon: string; title: string; sub?: string; dest: string; url?: string; highlight?: boolean }[] };
   previous?: string[];
   photoPos?: { x: number; y: number };
   photoZoom?: number;
@@ -229,6 +230,10 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     types: undefined,
     enabledSections: undefined,
     actions: hide.has("actions") ? [] : actions,
+    spotlight: s.spotlight ? {
+      phoneFirst: !!s.spotlight.phoneFirst, socials: s.spotlight.socials !== false, location: s.spotlight.location !== false, pages: s.spotlight.pages !== false,
+      links: (s.spotlight.links || []).filter((l) => (l.title || "").trim()).map((l) => ({ icon: l.icon || "link", title: l.title.trim(), sub: (l.sub || "").trim() || undefined, dest: l.dest || "link", url: l.dest === "link" ? absUrl(l.url) : undefined, highlight: !!l.highlight })),
+    } : undefined,
     bioShort: s.bio || "",
     bioLong,
     bookedFor: [],

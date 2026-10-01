@@ -74,7 +74,7 @@ const FAQS = [
   ["Is this a replacement for LinkedIn?", "No. LinkedIn is where your network lives, and it does that well. Marquee is where your work lives: what you do, how you work, what you charge, and how someone books you. Most people keep both and put their Marquee link in their LinkedIn bio."],
   ["Who is Marquee for?", "Anyone whose value does not fit on one line. Fractional executives, consultants, coaches, advisors, founders, creators, and people in full-time roles who also advise, speak, teach, or sell. If you earn from more than one thing, or you plan to, this was built for you."],
   ["Who can see my profile?", "You decide. The Career Blueprint produces two things: a private read only you see, including your constraints and what you need to earn, and a public profile with what you choose to show. Nothing moves from one to the other without you."],
-  ["When is it live?", "The Career Blueprint is live now and free. Profiles are in private beta and open now to the first 250 Founding Members. Marquee Pro opens December 1."],
+  ["When is it live?", "The Career Blueprint is live now and free. Profiles are in private beta and open now to Founding Members, with limited places. Marquee Pro opens December 1."],
 ];
 
 export default function HomePage() {
@@ -114,7 +114,7 @@ export default function HomePage() {
               <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred`}>Sign Up Now</Link>
               <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
             </div>
-            <p className="text-[13px] font-semibold text-dred mt-4">Private beta is open now. Limited to 250 Founding Members.</p>
+            <p className="text-[13px] font-semibold text-dred mt-4">Private beta is open now. Founding Member places are limited.</p>
           </div>
           <div className="hidden md:flex justify-center">
             <PhonePreview />

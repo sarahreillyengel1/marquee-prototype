@@ -109,6 +109,11 @@ export interface ActiveProject {
   highlights?: string[]
 }
 
+/** One button on the phone-first "Spotlight" page. `dest` is a page of the profile, "contact", or "link" with a url. */
+export interface SpotlightLink { icon: string; title: string; sub?: string; dest: string; url?: string; highlight?: boolean }
+/** The short, phone-first version of a profile: what the person chose to show, in the order they chose. */
+export interface Spotlight { phoneFirst?: boolean; socials?: boolean; location?: boolean; pages?: boolean; links: SpotlightLink[] }
+
 export interface StoreItem {
   id: string
   featured?: boolean
@@ -232,6 +237,7 @@ export interface Profile {
   media: MediaItem[]
   portfolio: ProjectCase[]
   store?: StoreItem[]
+  spotlight?: Spotlight
   reach?: ReachStat[]
   audience?: { age?: string; gender?: string; geo?: string }
   /** Cal.com scheduling link — powers the "Book instantly" flow */
