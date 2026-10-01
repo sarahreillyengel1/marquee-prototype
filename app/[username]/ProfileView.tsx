@@ -1307,6 +1307,12 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
         <ModalCtx.Provider value={setModal}>
           <ToastCtx.Provider value={showToast}>
             <div className={"view-" + view}>
+              {profile.sample && (
+                <div style={{ background: "#111111", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 500 }}>
+                  <span style={{ letterSpacing: ".16em", fontWeight: 700 }}>SAMPLE PROFILE</span> · {profile.name} is an invented person, here to show what a full Marquee can hold ·{" "}
+                  <a href="https://marquee.bio/join" style={{ color: "#fff", textDecoration: "underline", fontWeight: 700 }}>Build yours →</a>
+                </div>
+              )}
               {profile.beta && (
                 <div style={{ background: "#73926A", color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13, fontWeight: 600 }}>
                   <span style={{ letterSpacing: ".16em", fontWeight: 800 }}>BETA</span> · an early Marquee profile ·{" "}

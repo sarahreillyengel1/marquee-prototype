@@ -412,6 +412,18 @@ export default function BuildPreview() {
   const [resumeText, setResumeText] = useState("");
   const [siteUrl, setSiteUrl] = useState("");
   const [photoSmall, setPhotoSmall] = useState(false);
+  // Beta contact form: a question, a bug or a feature request, straight to the Marquee team
+  const [fb, setFb] = useState<{ open: boolean; kind: string; message: string; state: "" | "sending" | "sent"; err: string }>({ open: false, kind: "Question", message: "", state: "", err: "" });
+  const sendFb = async () => {
+    if (fb.message.trim().length < 3) { setFb((f) => ({ ...f, err: "Write a few words first." })); return; }
+    setFb((f) => ({ ...f, state: "sending", err: "" }));
+    try {
+      const r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: fb.kind, message: fb.message, page: `Builder · ${active}` }) });
+      const j = await r.json();
+      if (!r.ok) { setFb((f) => ({ ...f, state: "", err: j.error || "We couldn't send that. Please try again." })); return; }
+      setFb((f) => ({ ...f, state: "sent", message: "" }));
+    } catch { setFb((f) => ({ ...f, state: "", err: "We couldn't reach Marquee. Please try again." })); }
+  };
   const [parsing, setParsing] = useState(false);
   const [parseErr, setParseErr] = useState("");
   // What the reader found, waiting for the person to tick what goes in and say what each thing is.
@@ -596,6 +608,7 @@ export default function BuildPreview() {
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
           <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/dashboard"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
+          <button onClick={() => setFb((f) => ({ ...f, open: true, state: "", err: "" }))} className="font-sans text-[13px] font-semibold text-[#670821] bg-[#EDE7FF] py-[7px] px-[12px] hover:bg-[#E0D6FF]">Beta feedback</button>
           <a href="/dashboard" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Dashboard</a>
           {claimed && pubUsername && <a href={`/${pubUsername}`} target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">View profile ↗</a>}
           <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
@@ -1471,6 +1484,35 @@ export default function BuildPreview() {
             <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">Edit any section from the left rail anytime. Ready to publish your profile?</p>
             <button onClick={() => { setTour(null); setShowPublish(true); }} className="w-full font-sans bg-brand-ink text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-black">Generate my profile →</button>
             <button onClick={() => setTour(null)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">Keep editing</button>
+          </div>
+        </div>
+      )}
+
+      {fb.open && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5" onClick={() => setFb((f) => ({ ...f, open: false }))}>
+          <div role="dialog" aria-label="Beta feedback" className="bg-white w-full max-w-[520px] p-7" onClick={(e) => e.stopPropagation()}>
+            {fb.state === "sent" ? (
+              <>
+                <h2 className="font-lora text-[26px] leading-[1.15] mb-2">Got it. Thank you.</h2>
+                <p className="text-[14.5px] text-[#3a352f] leading-[1.55] mb-5">It went straight to Sarah. If it needs an answer, you&apos;ll get a reply by email.</p>
+                <button onClick={() => setFb((f) => ({ ...f, open: false }))} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5">Done</button>
+              </>
+            ) : (
+              <>
+                <h2 className="font-lora text-[26px] leading-[1.15] mb-1">Tell us anything.</h2>
+                <p className="text-[14px] text-[#7d7a74] leading-[1.5] mb-4">You&apos;re in the beta, so your notes shape what gets built. This goes straight to the founder.</p>
+                <div className="flex flex-wrap gap-[6px] mb-3">
+                  {["Question", "Something is broken", "Feature request", "Other"].map((k) => <button key={k} onClick={() => setFb((f) => ({ ...f, kind: k }))} aria-pressed={fb.kind === k} className={`font-sans text-[12.5px] py-[6px] px-[11px] border ${fb.kind === k ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#a8a29a]"}`}>{k}</button>)}
+                </div>
+                <label htmlFor="fb-msg" className="sr-only">Your message</label>
+                <textarea id="fb-msg" autoFocus value={fb.message} onChange={(e) => setFb((f) => ({ ...f, message: e.target.value }))} rows={6} placeholder={fb.kind === "Something is broken" ? "What did you do, and what happened?" : fb.kind === "Feature request" ? "What would you like Marquee to do?" : "What's on your mind?"} className="w-full font-inter text-[14px] py-[10px] px-[12px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
+                {fb.err && <p className="text-[13px] text-[#AB0000] mt-2" role="alert">{fb.err}</p>}
+                <div className="flex items-center gap-3 mt-4">
+                  <button onClick={sendFb} disabled={fb.state === "sending"} className="font-sans bg-[#670821] hover:bg-[#4E0619] text-white text-[13px] font-semibold py-[11px] px-5 disabled:opacity-50">{fb.state === "sending" ? "Sending…" : "Send"}</button>
+                  <button onClick={() => setFb((f) => ({ ...f, open: false }))} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Cancel</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

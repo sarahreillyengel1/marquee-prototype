@@ -213,3 +213,16 @@ export async function sendMembershipWelcome(to: string, plan: string, finishUrl:
     p("If you haven't already, set up your account and start your profile.") + button(finishUrl, "Set up my account") +
     p("Your Founding Member pricing stays locked for as long as your membership stays active."), "Sent by Marquee"));
 }
+
+
+/* ─────────────── Beta contact form ─────────────── */
+
+/** A member's note from inside the product, sent to the Marquee team. Reply goes to the member. */
+export async function sendBetaFeedback(m: { kind: string; message: string; page?: string; name: string; email: string; founding: boolean }) {
+  const to = process.env.BETA_INBOX || "sarah@marquee.bio";
+  const who = m.name ? `${m.name} (${m.email})` : m.email;
+  return sendEmail(to, `[Marquee beta] ${m.kind} · ${m.name || m.email}`, shell(
+    p(`<strong>${esc(m.kind)}</strong> from ${esc(who)}${m.founding ? " · Founding Member" : ""}`) +
+    card(row("Message", esc(m.message).replace(/\n/g, "<br />")) + (m.page ? row("Sent from", esc(m.page)) : "")) +
+    p("Reply to this email to answer them directly."), "Sent from the beta contact form"), m.email);
+}

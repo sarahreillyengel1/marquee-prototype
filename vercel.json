@@ -1,3 +1,21 @@
 {
-  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 13 * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 13 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.marquee.bio"
+        }
+      ],
+      "destination": "https://marquee.bio/:path*",
+      "permanent": true
+    }
+  ]
 }

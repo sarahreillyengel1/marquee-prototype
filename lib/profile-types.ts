@@ -202,6 +202,7 @@ export interface Profile {
   /** One-time / simplified profile flags. */
   singlePage?: boolean   // hide sub-page nav + "view all / read full bio" links
   beta?: boolean         // show a BETA banner + "Sign up for beta" CTA
+  sample?: boolean       // an invented person: show a "Sample profile" banner so nobody takes it for real
   inquiryEmail?: string  // where "Work with me" inquiries are emailed (demo/beta profiles)
 
   bioShort: string
