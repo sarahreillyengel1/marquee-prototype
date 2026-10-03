@@ -16,9 +16,9 @@ export default function LoginPage() {
   async function sendReset() {
     setError(""); setResetMsg("");
     if (!email.trim()) { setError("Enter your email above first, then click Forgot password."); return; }
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
-    if (error) setError(error.message);
-    else setResetMsg("Check your email — we sent a link to set a new password.");
+    const r = await fetch("/api/password-reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim() }) });
+    if (!r.ok) setError((await r.json().catch(() => ({}))).error || "Something went wrong. Please try again.");
+    else setResetMsg("Check your email — if that address has an account, we sent a link to set a new password.");
   }
   const router = useRouter();
   const supabase = createBrowserSupabase();

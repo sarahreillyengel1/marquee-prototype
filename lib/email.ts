@@ -140,7 +140,7 @@ export interface BookingMail {
   ics: string;              // calendar invite
 }
 const invite = (ics: string, name = "invite.ics"): Attachment[] => [{ filename: name, content: Buffer.from(ics, "utf8").toString("base64"), content_type: "text/calendar; charset=utf-8; method=REQUEST" }];
-const first = (n: string) => (n || "").trim().split(/\s+/)[0] || n;
+const first = (n: string) => { const f = (n || "").trim().split(/\s+/)[0] || n; return f ? f[0].toUpperCase() + f.slice(1) : f; }; // "sarah" -> "Sarah"
 
 /** Booking confirmed — one email to the visitor, one to the owner. */
 export async function sendBookingConfirmed(m: BookingMail) {
@@ -201,17 +201,76 @@ export async function sendRequestEmails(m: { ownerName: string; ownerEmail: stri
 /** "Remind Me" — confirms we have their email and says what happens next. */
 export async function sendReminderConfirmation(to: string, about: "pro" | "founding") {
   const body = about === "pro"
-    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now, with limited places.") + button("https://marquee.bio/join", "Become a Founding Member")
+    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now. Access is limited.") + button("https://marquee.bio/join", "Become a Founding Member")
     : p("You asked about <strong>Founding Member</strong> sign-up.") + p("We will email you the moment it opens, with your link to join.");
   return sendEmail(to, about === "pro" ? "We'll remind you when Marquee Pro opens" : "We'll tell you when Founding Member sign-up opens", shell(p("Hi there,") + body, "Sent by Marquee"));
 }
 
-/** Paid, but the account isn't set up yet — the link to finish. Also the receipt of what they bought. */
-export async function sendMembershipWelcome(to: string, plan: string, finishUrl: string) {
-  return sendEmail(to, "Welcome to Marquee. Finish setting up your account", shell(
-    p("Welcome. You are a Marquee <strong>Founding Member</strong>.") + card(row("Membership", "Founding Member") + row("Billing", esc(plan))) +
-    p("If you haven't already, set up your account and start your profile.") + button(finishUrl, "Set up my account") +
-    p("Your Founding Member pricing stays locked for as long as your membership stays active."), "Sent by Marquee"));
+/* ─────────────── Welcome ───────────────
+   One welcome email, the same words for everyone who joins the beta, from Sarah.
+   Paid: sent when the payment lands; the button finishes setting up the account.
+   Invite code: sent when the account is created; the button opens the builder.
+   The wording is Sarah's. Change it only on her say-so. */
+
+// The footer on emails to members: who we are and where to find us. No address, no "why you got this" line (Sarah, 2 Oct 2026).
+const memberFoot = `Marquee Identity, Inc. &middot; <a href="https://marquee.bio" style="color:#7d7a74;">marquee.bio</a> &middot; <a href="https://www.instagram.com/marquee.bio/" style="color:#7d7a74;">Instagram</a> &middot; <a href="mailto:hello@marquee.bio" style="color:#7d7a74;">hello@marquee.bio</a>`;
+const preheader = (t: string) => `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(t)}</div>`;
+const wineButton = (href: string, label: string) => `<a href="${esc(href)}" style="display:inline-block;background:#670821;color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;padding:14px 24px;">${esc(label)} &rarr;</a>`;
+
+async function sendWelcome(to: string, firstName: string, buildUrl: string) {
+  const name = first(firstName || "");
+  const html = `
+  <div style="margin:0;padding:0;background:#F7F6F2;">${preheader("Your Marquee is ready.")}
+    <div style="max-width:560px;margin:0 auto;padding:36px 20px 40px;font-family:Helvetica,Arial,sans-serif;color:#111111;">
+      <div style="font-size:15px;font-weight:600;letter-spacing:0.25em;color:#111111;margin:0 8px 22px;">MARQUEE</div>
+      <div style="background:#670821;padding:38px 32px 34px;">
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:40px;line-height:1.05;color:#FFFFFF;margin:0;">Welcome.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E9E6DF;border-top:none;padding:30px 32px 30px;">
+        ${p(`Hi ${name ? esc(name) : "there"},`)}
+        ${p("Welcome to Marquee. We&rsquo;re so happy to have you join us as a Founding Member.")}
+        ${p("We created Marquee to help professionals capture the value of their knowledge and expertise &mdash; and turn it into more ways to be discovered, hired, booked and paid.")}
+        <div style="margin:24px 0 28px;">${wineButton(buildUrl, "Build your Marquee")}</div>
+        ${p("Once you&rsquo;re verified, we&rsquo;ll send you a Getting Started Guide with everything you need to get set up.")}
+        ${p("As you build and explore, hit reply anytime with feedback, ideas or questions. Your input will help shape Marquee from the beginning.")}
+        <p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>
+        <p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;color:#6E6A62;">Founder &amp; CEO, Marquee</p>
+      </div>
+      <p style="font-size:12px;line-height:1.6;color:#7d7a74;margin:18px 8px 0;">${memberFoot}</p>
+    </div>
+  </div>`;
+  return sendEmail(to, "Welcome to Marquee", html, "sarah@marquee.bio");
+}
+
+/** Paid: the payment has landed. The button finishes setting up the account, then opens the builder. */
+export async function sendMembershipWelcome(to: string, _plan: string, finishUrl: string, firstName = "") {
+  return sendWelcome(to, firstName, finishUrl);
+}
+
+/** Invite code: the account now exists. */
+export async function sendBetaWelcome(to: string, firstName: string) {
+  return sendWelcome(to, firstName, "https://marquee.bio/build-preview");
+}
+
+/** Sent when the Marquee team has checked a new member: the Getting Started guide. */
+export async function sendGettingStarted(to: string, firstName: string) {
+  const name = first(firstName || "");
+  return sendEmail(to, "Your Marquee Getting Started Guide", shell(
+    (name ? p(`${esc(name)},`) : "") +
+    p("Your account has been verified and your Getting Started Guide is ready.") +
+    p("Inside, you&rsquo;ll find everything you need to build your profile and get the most out of Marquee.") +
+    `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/getting-started.pdf", "Open the guide")}</div>` +
+    p("I&rsquo;ll also reach out shortly to offer some one-on-one help getting your Marquee set up. In the meantime, feel free to jump in and start exploring.") +
+    `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p><p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;color:#6E6A62;">Founder &amp; CEO, Marquee</p>`, memberFoot), "sarah@marquee.bio");
+}
+
+/** Forgot password: the link to choose a new one. */
+export async function sendPasswordReset(to: string, link: string) {
+  return sendEmail(to, "Reset your Marquee password", shell(
+    `<p style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.2;margin:0 0 16px;">Reset your Marquee password</p>` +
+    p("We received a request to reset the password for your Marquee account.") +
+    `<div style="margin:22px 0 24px;">${button(link, "Reset my password")}</div>` +
+    `<p style="font-size:14px;line-height:1.55;margin:0;color:#6E6A62;">This link can only be used once and expires in one hour. If you didn&rsquo;t request a password reset, you can ignore this email.</p>`, memberFoot));
 }
 
 

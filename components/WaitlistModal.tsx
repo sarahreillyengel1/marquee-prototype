@@ -14,6 +14,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
   const [email, setEmail] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [role, setRole] = useState("");
+  const [trap, setTrap] = useState(""); // hidden field; real people never fill it in
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +40,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, linkedin, role, source }),
+        body: JSON.stringify({ email, first_name: firstName, last_name: lastName, linkedin, role, source, website_url: trap }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || "Couldn't save your spot");
@@ -88,6 +89,7 @@ export default function WaitlistModal({ open, onClose, source = "landing" }: Pro
             </div>
 
             <form onSubmit={submit} className="space-y-4">
+              <input type="text" name="website_url" value={trap} onChange={(e) => setTrap(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs uppercase tracking-wider font-semibold text-brand-ink/60 mb-1.5">

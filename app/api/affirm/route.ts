@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { looksLikeSpam } from "@/lib/spam";
 import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
 
@@ -77,6 +78,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (looksLikeSpam(req)) return NextResponse.json({ ok: true, success: true }); // junk: answer as if it worked, do nothing
   const body = await req.json().catch(() => ({}));
   const username = String(body.username || "").trim().toLowerCase();
   const superpower = String(body.superpower || "").trim().slice(0, 300);

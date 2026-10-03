@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { looksLikeSpam } from "@/lib/spam";
 import { createServerSupabase } from "@/lib/supabase";
 import { sendReminderConfirmation } from "@/lib/email";
 
@@ -10,6 +11,7 @@ import { sendReminderConfirmation } from "@/lib/email";
 const NOTE: Record<string, string> = { "pro-dec-1": "remind: Marquee Pro opens December 1", founding: "wants: Founding Member sign-up" };
 
 export async function POST(req: Request) {
+  if (looksLikeSpam(req)) return NextResponse.json({ ok: true, success: true }); // junk: answer as if it worked, do nothing
   const body = await req.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase().slice(0, 200);
   const about = NOTE[String(body.about)] ? String(body.about) : "pro-dec-1";

@@ -4,9 +4,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Member = { name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; username: string; publishedAt: string };
+type Member = { id: string; reviewedAt: string; removedAt: string; isAdmin: boolean; name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; username: string; publishedAt: string };
 type Wait = { email: string; first_name?: string | null; last_name?: string | null; status?: string | null; notes?: string | null; linkedin_url?: string | null; created_at: string };
-type Data = { asOf: string; members: Member[]; waitlist: Wait[]; reminders: Wait[]; codesLeft: string[] };
+type Count = { name: string; count: number };
+type Span = { views: number; visitors: number };
+type Traffic = { today: Span; week: Span; month: Span; days: { day: string; views: number; visitors: number }[]; pages: Count[]; profiles: Count[]; sources: Count[]; phones: number };
+type Data = { traffic: Traffic | null; asOf: string; members: Member[]; waitlist: Wait[]; reminders: Wait[]; codesLeft: string[] };
 
 const day = (iso: string) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 const PLAN: Record<string, string> = { founding_monthly: "Founding · $20/month", founding_yearly: "Founding · $200/year", founding_comped: "Founding · comped", "invite code": "Invite code" };
@@ -16,6 +19,8 @@ const td = "py-[11px] pr-4 border-b border-[#F1EEE8] text-[13.5px] align-top";
 export default function Admin() {
   const [d, setD] = useState<Data | null>(null);
   const [state, setState] = useState<"loading" | "denied" | "ok">("loading");
+  const [busy, setBusy] = useState("");
+  const [note, setNote] = useState("");
   const load = () => fetch("/api/admin/members").then(async (r) => { if (!r.ok) { setState("denied"); return; } setD(await r.json()); setState("ok"); }).catch(() => setState("denied"));
   useEffect(() => { load(); }, []);
 
@@ -26,6 +31,23 @@ export default function Admin() {
   const published = d.members.filter((m) => m.username);
   const Stat = ({ n, t, s }: { n: string | number; t: string; s?: string }) => <div className="bg-white border border-[#E1DED7] p-[18px]"><div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9C968C]">{t}</div><div className="font-lora text-[34px] leading-none mt-[10px] mb-1">{n}</div>{s && <div className="text-[12.5px] text-[#6E6A62]">{s}</div>}</div>;
   const copy = (list: string[]) => navigator.clipboard?.writeText(list.join(", "));
+  const act = async (m: Member, action: "verify" | "remove") => {
+    if (action === "remove" && !window.confirm(`Remove ${m.name || m.email}?\n\nThis refunds their latest payment, cancels their membership, takes their profile down and blocks the account. It can't be undone from here.`)) return;
+    setBusy(m.id + action); setNote("");
+    const r = await fetch("/api/admin/members", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id: m.id }) });
+    const j = await r.json().catch(() => ({}));
+    setBusy("");
+    setNote(!r.ok ? (j.error || "That didn't work.") : action === "verify" ? `${m.name || m.email} verified. ${j.emailed ? "Getting Started guide sent." : "The guide email did NOT send — email it to them yourself."}` : `${m.name || m.email} removed: ${(j.notes || []).join(", ")}.`);
+    load();
+  };
+  const dropWait = async (email: string) => {
+    if (!window.confirm(`Remove ${email} from the waitlist?`)) return;
+    setBusy(email);
+    const r = await fetch("/api/admin/members", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+    setBusy(""); setNote(r.ok ? `${email} removed from the waitlist.` : "That didn't work.");
+    load();
+  };
+  const waiting = d.members.filter((m) => !m.reviewedAt && !m.removedAt && !m.isAdmin);
 
   return (
     <main className="min-h-screen bg-brand-paper font-inter text-brand-ink px-6 md:px-12 py-10">
@@ -42,9 +64,11 @@ export default function Admin() {
           <Stat n={d.reminders.length} t="Remind me, Dec 1" s="For Marquee Pro" />
         </div>
 
+        {waiting.length > 0 && <div className="bg-[#EDE7FF] border border-[#C7B5FF] px-5 py-[13px] mb-5 text-[14px]"><strong>{waiting.length} new {waiting.length === 1 ? "member needs" : "members need"} your review:</strong> {waiting.map((m) => m.name || m.email).join(", ")}. Verify to send the Getting Started guide, or remove.</div>}
+        {note && <div className="bg-white border border-[#E1DED7] border-l-[3px] border-l-[#670821] px-5 py-[12px] mb-5 text-[14px]" role="status">{note}</div>}
         <div className="flex items-baseline justify-between mb-2"><h2 className="font-lora text-[22px]">Members</h2><button onClick={() => copy(d.members.map((m) => m.email))} className="text-[12.5px] text-[#670821] font-semibold hover:underline">Copy all emails</button></div>
         <div className="bg-white border border-[#E1DED7] px-5 mb-9 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[860px]"><thead><tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Plan</th><th className={th}>Status</th><th className={th}>Joined</th><th className={th}>Profile</th></tr></thead>
+          <table className="w-full border-collapse min-w-[1080px]"><thead><tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Plan</th><th className={th}>Status</th><th className={th}>Joined</th><th className={th}>Profile</th><th className={th}>Review</th></tr></thead>
             <tbody>{d.members.map((m) => (
               <tr key={m.email}>
                 <td className={td}><span className="font-semibold">{m.name || "—"}</span>{m.verified && <span className="ml-2 text-[10.5px] font-semibold uppercase tracking-[0.08em] bg-[#670821] text-white px-[6px] py-[2px]">Verified</span>}</td>
@@ -53,18 +77,57 @@ export default function Admin() {
                 <td className={td}>{m.status ? <span className={`text-[12px] font-semibold px-[8px] py-[3px] ${m.status === "active" ? "bg-[#EDE7FF] text-[#670821]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{m.status}</span> : "—"}</td>
                 <td className={td}>{day(m.joined)}</td>
                 <td className={td}>{m.username ? <a href={`/${m.username}`} target="_blank" rel="noopener" className="text-[#670821] font-semibold hover:underline">/{m.username} ↗</a> : <span className="text-[#9C968C]">Not published</span>}</td>
+                <td className={`${td} whitespace-nowrap`}>
+                  {m.removedAt ? <span className="text-[12px] font-semibold px-[8px] py-[3px] bg-[#111] text-white">Removed {day(m.removedAt)}</span>
+                    : m.isAdmin ? <span className="text-[#9C968C]">Team</span>
+                    : <>
+                      {m.reviewedAt ? <span className="text-[12.5px] text-[#3a352f]">Verified {day(m.reviewedAt)} · guide sent</span>
+                        : <button disabled={!!busy} onClick={() => act(m, "verify")} className="font-sans text-[12.5px] font-semibold bg-[#670821] text-white py-[7px] px-[11px] hover:bg-[#4E0619] disabled:opacity-50">{busy === m.id + "verify" ? "Sending…" : "Verify & send guide"}</button>}
+                      <button disabled={!!busy} onClick={() => act(m, "remove")} className="ml-3 font-sans text-[12.5px] font-semibold text-[#670821] hover:underline disabled:opacity-50">{busy === m.id + "remove" ? "Removing…" : "Remove"}</button>
+                    </>}
+                </td>
               </tr>))}</tbody></table>
         </div>
 
+        <h2 className="font-lora text-[22px] mb-2">Site visits</h2>
+        {!d.traffic ? <div className="bg-white border border-[#E1DED7] px-5 py-4 mb-9 text-[14px] text-[#3a352f]">Visit counting isn&apos;t switched on yet. It needs one table added in Supabase.</div> : (() => {
+          const t = d.traffic; const max = Math.max(1, ...t.days.map((x) => x.views));
+          const List = ({ title, rows, empty, link }: { title: string; rows: Count[]; empty: string; link?: boolean }) => (
+            <div className="bg-white border border-[#E1DED7] p-[18px]"><div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9C968C] mb-2">{title} · 7 days</div>
+              {rows.length === 0 ? <div className="text-[13px] text-[#9C968C]">{empty}</div> : rows.map((r) => <div key={r.name} className="flex justify-between gap-3 text-[13.5px] py-[5px] border-b border-[#F1EEE8] last:border-0"><span className="truncate">{link ? <a href={`/${r.name}`} target="_blank" rel="noopener" className="hover:underline">/{r.name}</a> : r.name}</span><span className="font-semibold tabular-nums">{r.count}</span></div>)}
+            </div>);
+          return (
+            <div className="mb-9">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <Stat n={t.today.visitors} t="Visitors today" s={`${t.today.views} pages viewed`} />
+                <Stat n={t.week.visitors} t="Visitors, 7 days" s={`${t.week.views} pages viewed`} />
+                <Stat n={t.month.visitors} t="Visitors, 30 days" s={`${t.month.views} pages viewed`} />
+                <Stat n={`${t.phones}%`} t="On a phone" s="Last 7 days" />
+              </div>
+              <div className="bg-white border border-[#E1DED7] p-[18px] mb-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9C968C] mb-3">Pages viewed per day · last 14 days</div>
+                <div className="flex items-end gap-[6px] h-[110px]">{t.days.map((x) => <div key={x.day} className="flex-1 flex flex-col items-center justify-end h-full" title={`${x.day}: ${x.views} pages, ${x.visitors} visitors`}><div className="text-[10.5px] text-[#6E6A62] mb-1 tabular-nums">{x.views || ""}</div><div className="w-full bg-[#C7B5FF]" style={{ height: `${Math.max(x.views ? 3 : 1, (x.views / max) * 80)}px`, background: x.views ? "#C7B5FF" : "#EDE7FF" }} /></div>)}</div>
+                <div className="flex gap-[6px] mt-1">{t.days.map((x) => <div key={x.day} className="flex-1 text-center text-[10px] text-[#9C968C] tabular-nums">{Number(x.day.slice(8))}</div>)}</div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-3">
+                <List title="Where visitors came from" rows={t.sources} empty="No outside links yet. Visits typed in directly aren't listed." />
+                <List title="Top pages" rows={t.pages} empty="No visits yet." />
+                <List title="Most viewed profiles" rows={t.profiles} empty="No profile visits yet." link />
+              </div>
+              <p className="text-[12px] text-[#9C968C] mt-2">Counted by Marquee, without cookies. A visitor is one person on one day. Your own visits count too.</p>
+            </div>);
+        })()}
+
         <div className="flex items-baseline justify-between mb-2"><h2 className="font-lora text-[22px]">Waitlist</h2><button onClick={() => copy(d.waitlist.map((w) => w.email))} className="text-[12.5px] text-[#670821] font-semibold hover:underline">Copy all emails</button></div>
         <div className="bg-white border border-[#E1DED7] px-5 mb-9 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[760px]"><thead><tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Asked</th><th className={th}>Notes</th></tr></thead>
+          <table className="w-full border-collapse min-w-[760px]"><thead><tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Asked</th><th className={th}>Notes</th><th className={th}></th></tr></thead>
             <tbody>{d.waitlist.length === 0 ? <tr><td className={td} colSpan={4}>Nobody yet.</td></tr> : d.waitlist.map((w) => (
               <tr key={w.email + w.created_at}>
                 <td className={td}><span className="font-semibold">{[w.first_name, w.last_name].filter(Boolean).join(" ") || "—"}</span></td>
                 <td className={td}><a href={`mailto:${w.email}`} className="hover:underline">{w.email}</a></td>
                 <td className={td}>{day(w.created_at)}</td>
                 <td className={`${td} text-[#6E6A62]`}>{w.linkedin_url ? <a href={w.linkedin_url} target="_blank" rel="noopener" className="hover:underline">LinkedIn ↗</a> : (w.notes || "").slice(0, 80)}</td>
+                <td className={`${td} text-right`}><button disabled={!!busy} onClick={() => dropWait(w.email)} className="text-[12.5px] font-semibold text-[#670821] hover:underline disabled:opacity-50">Remove</button></td>
               </tr>))}</tbody></table>
         </div>
 

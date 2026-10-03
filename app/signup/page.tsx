@@ -32,52 +32,15 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Gate first: no account is created unless the beta code is valid and unused.
-      const check = await fetch("/api/redeem-code", {
+      // The account is created on the server, already confirmed, so the only email is Marquee's welcome.
+      const res = await fetch("/api/signup-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: betaCode, validateOnly: true }),
+        body: JSON.stringify({ code: betaCode, email, password, first_name: firstName, last_name: lastName }),
       });
-      if (!check.ok) {
-        const r = await check.json().catch(() => ({}));
-        setError(r.error || "That code isn't valid.");
-        setLoading(false);
-        return;
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-          },
-        },
-      });
-
-      if (authError) {
-        setError(authError.message);
-        setLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError("Signup failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      const res = await fetch("/api/redeem-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: betaCode, userId: authData.user.id }),
-      });
-
-      const result = await res.json();
       if (!res.ok) {
-        setError(result.error);
+        const r = await res.json().catch(() => ({}));
+        setError(r.error || "Something went wrong. Please try again.");
         setLoading(false);
         return;
       }
@@ -98,53 +61,10 @@ export default function SignupPage() {
     }
   }
 
+  // Joining without a code happens on /join (pay first, then create the account). Nothing here creates an account.
   async function handlePaidSignup(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-          },
-        },
-      });
-
-      if (authError) {
-        setError(authError.message);
-        setLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError("Signup failed.");
-        setLoading(false);
-        return;
-      }
-
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, userId: authData.user.id }),
-      });
-
-      const { url } = await res.json();
-      if (url) {
-        window.location.href = url;
-      } else {
-        setError("Failed to create checkout session.");
-        setLoading(false);
-      }
-    } catch {
-      setError("Something went wrong.");
-      setLoading(false);
-    }
+    router.push("/join");
   }
 
   return (

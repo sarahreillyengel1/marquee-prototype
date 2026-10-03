@@ -1,9 +1,11 @@
 import { createServerSupabase } from "@/lib/supabase";
+import { looksLikeSpam } from "@/lib/spam";
 import { DEMO_PROFILES } from "@/lib/demo-profiles";
 import { sendContactNotification } from "@/lib/email";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
+  if (looksLikeSpam(request)) return NextResponse.json({ ok: true, success: true }); // junk: answer as if it worked, do nothing
   const body = await request.json();
   const {
     username,

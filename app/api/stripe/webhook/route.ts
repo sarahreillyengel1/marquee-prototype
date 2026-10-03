@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     // a new member: email them the link to finish, in case they closed the page after paying
     if (s.metadata?.kind === "membership" && s.payment_status === "paid" && isPlan(s.metadata.plan)) {
       const to = s.customer_details?.email || s.customer_email;
-      if (to) await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`);
+      if (to) await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`, s.customer_details?.name || "");
     }
     if (id && s.payment_status === "paid") {
       // only the first delivery confirms and emails; repeats find nothing left to update

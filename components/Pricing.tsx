@@ -97,7 +97,7 @@ export default function Pricing() {
           {FOUNDING.map((l) => <li key={l} className="text-[14.5px] leading-[1.45] py-[10px] border-b border-white/20 last:border-0">{l}</li>)}
         </ul>
         <div>
-          <p className={`${TOP} text-[12.5px] leading-[1.45] text-white/85`}>For professionals with 5+ years of experience.<br />Founding Member places are limited.</p>
+          <p className={`${TOP} text-[12.5px] leading-[1.45] text-white/85`}>Access is limited.</p>
           <Link href="/join" className={`${BTN} bg-white text-dred hover:bg-beige block w-full mt-3`}>Sign Up Now</Link>
         </div>
       </div>

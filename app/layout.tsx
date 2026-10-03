@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat, Lora, Poppins } from "next/font/google";
 import localFont from "next/font/local";
+import PageViews from "@/components/PageViews";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthLinkHandler } from "@/components/AuthLinkHandler";
 import "./globals.css";
@@ -82,6 +83,7 @@ export default function RootLayout({
         className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} ${caveat.variable} ${lora.variable} ${canela.variable} ${poppins.variable} font-sans antialiased`}
       >
         <AuthLinkHandler />
+        <PageViews />
         {children}
         <Analytics />
       </body>

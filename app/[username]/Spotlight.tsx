@@ -18,7 +18,7 @@ export function defaultSpotlightLinks(p: Profile): SpotlightLink[] {
     url: !a.internal && a.destination !== "contact" ? a.destination : undefined,
   }));
   const has = (d: string) => out.some((l) => l.dest === d);
-  if (p.engagements.some((e) => e.visible) && !has("contact") && !has("work-with-me")) out.push({ icon: "handshake", title: "Work with me", dest: "work-with-me" });
+  if (p.engagements.some((e) => e.visible) && !has("contact") && !has("work-with-me")) out.push({ icon: "grid", title: "Work with me", dest: "work-with-me" });
   if ((p.store || []).length && !has("shop")) out.push({ icon: "bag", title: "Shop my store", dest: "shop" });
   return out;
 }
@@ -34,7 +34,7 @@ export function Spotlight({ profile, preview }: { profile: Profile; preview?: bo
   if (profile.roles.length) pages.push(["briefcase", "Experience", `${full}#experience`]);
   if (profile.media.length) pages.push(["play-circle", "Media", `${full}#media`]);
   if ((profile.store || []).length) pages.push(["bag", "Shop", `${full}#shop`]);
-  if (profile.engagements.some((e) => e.visible)) pages.push(["handshake", "Services", `${full}#work-with-me`]);
+  if (profile.engagements.some((e) => e.visible)) pages.push(["grid", "Services", `${full}#work-with-me`]);
   return (
     <div className="mq-root spot" data-look={profile.look || undefined} style={preview ? { minHeight: 0 } : undefined}>
       <div className="spot-in">

@@ -79,7 +79,7 @@ export default function Join() {
             <button onClick={pay} disabled={busy} className="block w-full mt-6 px-6 py-[15px] text-[16px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{busy ? "Opening secure payment…" : "Continue to payment"}</button>
             {err && <p className="text-[13px] text-dred mt-3 text-center" role="alert">{err}</p>}
             <p className="text-[13px] leading-[1.55] text-ink/70 mt-4 text-center">You&apos;ll pay on Stripe&apos;s secure page, then create your account. Cancel anytime.</p>
-            <p className="text-[13px] leading-[1.55] text-ink/70 mt-6 text-center">For professionals with 5+ years of experience. Founding Member places are limited.</p>
+            <p className="text-[13px] leading-[1.55] text-ink/70 mt-6 text-center">Access is limited.</p>
           </>
         )}
         <p className="text-[13px] mt-10 text-center"><Link href="/signup" className="underline underline-offset-2 hover:text-dred">Have an invite code?</Link> &nbsp;·&nbsp; <Link href="/login" className="underline underline-offset-2 hover:text-dred">Sign in</Link></p>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { looksLikeSpam } from "@/lib/spam";
 import { createServerSupabase } from "@/lib/supabase";
 import { DEMO_PROFILES } from "@/lib/demo-profiles";
 import { ownerOf, validEmail } from "@/lib/booking-server";
@@ -10,6 +11,7 @@ import { emailReady, sendRequestEmails } from "@/lib/email";
 //   -> { ok: true, emailed: true }
 //   -> { ok: false, fallback: "mailto:…" }  when email isn't switched on yet, so nothing is lost
 export async function POST(req: Request) {
+  if (looksLikeSpam(req)) return NextResponse.json({ ok: true, success: true }); // junk: answer as if it worked, do nothing
   const body = await req.json().catch(() => ({}));
   const username = String(body.username || "").trim().toLowerCase();
   const offer = String(body.offer || "General").trim().slice(0, 200);

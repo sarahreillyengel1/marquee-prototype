@@ -1,10 +1,13 @@
 import { createServerSupabase } from "@/lib/supabase";
 import { sendWaitlistConfirmation, sendWaitlistNotification } from "@/lib/email";
 import { NextResponse } from "next/server";
+import { looksLikeSpam } from "@/lib/spam";
 
 export async function POST(request: Request) {
   const body = await request.json();
   const { email, first_name, last_name, linkedin, role, source, utm_source, utm_medium, utm_campaign } = body;
+  // junk: answer as if it worked, save nothing, send nothing
+  if (looksLikeSpam(request, body.website_url)) return NextResponse.json({ success: true });
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Valid email is required" }, { status: 400 });

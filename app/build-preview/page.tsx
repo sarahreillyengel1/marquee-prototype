@@ -20,10 +20,10 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Long Bio", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["CTA", "Links", "Work With Me", "Media", "Reach", "Shop"] },
+  { label: "Build your brand", steps: ["CTAs", "Work With Me", "Media", "Reach", "Shop", "Mobile Links"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
-const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "CTA", "Links", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
+const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "CTAs", "Mobile Links", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
 // Steps whose section can be hidden from the public profile (About/Resume/Long Bio are core).
 const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", CTA: "actions" };
 const LOOKS = [
@@ -49,7 +49,7 @@ const TOUR_HINTS: Record<string, string> = {
   "Values": "What you won’t compromise on.",
   "Testimonials": "Words from people you’ve worked with.",
   "Education": "Schools, degrees, and certifications.",
-  "Links": "The short page for your social bio.",
+  "Mobile Links": "The short page for your social bio.",
   "Work With Me": "How people can hire, book, or work with you.",
   "Media": "Press, talks, writing, and portfolio.",
   "Shop": "Productize your expertise — templates, guides, courses.",
@@ -568,6 +568,7 @@ export default function BuildPreview() {
   const publish = async () => {
     const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
+    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
     setPublishing(true); setPubResult(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -904,7 +905,7 @@ export default function BuildPreview() {
             </>
           )}
 
-          {active === "CTA" && (
+          {active === "CTAs" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your four CTAs.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The four things you most want people to do, shown as a row right under your header — e.g. <b>Contact</b> · Get in touch, <b>Listen</b> · your podcast, <b>Read</b> · your newsletter, <b>Explore</b> · your company. Each one opens Work with me, one of your pages, or a link.</p>
@@ -938,8 +939,8 @@ export default function BuildPreview() {
             </>
           )}
 
-          {active === "Links" && (() => {
-            const ICONS: [string, string][] = [["calendar", "Calendar"], ["news", "Newsletter"], ["rocket", "Rocket"], ["handshake", "Handshake"], ["bag", "Shopping bag"], ["play-circle", "Play"], ["book", "Book"], ["link", "Link"], ["star", "Star"], ["heart", "Heart"], ["send", "Send"], ["users", "People"], ["compass", "Compass"], ["dollar", "Dollar"]];
+          {active === "Mobile Links" && (() => {
+            const ICONS: [string, string][] = [["calendar", "Calendar"], ["news", "Newsletter"], ["rocket", "Rocket"], ["handshake", "Handshake"], ["grid", "Four squares"], ["bag", "Shopping bag"], ["play-circle", "Play"], ["book", "Book"], ["link", "Link"], ["star", "Star"], ["heart", "Heart"], ["send", "Send"], ["users", "People"], ["compass", "Compass"], ["dollar", "Dollar"]];
             const DESTS = [{ v: "link", label: "A link (URL)" }, { v: "contact", label: "Work with me" }, { v: "shop", label: "My Shop page" }, { v: "media", label: "My Media page" }, { v: "experience", label: "My Experience page" }, { v: "profile", label: "My full profile" }];
             const TYPE_ICON: Record<string, string> = { Contact: "handshake", Hire: "handshake", Partner: "handshake", Book: "calendar", Read: "news", Listen: "play-circle", Watch: "play-circle", Learn: "book", Explore: "compass", Shop: "bag", Buy: "bag", Invest: "rocket", Follow: "users", Join: "users" };
             const fromCtas = () => setSpot((c) => ({ ...c, links: actions.filter((a) => a.label.trim()).map((a) => ({ icon: TYPE_ICON[a.type] || "link", title: a.label, sub: "", dest: a.dest === "link" ? "link" : a.dest === "bio" ? "experience" : a.dest === "work-with-me" ? "contact" : a.dest, url: a.url, highlight: false })) }));
@@ -947,12 +948,12 @@ export default function BuildPreview() {
             const tick = "flex items-center gap-2 font-sans text-[13px] cursor-pointer";
             return (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your Links.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your Mobile Links.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-6">The short version of your profile, made for phones. It&apos;s the link for your Instagram, TikTok or LinkedIn bio: your photo, a few buttons you choose, and a way into the full profile. You decide what shows and in what order.</p>
               <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-10 items-start">
                 <div>
                   <div className="border border-[#E1DED7] bg-white p-[16px] mb-5">
-                    <div className="font-sans text-[12px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-1">Your Links page</div>
+                    <div className="font-sans text-[12px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-1">Your Mobile Links page</div>
                     <div className="font-sans text-[15px] font-semibold break-all">{addr}</div>
                     <label className={`${tick} mt-3`}><input type="checkbox" checked={spot.phoneFirst} onChange={(e) => setSpot((c) => ({ ...c, phoneFirst: e.target.checked }))} /> Also show this first when someone opens my main link on a phone</label>
                     <p className="text-[12px] text-[#7d7a74] mt-1">Your full profile is always one tap away, and always shows on a computer.</p>
@@ -961,7 +962,7 @@ export default function BuildPreview() {
                   <div className="font-sans text-[13px] font-semibold mb-2">Buttons <span className="font-normal text-[#a8a29a]">· in the order they appear</span></div>
                   {spot.links.length === 0 && (
                     <div className="border border-dashed border-[#DBD7CF] bg-white p-[16px] mb-3 text-[13px] text-[#3a352f] leading-[1.5]">
-                      No buttons chosen yet, so your Links page uses your CTAs{actions.length ? "" : " (you haven't added any yet)"}, plus Work with me and your shop when you have them.
+                      No buttons chosen yet, so your Mobile Links page uses your CTAs{actions.length ? "" : " (you haven't added any yet)"}, plus Work with me and your shop when you have them.
                       {actions.length > 0 && <button onClick={fromCtas} className="block mt-2 font-sans text-[13px] font-semibold text-[#670821] underline underline-offset-2">Start from my CTAs and edit them</button>}
                     </div>
                   )}
@@ -994,7 +995,7 @@ export default function BuildPreview() {
                   <div className="space-y-2">
                     <label className={tick}><input type="checkbox" checked={spot.location} onChange={(e) => setSpot((c) => ({ ...c, location: e.target.checked }))} /> My location</label>
                     <label className={tick}><input type="checkbox" checked={spot.socials} onChange={(e) => setSpot((c) => ({ ...c, socials: e.target.checked }))} /> My social icons</label>
-                    <label className={tick}><input type="checkbox" checked={spot.pages} onChange={(e) => setSpot((c) => ({ ...c, pages: e.target.checked }))} /> Shortcuts to my profile pages (Profile, Experience, Media, Shop, Work)</label>
+                    <label className={tick}><input type="checkbox" checked={spot.pages} onChange={(e) => setSpot((c) => ({ ...c, pages: e.target.checked }))} /> Shortcuts to my profile pages (Profile, Experience, Media, Shop, Services)</label>
                   </div>
                 </div>
 
