@@ -5,8 +5,8 @@ import { isBotAgent } from "@/lib/spam";
 
 // POST /api/pv { path, ref } -> records one page visit. No cookies; the visitor code changes daily.
 export const dynamic = "force-dynamic";
-const APP = new Set(["", "about", "join", "login", "signup", "reset-password", "blueprint", "booking", "terms", "privacy", "onboard", "dashboard", "stats", "recruiter-preview", "style"]);
-const SKIP = /^\/(admin|api|build-preview|dashboard|onboard|_next)(\/|$)/;
+const APP = new Set(["", "about", "join", "login", "signup", "reset-password", "spotlight", "build-preview", "dashboard", "onboard", "blueprint", "booking", "terms", "privacy", "onboard", "dashboard", "stats", "recruiter-preview", "style"]);
+const SKIP = /^\/(admin|api|_next)(\/|$)/;
 
 export async function POST(req: Request) {
   try {
@@ -21,10 +21,11 @@ export async function POST(req: Request) {
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim();
     const day = new Date().toISOString().slice(0, 10);
     const visitor = createHash("sha256").update(`${day}|${ip}|${ua}|${process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-12) || ""}`).digest("hex").slice(0, 16);
-    await createServerSupabase().from("page_views").insert({
-      path, profile: APP.has(seg) ? null : seg.toLowerCase().slice(0, 60), ref: ref || null,
-      device: /mobi|iphone|android/i.test(ua) ? "phone" : "computer", country: req.headers.get("x-vercel-ip-country") || null, visitor,
-    });
+    const member = /^[0-9a-f-]{36}$/i.test(String(body.member || "")) ? String(body.member) : null;
+    const row = { path, profile: APP.has(seg) ? null : seg.toLowerCase().slice(0, 60), ref: ref || null, device: /mobi|iphone|android/i.test(ua) ? "phone" : "computer", country: req.headers.get("x-vercel-ip-country") || null, visitor };
+    const db = createServerSupabase();
+    const { error } = await db.from("page_views").insert(member ? { ...row, member } : row);
+    if (error && member) await db.from("page_views").insert(row); // before the member column exists
   } catch { /* counting must never break a page */ }
   return new NextResponse(null, { status: 204 });
 }

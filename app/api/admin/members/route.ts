@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { sendGettingStarted } from "@/lib/email";
 import { stripe, stripeReady } from "@/lib/stripe";
+import { ensureMemberAccount, paidSession } from "@/lib/membership-server";
 
 // GET /api/admin/members -> everyone who has signed up, for the Marquee team only.
 // Members (accounts, plan, profile), the waitlist, and December 1 reminders.
@@ -15,20 +16,43 @@ export async function GET() {
   const email = (data.user?.email || "").toLowerCase();
   if (!email || !ADMINS.includes(email)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const db = createServerSupabase();
-  const [{ data: users }, { data: profiles }, { data: waitlist }, { data: codes }] = await Promise.all([
+  const [{ data: users }, { data: profiles }, { data: waitlist }, { data: codes }, { data: drafts }, { data: payouts }, { data: memberViews }] = await Promise.all([
     db.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     db.from("published_profiles").select("username,user_id,published_at"),
     db.from("waitlist").select("email,first_name,last_name,status,notes,linkedin_url,created_at").order("created_at", { ascending: false }),
     db.from("beta_codes").select("code,redeemed_at,redeemed_by"),
+    db.from("builder_drafts").select("user_id,updated_at,data"),
+    db.from("booking_settings").select("user_id,stripe_ready,meeting_link"),
+    db.from("page_views").select("member,at,path").not("member", "is", null).gte("at", new Date(Date.now() - 30 * 864e5).toISOString()).limit(50000).then((r) => (r.error ? { data: [] as { member: string; at: string; path: string }[] } : r)),
   ]);
+  // how far each member's profile is: which of the main sections hold anything
+  type DraftData = { photoUrl?: string; bio?: string; entries?: unknown[]; skills?: unknown[]; offers?: { added?: boolean }[]; media?: unknown[]; vals?: unknown[]; testis?: unknown[]; actions?: unknown[]; products?: unknown[] };
+  const draftBy = new Map((drafts || []).map((d) => [d.user_id, d]));
+  const payoutBy = new Map((payouts || []).map((b) => [b.user_id, b]));
+  const NYday = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const daysBy = new Map<string, Set<string>>(); const lastBy = new Map<string, string>(); const builderBy = new Map<string, number>();
+  for (const v of (memberViews || []) as { member: string; at: string; path: string }[]) {
+    if (!daysBy.has(v.member)) daysBy.set(v.member, new Set());
+    daysBy.get(v.member)!.add(NYday(v.at));
+    if (!lastBy.has(v.member) || v.at > lastBy.get(v.member)!) lastBy.set(v.member, v.at);
+    if (v.path.startsWith("/build-preview")) builderBy.set(v.member, (builderBy.get(v.member) || 0) + 1);
+  }
+  const progress = (uid: string) => {
+    const d = (draftBy.get(uid)?.data || {}) as DraftData;
+    const checks = { photo: !!d.photoUrl, bio: !!(d.bio || "").trim(), experience: (d.entries?.length ?? 0) > 0, skills: (d.skills?.length ?? 0) > 0, offers: !!d.offers?.some((o) => o.added), media: (d.media?.length ?? 0) > 0, values: (d.vals?.length ?? 0) > 0, testimonials: (d.testis?.length ?? 0) > 0, ctas: (d.actions?.length ?? 0) > 0 };
+    const done = Object.values(checks).filter(Boolean).length;
+    return { pct: Math.round((done / Object.keys(checks).length) * 100), filled: Object.entries(checks).filter(([, v]) => v).map(([k]) => k) };
+  };
   const byUser = new Map((profiles || []).map((p) => [p.user_id, p]));
   const codeBy = new Map((codes || []).filter((c) => c.redeemed_by).map((c) => [c.redeemed_by, c.code]));
   const members = (users?.users || []).map((u) => {
-    const m = (u.app_metadata || {}) as { plan?: string; founding_member?: boolean; subscription_status?: string; verified?: boolean; reviewed_at?: string; removed_at?: string };
+    const m = (u.app_metadata || {}) as { plan?: string; founding_member?: boolean; subscription_status?: string; verified?: boolean; reviewed_at?: string; removed_at?: string; needs_password?: boolean };
     const meta = (u.user_metadata || {}) as { full_name?: string };
     const p = byUser.get(u.id);
     return {
-      id: u.id, reviewedAt: m.reviewed_at || "", removedAt: m.removed_at || "", isAdmin: ADMINS.includes((u.email || "").toLowerCase()),
+      id: u.id, reviewedAt: m.reviewed_at || "", removedAt: m.removed_at || "", needsPassword: !!m.needs_password,
+      draftAt: draftBy.get(u.id)?.updated_at || "", progress: progress(u.id).pct, filled: progress(u.id).filled, payoutReady: !!payoutBy.get(u.id)?.stripe_ready, meetingLink: !!payoutBy.get(u.id)?.meeting_link,
+      activeDays: daysBy.get(u.id)?.size || 0, lastActive: lastBy.get(u.id) || u.last_sign_in_at || "", builderVisits: builderBy.get(u.id) || 0, isAdmin: ADMINS.includes((u.email || "").toLowerCase()),
       name: meta.full_name || "", email: u.email || "", joined: u.created_at, lastSeen: u.last_sign_in_at || "",
       plan: m.plan || (codeBy.get(u.id) ? "invite code" : ""), status: m.subscription_status || "", founding: !!m.founding_member, verified: !!m.verified,
       code: codeBy.get(u.id) || "", username: p?.username || "", publishedAt: p?.published_at || "",
@@ -55,7 +79,9 @@ export async function GET() {
       phones: week.length ? Math.round((week.filter((x) => x.device === "phone").length / week.length) * 100) : 0, isToday: today,
     };
   }
+  const activeByDay = Array.from({ length: 14 }, (_, i) => { const d = NYday(new Date(Date.now() - (13 - i) * 864e5).toISOString()); const who = new Set(((memberViews || []) as { member: string; at: string }[]).filter((v) => NYday(v.at) === d).map((v) => v.member)); return { day: d, members: who.size }; });
   return NextResponse.json({
+    usage: { activeByDay, tracked: (memberViews || []).length > 0 },
     traffic,
     asOf: new Date().toISOString(),
     members,
@@ -76,6 +102,19 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const id = String(body.id || ""), action = String(body.action || "");
   const db = createServerSupabase();
+
+  // Someone paid but never finished: create their account from the payment link in their welcome email.
+  if (action === "from_payment") {
+    const m = String(body.link || "").match(/cs_(?:live|test)_[A-Za-z0-9]+/);
+    if (!m) return NextResponse.json({ error: "Paste the link from the welcome email, or the code that starts with cs_live_." }, { status: 400 });
+    const p = await paidSession(m[0]);
+    if (!p) return NextResponse.json({ error: "Stripe doesn't show a completed payment for that code." }, { status: 404 });
+    let uid = "";
+    try { uid = await ensureMemberAccount(m[0], p.email, ""); } catch (e) { console.error("from_payment:", e); return NextResponse.json({ error: "Couldn't create the account. Please try again." }, { status: 500 }); }
+    const { data: u } = await db.auth.admin.getUserById(uid);
+    const needs = !!(u?.user?.app_metadata as { needs_password?: boolean } | undefined)?.needs_password;
+    return NextResponse.json({ ok: true, email: p.email, plan: p.planLabel, needsPassword: needs });
+  }
   const { data: got } = await db.auth.admin.getUserById(id);
   const u = got?.user;
   if (!u) return NextResponse.json({ error: "No such member." }, { status: 404 });

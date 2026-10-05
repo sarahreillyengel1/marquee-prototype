@@ -568,7 +568,7 @@ export default function BuildPreview() {
   const publish = async () => {
     const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
-    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
+    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
     setPublishing(true); setPubResult(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();

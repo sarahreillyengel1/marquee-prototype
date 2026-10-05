@@ -42,3 +42,29 @@ export async function userByEmail(email: string) {
   }
   return null;
 }
+
+/** The account for a paid checkout: found by email, or created now with a password still to be chosen.
+ *  Safe to run more than once. Returns the user id, or "" when the payment can't be read. */
+export async function ensureMemberAccount(sessionId: string, email: string, fullName: string) {
+  const p = await paidSession(sessionId);
+  if (!p) return "";
+  // the name the person gave Stripe, when the caller didn't pass one
+  if (!fullName.trim()) { try { const s = await stripe().checkout.sessions.retrieve(sessionId); fullName = s.customer_details?.name || ""; } catch { /* name stays blank */ } }
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  const existing = await userByEmail(p.email || email);
+  if (existing) {
+    await attachMembership(existing.id, p);
+    // fill in a blank name from the payment (an account made before names were carried across)
+    const meta = (existing.user_metadata || {}) as { full_name?: string };
+    if (!(meta.full_name || "").trim() && fullName.trim()) await createServerSupabase().auth.admin.updateUserById(existing.id, { user_metadata: { ...existing.user_metadata, first_name: parts[0] || "", last_name: parts.slice(1).join(" "), full_name: fullName.trim() } }).catch(() => null);
+    return existing.id;
+  }
+  const first = parts[0] || "", last = parts.slice(1).join(" ");
+  const db = createServerSupabase();
+  // a random password nobody knows; needs_password tells /join/welcome to ask for one
+  const password = Array.from(crypto.getRandomValues(new Uint8Array(24)), (b) => b.toString(16).padStart(2, "0")).join("");
+  const { data, error } = await db.auth.admin.createUser({ email: p.email, password, email_confirm: true, user_metadata: { first_name: first, last_name: last, full_name: fullName.trim() }, app_metadata: { needs_password: true } });
+  if (error || !data.user) throw new Error(error?.message || "createUser failed");
+  await attachMembership(data.user.id, p);
+  return data.user.id;
+}

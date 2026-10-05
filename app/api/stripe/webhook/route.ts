@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
 import { mailFor, originOf, type BookingRow } from "@/lib/booking-server";
 import { sendBookingConfirmed, sendMembershipWelcome } from "@/lib/email";
+import { ensureMemberAccount } from "@/lib/membership-server";
 import { PLANS, isPlan } from "@/lib/membership";
 import { payoutAccountReady, stripe, stripeReady } from "@/lib/stripe";
 
@@ -29,8 +30,14 @@ export async function POST(req: Request) {
     const id = s.metadata?.booking_id;
     // a new member: email them the link to finish, in case they closed the page after paying
     if (s.metadata?.kind === "membership" && s.payment_status === "paid" && isPlan(s.metadata.plan)) {
-      const to = s.customer_details?.email || s.customer_email;
-      if (to) await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`, s.customer_details?.name || "");
+      // the account is created now, from the payment, so every paying member exists the moment they pay;
+      // the welcome email's button takes them to choose a password
+      const to = (s.customer_details?.email || s.customer_email || "").trim().toLowerCase();
+      const name = s.customer_details?.name || "";
+      if (to) {
+        try { await ensureMemberAccount(s.id, to, name); } catch (e) { console.error("Member account at payment:", e instanceof Error ? e.message : e); }
+        await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`, name);
+      }
     }
     if (id && s.payment_status === "paid") {
       // only the first delivery confirms and emails; repeats find nothing left to update

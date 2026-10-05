@@ -96,8 +96,9 @@ export default function HomePage() {
         <div className={`${WRAP} py-[14px] flex items-center justify-between gap-4`}>
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-3 sm:gap-5 items-center">
-            <Link href="/login" className="text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
-            <Link href="/join" className={`${BTN} bg-dred text-white hover:bg-red !px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}>Sign Up Now</Link>
+            <Link href="/spotlight" className="px-4 sm:px-5 py-[9px] rounded-full border border-ink text-[13.5px] font-semibold whitespace-nowrap hover:bg-ink hover:text-white transition-colors"><span className="sm:hidden">Spotlight</span><span className="hidden sm:inline">Read Spotlight</span></Link>
+            <Link href="/login" className="hidden sm:inline text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
+            <Link href="/join" className={`${BTN} bg-dred text-white hover:bg-red !px-4 sm:!px-5 !py-[10px] !text-[13.5px] whitespace-nowrap`}><span className="sm:hidden">Sign up</span><span className="hidden sm:inline">Sign Up Now</span></Link>
           </div>
         </div>
       </nav>
@@ -365,6 +366,7 @@ export default function HomePage() {
             <div>
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Company</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
+                <li><Link href="/spotlight" className="hover:text-dred">Spotlight</Link></li>
                 <li><Link href="/about" className="hover:text-dred">About</Link></li>
                 <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-dred">Newsletter</a></li>
                 <li><a href="mailto:hello@marquee.bio" className="hover:text-dred">Contact</a></li>

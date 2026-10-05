@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createBrowserSupabase } from "@/lib/supabase";
 
-type Paid = { email: string; plan: string; hasAccount: boolean; claimed: boolean };
+type Paid = { email: string; plan: string; hasAccount: boolean; needsPassword?: boolean; claimed: boolean; first?: string; last?: string };
 
 export default function Welcome() {
   const [sessionId, setSessionId] = useState("");
@@ -21,7 +21,7 @@ export default function Welcome() {
     const id = new URLSearchParams(window.location.search).get("session_id") || "";
     setSessionId(id);
     if (!id) { setMissing(true); return; }
-    fetch(`/api/membership/session?session_id=${encodeURIComponent(id)}`).then(async (r) => { if (!r.ok) { setMissing(true); return; } setPaid(await r.json()); }).catch(() => setMissing(true));
+    fetch(`/api/membership/session?session_id=${encodeURIComponent(id)}`).then(async (r) => { if (!r.ok) { setMissing(true); return; } const j = await r.json(); setPaid(j); setF((f) => ({ ...f, first: j.first || "", last: j.last || "" })); }).catch(() => setMissing(true));
   }, []);
 
   const create = async (e: React.FormEvent) => {
@@ -73,8 +73,8 @@ export default function Welcome() {
           </>
         ) : (
           <>
-            <span className="inline-block text-[11.5px] font-bold tracking-[0.16em] uppercase px-[13px] py-[7px] rounded-full bg-dred text-white">Founding Member · {paid.plan}</span>
-            <h1 className="font-lora font-normal leading-[1.1] text-[clamp(28px,6vw,38px)] mt-5">Payment received. Now create your account.</h1>
+            <span className="inline-block text-[11.5px] font-bold tracking-[0.16em] uppercase px-[13px] py-[7px] rounded-full bg-dred text-white">Founding Member</span>
+            <h1 className="font-lora font-normal leading-[1.1] text-[clamp(28px,6vw,38px)] mt-5">Complete your account setup.</h1>
             <form onSubmit={create} className="bg-white border border-hair rounded-[10px] p-6 mt-7" noValidate>
               <div className="mb-4"><div className={label}>Email</div><div className="text-[15px]">{paid.email}</div><div className="text-[12.5px] text-ink/60 mt-1">The email you paid with. You&apos;ll sign in with it.</div></div>
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
@@ -83,7 +83,7 @@ export default function Welcome() {
               </div>
               <div><label htmlFor="w-pass" className={label}>Choose a password</label><input id="w-pass" type="password" autoComplete="new-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} className={field} /><div className="text-[12.5px] text-ink/60 mt-1">At least 8 characters.</div></div>
               {err && <p className="text-[13px] text-dred mt-3" role="alert">{err}</p>}
-              <button type="submit" disabled={busy} className="block w-full mt-5 px-6 py-[14px] text-[15.5px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{busy ? "Creating your account…" : "Create account and start my profile"}</button>
+              <button type="submit" disabled={busy} className="block w-full mt-5 px-6 py-[14px] text-[15.5px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{busy ? (paid.needsPassword ? "Saving…" : "Creating your account…") : paid.needsPassword ? "Save and start building →" : "Create my account →"}</button>
             </form>
           </>
         )}

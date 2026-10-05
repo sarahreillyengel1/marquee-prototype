@@ -25,14 +25,27 @@ async function sendEmail(to: string, subject: string, html: string, replyTo?: st
       body: JSON.stringify({ from: FROM, to, subject, html, ...(replyTo ? { reply_to: replyTo } : {}), ...(attachments?.length ? { attachments } : {}) }),
     });
     if (!res.ok) {
-      console.error("Resend send failed:", res.status, await res.text());
+      const text = await res.text();
+      console.error("Resend send failed:", res.status, text);
+      await logEmail(to, subject, false, null, `${res.status} ${text.slice(0, 200)}`);
       return { ok: false as const };
     }
+    const j = await res.json().catch(() => ({}));
+    await logEmail(to, subject, true, j?.id || null, null);
     return { ok: true as const };
   } catch (err) {
     console.error("Resend send error:", err);
+    await logEmail(to, subject, false, null, err instanceof Error ? err.message.slice(0, 200) : "error");
     return { ok: false as const };
   }
+}
+
+// Every send is noted in email_log (lib/usage-schema.sql) so /admin can show what went out. Never blocks a send.
+async function logEmail(to: string, subject: string, ok: boolean, resendId: string | null, error: string | null) {
+  try {
+    const { createServerSupabase } = await import("@/lib/supabase");
+    await createServerSupabase().from("email_log").insert({ to_email: to, subject, ok, resend_id: resendId, error });
+  } catch { /* table may not exist yet */ }
 }
 
 // Confirmation to the person who just applied — "your request is being reviewed".

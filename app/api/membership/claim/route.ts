@@ -18,6 +18,20 @@ export async function POST(req: Request) {
   const existing = await userByEmail(p.email);
   if (existing) {
     if (p.claimedBy && p.claimedBy !== existing.id) return NextResponse.json({ error: "This membership is already set up." }, { status: 409 });
+    const app = (existing.app_metadata || {}) as { needs_password?: boolean };
+    if (app.needs_password) {
+      // created at payment time: this is where the member chooses their password
+      const password = String(body.password || "");
+      if (password.length < 8) return NextResponse.json({ error: "Choose a password of at least 8 characters." }, { status: 400 });
+      const first = String(body.first_name || "").trim().slice(0, 60), last = String(body.last_name || "").trim().slice(0, 60);
+      const meta = (existing.user_metadata || {}) as { first_name?: string; last_name?: string; full_name?: string };
+      const names = first || last ? { first_name: first || meta.first_name, last_name: last || meta.last_name, full_name: `${first || meta.first_name || ""} ${last || meta.last_name || ""}`.trim() } : {};
+      const db = createServerSupabase();
+      const { error } = await db.auth.admin.updateUserById(existing.id, { password, app_metadata: { ...existing.app_metadata, needs_password: false }, user_metadata: { ...meta, ...names } });
+      if (error) { console.error("Set password error:", error.message); return NextResponse.json({ error: "We couldn't save that password. Please try again." }, { status: 500 }); }
+      await attachMembership(existing.id, p);
+      return NextResponse.json({ ok: true, email: p.email, existing: false });
+    }
     await attachMembership(existing.id, p);
     return NextResponse.json({ ok: true, email: p.email, existing: true });
   }
