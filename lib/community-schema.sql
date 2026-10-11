@@ -1,4 +1,4 @@
--- Answers from marquee.bio/community ("Get to Know You"). Run once in Supabase: SQL Editor -> paste -> Run.
+-- Answers from marquee.bio/community-feedback ("Get to Know You"). Run once in Supabase: SQL Editor -> paste -> Run.
 create table if not exists public.community_responses (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),

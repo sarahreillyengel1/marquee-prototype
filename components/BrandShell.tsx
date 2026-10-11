@@ -56,9 +56,9 @@ export default function BrandShell({
             <FooterCol title="Company" links={[
               { label: "Spotlight", href: "/spotlight" },
               { label: "About", href: "/about" },
-              { label: "Get to Know You", href: "/community" },
               { label: "Newsletter", href: "https://beknownweekly.substack.com/" },
               { label: "Contact", href: "mailto:hello@marquee.bio" },
+              { label: "Community Feedback", href: "/community-feedback" },
             ]} />
           </div>
           <div className="mt-12 pt-[22px] border-t border-hair flex justify-between flex-wrap gap-[14px] text-[13px] text-ink/55">

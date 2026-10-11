@@ -66,7 +66,7 @@ export default function FeedbackAdmin() {
           <div>
             <Link href="/admin" className="text-[13px] text-[#7d7a74] hover:text-brand-ink">← Admin</Link>
             <h1 className="font-lora text-[32px] leading-[1.05] mt-2">Feedback</h1>
-            <p className="text-[14px] text-[#7d7a74] mt-1">{rows.length} {rows.length === 1 ? "response" : "responses"} from {people} {people === 1 ? "person" : "people"}. Answers from marquee.bio/community. Never published.</p>
+            <p className="text-[14px] text-[#7d7a74] mt-1">{rows.length} {rows.length === 1 ? "response" : "responses"} from {people} {people === 1 ? "person" : "people"}. Answers from marquee.bio/community-feedback. Never published.</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <a href="/api/admin/feedback?format=csv" className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[9px] px-[14px] hover:bg-[#4E0619]">Export CSV</a>

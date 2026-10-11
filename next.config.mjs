@@ -20,6 +20,7 @@ const nextConfig = {
       { source: "/pricing", destination: "/#pricing", permanent: true },
       { source: "/resources", destination: "/#faq", permanent: true },
       { source: "/assessment", destination: "/#blueprint", permanent: true },
+      { source: "/community", destination: "/community-feedback", permanent: true },
     ];
   },
 };
