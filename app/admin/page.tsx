@@ -4,13 +4,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Member = { id: string; reviewedAt: string; removedAt: string; needsPassword?: boolean; draftAt: string; progress: number; filled: string[]; payoutReady: boolean; meetingLink: boolean; activeDays: number; lastActive: string; builderVisits: number; isAdmin: boolean; name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; username: string; publishedAt: string };
+type Member = { id: string; reviewedAt: string; removedAt: string; needsPassword?: boolean; referrals: number; referralsVerified: number; referralsInvited: number; rewardAt: string; rewardCredited: boolean; draftAt: string; progress: number; filled: string[]; payoutReady: boolean; meetingLink: boolean; activeDays: number; lastActive: string; builderVisits: number; isAdmin: boolean; name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; username: string; publishedAt: string };
 type Wait = { email: string; first_name?: string | null; last_name?: string | null; status?: string | null; notes?: string | null; linkedin_url?: string | null; created_at: string };
 type Count = { name: string; count: number };
 type Span = { views: number; visitors: number };
-type Traffic = { today: Span; week: Span; month: Span; days: { day: string; views: number; visitors: number }[]; pages: Count[]; profiles: Count[]; sources: Count[]; phones: number };
+type Traffic = { today: Span; week: Span; month: Span; days: { day: string; views: number; visitors: number }[]; pages: Count[]; profiles: Count[]; sources: Count[]; phones: number; automated?: { visitors: number; views: number } };
 type Mail = { id: string; to: string; subject: string; at: string; status: string };
-type Data = { usage: { activeByDay: { day: string; members: number }[]; tracked: boolean }; traffic: Traffic | null; asOf: string; members: Member[]; waitlist: Wait[]; reminders: Wait[]; codesLeft: string[] };
+type Referral = { referrer: string; referred: string; paidAt: string };
+type Data = { referrals: Referral[]; usage: { activeByDay: { day: string; members: number }[]; tracked: boolean }; traffic: Traffic | null; asOf: string; members: Member[]; waitlist: Wait[]; reminders: Wait[]; codesLeft: string[] };
 
 const day = (iso: string) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 const PLAN: Record<string, string> = { founding_monthly: "Founding · $20/month", founding_yearly: "Founding · $200/year", founding_comped: "Founding · comped", "invite code": "Invite code" };
@@ -35,13 +36,13 @@ export default function Admin() {
   const published = d.members.filter((m) => m.username);
   const Stat = ({ n, t, s }: { n: string | number; t: string; s?: string }) => <div className="bg-white border border-[#E1DED7] p-[18px]"><div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9C968C]">{t}</div><div className="font-lora text-[34px] leading-none mt-[10px] mb-1">{n}</div>{s && <div className="text-[12.5px] text-[#6E6A62]">{s}</div>}</div>;
   const copy = (list: string[]) => navigator.clipboard?.writeText(list.join(", "));
-  const act = async (m: Member, action: "verify" | "remove") => {
+  const act = async (m: Member, action: "verify" | "remove" | "reward_done") => {
     if (action === "remove" && !window.confirm(`Remove ${m.name || m.email}?\n\nThis refunds their latest payment, cancels their membership, takes their profile down and blocks the account. It can't be undone from here.`)) return;
     setBusy(m.id + action); setNote("");
     const r = await fetch("/api/admin/members", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id: m.id }) });
     const j = await r.json().catch(() => ({}));
     setBusy("");
-    setNote(!r.ok ? (j.error || "That didn't work.") : action === "verify" ? `${m.name || m.email} verified. ${j.emailed ? "Getting Started guide sent." : "The guide email did NOT send — email it to them yourself."}` : `${m.name || m.email} removed: ${(j.notes || []).join(", ")}.`);
+    setNote(!r.ok ? (j.error || "That didn't work.") : action === "reward_done" ? `${m.name || m.email}: referral reward marked as given.` : action === "verify" ? `${m.name || m.email} verified. ${j.emailed ? "Getting Started guide sent." : "The guide email did NOT send — email it to them yourself."}${j.reward?.reached ? (j.reward.credited ? " Their referrer just reached 6: a $20 credit was added to that member's Stripe account." : " Their referrer just reached 6, but Stripe refused the credit: add it in Stripe and mark done.") : ""}` : `${m.name || m.email} removed: ${(j.notes || []).join(", ")}.`);
     load();
   };
   const dropWait = async (email: string) => {
@@ -67,7 +68,7 @@ export default function Admin() {
       <div className="max-w-[1180px] mx-auto">
         <div className="flex items-end justify-between flex-wrap gap-3 mb-7">
           <div><Link href="/" className="wordmark block mb-6">MARQUEE</Link><h1 className="font-lora text-[34px] leading-[1.05]">Who has signed up</h1><p className="text-[13.5px] text-[#6E6A62] mt-1">As of {new Date(d.asOf).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. Only you can see this page.</p></div>
-          <div className="flex gap-3"><Link href="/admin/spotlight" className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[10px] px-[15px] hover:bg-[#4E0619]">Spotlight editor →</Link><button onClick={() => { setState("loading"); load(); }} className="font-sans text-[13px] font-semibold border border-[#E1DED7] bg-white py-[10px] px-[15px] hover:border-brand-ink">Refresh</button></div>
+          <div className="flex gap-3"><Link href="/admin/spotlight" className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[10px] px-[15px] hover:bg-[#4E0619]">Spotlight editor →</Link><Link href="/admin/feedback" className="font-sans text-[13px] font-semibold border border-[#E1DED7] bg-white py-[10px] px-[15px] hover:border-brand-ink">Feedback →</Link><button onClick={() => { setState("loading"); load(); }} className="font-sans text-[13px] font-semibold border border-[#E1DED7] bg-white py-[10px] px-[15px] hover:border-brand-ink">Refresh</button></div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-9">
@@ -126,7 +127,7 @@ export default function Admin() {
                 </>)}
               </div>
               <div className="bg-white border border-[#E1DED7] px-5 overflow-x-auto">
-                <table className="w-full border-collapse min-w-[980px]"><thead><tr>{["Member", "Joined", "Last seen", "Days active · 30d", "Builder visits", "Profile", "Live", "Payouts"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
+                <table className="w-full border-collapse min-w-[1060px]"><thead><tr>{["Member", "Joined", "Last seen", "Days active · 30d", "Builder visits", "Profile", "Live", "Payouts", "Referrals"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
                   <tbody>{real.length === 0 ? <tr><td className={td} colSpan={8}>No members yet.</td></tr> : real.map((m) => (
                     <tr key={m.id}>
                       <td className={td}><span className="font-semibold">{m.name || m.email}</span>{m.needsPassword && <div className="text-[11.5px] text-[#670821]">Paid · no password yet</div>}</td>
@@ -137,7 +138,9 @@ export default function Admin() {
                       <td className={td}><div className="flex items-center gap-2"><div className="w-[90px] h-[6px] bg-[#EDE7FF]"><div className="h-full bg-[#670821]" style={{ width: `${m.progress}%` }} /></div><span className="text-[12.5px] tabular-nums">{m.progress}%</span></div><div className="text-[11px] text-[#9C968C] mt-[2px]">{m.filled.length ? m.filled.join(", ") : m.draftAt ? "nothing filled yet" : "not started"}</div></td>
                       <td className={td}>{m.username ? <a href={`/${m.username}`} target="_blank" rel="noopener" className="text-[#670821] font-semibold hover:underline">Yes ↗</a> : <span className="text-[#9C968C]">Not yet</span>}</td>
                       <td className={td}>{m.payoutReady ? <span className="text-[12px] font-semibold px-[8px] py-[3px] bg-[#EDE7FF] text-[#670821]">Connected</span> : <span className="text-[#9C968C]">Not yet</span>}{!m.meetingLink && m.payoutReady && <div className="text-[11px] text-[#9C968C] mt-[2px]">no meeting link</div>}</td>
+                      <td className={td}><span className="tabular-nums">{m.referralsVerified} of 6 verified</span><div className="text-[11px] text-[#9C968C]">{m.referralsInvited} invited · {m.referrals} joined</div>{m.rewardAt && (m.rewardCredited ? <div className="text-[11px] text-[#9C968C] mt-[2px]">$20 credit given {day(m.rewardAt)}</div> : <div className="text-[11px] mt-[2px]"><span className="font-semibold px-[6px] py-[2px] bg-[#670821] text-white">$20 credit due</span> <span className="text-[#6E6A62]">Stripe refused; add it in Stripe, then</span> <button disabled={!!busy} onClick={() => act(m, "reward_done")} className="font-semibold text-[#670821] hover:underline">mark done</button></div>)}</td>
                     </tr>))}</tbody></table>
+                {d.referrals.length > 0 && <div className="pt-4"><div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9C968C] mb-2">Referrals · newest first</div>{d.referrals.map((r, i) => <div key={i} className="text-[13.5px] py-[5px] border-b border-[#F1EEE8] last:border-0"><span className="font-semibold">{r.referrer}</span> brought in <span className="font-semibold">{r.referred}</span><span className="text-[#9C968C]"> · {day(r.paidAt)}</span></div>)}</div>}
                 <p className="text-[12px] text-[#9C968C] py-3">Profile shows which builder sections hold something: photo, bio, experience, skills, offers, media, values, testimonials, CTAs. Your own account is left out.</p>
               </div>
             </div>);
@@ -168,7 +171,7 @@ export default function Admin() {
                 <List title="Top pages" rows={t.pages} empty="No visits yet." />
                 <List title="Most viewed profiles" rows={t.profiles} empty="No profile visits yet." link />
               </div>
-              <p className="text-[12px] text-[#9C968C] mt-2">Counted by Marquee, without cookies. A visitor is one person on one day. Your own visits count too.</p>
+              <p className="text-[12px] text-[#9C968C] mt-2">Counted by Marquee, without cookies. A visitor is one person on one day. Your own visits count too.{t.automated && t.automated.visitors > 0 ? ` Set aside as likely automated in the last 30 days: ${t.automated.visitors} visitor${t.automated.visitors === 1 ? "" : "s"}, ${t.automated.views} page views (home, join and login hammered in minutes, from nowhere).` : ""}</p>
             </div>);
         })()}
 

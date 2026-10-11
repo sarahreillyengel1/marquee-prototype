@@ -119,7 +119,7 @@ export default function SpotlightView({ items, today }: { items: SpotlightItem[]
               <div className="bg-dred text-white p-7">
                 <div className={`${EYEBROW} text-white/70`}>In your inbox</div>
                 <h3 className="font-lora text-[30px] leading-[1.05] mt-3">Be Known <em>Weekly</em></h3>
-                <p className="text-[14px] leading-[1.5] text-white/85 mt-3">The week&apos;s best opportunities, events and ideas. Every Friday.</p>
+                <p className="text-[14px] leading-[1.5] text-white/85 mt-3">The week&apos;s best opportunities, events and ideas, once a week.</p>
                 <a href={BE_KNOWN_URL} target="_blank" rel="noopener" className={`${BTN} bg-white text-dred hover:bg-beige mt-5`}>Subscribe →</a>
               </div>
             </aside>
@@ -188,7 +188,7 @@ export default function SpotlightView({ items, today }: { items: SpotlightItem[]
       <section id="weekly" className="bg-ink text-white scroll-mt-20">
         <div className={`${WRAP} py-[clamp(48px,7vw,88px)] grid md:grid-cols-[1fr_auto] gap-8 items-center`}>
           <div>
-            <div className={`${EYEBROW} text-brand-lavender`}>Every Friday</div>
+            <div className={`${EYEBROW} text-brand-lavender`}>Weekly</div>
             <h2 className="font-lora font-normal leading-[1] text-[clamp(40px,6vw,72px)] mt-3">Be Known <em>Weekly</em></h2>
             <p className="text-[16px] leading-[1.55] text-white/80 mt-4 max-w-[520px]">Stay in the know on Marquee news, featured stories, new opportunities and upcoming events.</p>
           </div>

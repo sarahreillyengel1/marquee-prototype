@@ -13,6 +13,8 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const plan: unknown = body.plan;
   if (!isPlan(plan)) return NextResponse.json({ error: "Choose monthly or annual." }, { status: 400 });
+  // who sent them, from marquee.bio/join?ref=<code>
+  const ref = String(body.ref || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60);
   if (!stripeReady()) return NextResponse.json({ error: "Sign-up isn't switched on yet.", notOpen: true }, { status: 503 });
   try {
     const prices = await foundingPrices(stripe());
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
       line_items: [{ price: prices[plan], quantity: 1 }],
       allow_promotion_codes: true,
       subscription_data: { metadata: { plan, founding_member: "true" }, description: PLANS[plan].label },
-      metadata: { plan, kind: "membership" },
+      metadata: { plan, kind: "membership", ...(ref ? { ref } : {}) },
       success_url: `${origin}/join/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/join`,
     });

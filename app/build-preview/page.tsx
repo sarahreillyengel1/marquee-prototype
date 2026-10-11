@@ -179,6 +179,23 @@ export default function BuildPreview() {
   const [uploading, setUploading] = useState(false);
   // Onboarding guide state: "welcome" intro → 0..12 walking the sections → "done" → null (dismissed)
   const [tour, setTour] = useState<"welcome" | number | "done" | null>("welcome");
+  // referral link and progress, from /api/referrals
+  type RefInfo = { link: string; invited: number; joined: number; verified: number; goal: number; cap: number; rewarded: boolean; invites: { name: string; email: string; at: string; joined: boolean }[] };
+  const [refInfo, setRefInfo] = useState<RefInfo | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inv, setInv] = useState({ name: "", email: "" });
+  const [invBusy, setInvBusy] = useState(false);
+  const [invNote, setInvNote] = useState("");
+  const sendInvite = async () => {
+    setInvBusy(true); setInvNote("");
+    const r = await fetch("/api/referrals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(inv) });
+    const j = await r.json().catch(() => ({}));
+    setInvBusy(false);
+    if (!r.ok) { setInvNote(j.error || "Couldn't send that invite."); return; }
+    setRefInfo(j); setInv({ name: "", email: "" }); setInvNote(`Invite sent to ${inv.email.trim()}.`);
+  };
+  const [refCopied, setRefCopied] = useState(false);
+  useEffect(() => { fetch("/api/referrals").then(async (r) => { if (r.ok) setRefInfo(await r.json()); }).catch(() => null); }, []);
   const tourGroup = (i: number) => (i < 9 ? "Build your profile" : "Build your brand");
   const startTour = () => { setTour(0); setActive(TOUR_STEPS[0]); };
   const tourGo = (i: number) => {
@@ -568,7 +585,7 @@ export default function BuildPreview() {
   const publish = async () => {
     const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
-    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
+    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight", "community"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
     setPublishing(true); setPubResult(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -611,12 +628,57 @@ export default function BuildPreview() {
           </div>
         ))}
         {(() => { const parts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()]; const pct = Math.round((parts.filter(Boolean).length / parts.length) * 100); const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#670821] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
+        {refInfo && (
+          <div className="mt-3 border border-[#E1DED7] bg-white p-[14px]">
+            <div className="font-sans text-[13px] font-semibold">Refer friends, earn a $20 credit</div>
+            <p className="text-[12px] text-[#6E6A62] leading-[1.45] mt-1">Invite up to {refInfo.cap} friends. When {refInfo.goal} have joined and been verified, you get a one-time $20 credit on your membership.</p>
+            <div className="flex items-center gap-[6px] mt-[10px]">{Array.from({ length: refInfo.goal }, (_, i) => <span key={i} className={`h-[6px] flex-1 ${i < refInfo.verified ? "bg-[#670821]" : i < refInfo.joined ? "bg-[#C7B5FF]" : "bg-[#EDE7FF]"}`} />)}<span className="text-[11.5px] text-[#6E6A62] tabular-nums ml-1 whitespace-nowrap">{refInfo.rewarded ? "Earned" : `${refInfo.verified} of ${refInfo.goal} verified`}</span></div>
+            <div className="text-[11px] text-[#9C968C] mt-[4px]">{refInfo.invited} of {refInfo.cap} invited{refInfo.joined > refInfo.verified ? ` · ${refInfo.joined - refInfo.verified} joined, waiting to be verified` : ""}</div>
+            <button onClick={() => { setInviteOpen(true); setInvNote(""); }} className="mt-[10px] w-full font-sans text-[12.5px] font-semibold text-white bg-[#670821] py-[8px] hover:bg-[#4E0619]">Invite friends →</button>
+            <button onClick={() => { navigator.clipboard?.writeText(refInfo.link).then(() => { setRefCopied(true); setTimeout(() => setRefCopied(false), 1800); }); }} className="mt-[8px] w-full font-sans text-[12.5px] font-semibold border border-brand-ink py-[8px] hover:bg-brand-ink hover:text-white">{refCopied ? "Copied" : "Copy my link"}</button>
+            <div className="text-[11px] text-[#9C968C] mt-[6px] truncate">{refInfo.link.replace("https://", "")}</div>
+          </div>
+        )}
       </aside>
+
+      {inviteOpen && refInfo && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setInviteOpen(false)}>
+          <div className="bg-white w-full max-w-[520px] p-7 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-baseline justify-between"><h2 className="font-lora text-[26px] leading-[1.1]">Invite a friend.</h2><button onClick={() => setInviteOpen(false)} className="text-[13px] text-[#6E6A62] hover:underline">Close</button></div>
+            <p className="text-[13.5px] text-[#6E6A62] leading-[1.5] mt-2">We&apos;ll email them an invitation in your name, with your link in it. Replies come to you.</p>
+            {refInfo.invited < refInfo.cap ? (
+              <div className="mt-5 grid grid-cols-[1fr_1.4fr_auto] gap-2">
+                <input value={inv.name} onChange={(e) => setInv({ ...inv, name: e.target.value })} placeholder="First name" className="font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                <input value={inv.email} onChange={(e) => setInv({ ...inv, email: e.target.value })} placeholder="Email" type="email" className="font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                <button disabled={invBusy || !inv.email.trim()} onClick={sendInvite} className="font-sans text-[13px] font-semibold text-white bg-[#670821] px-4 hover:bg-[#4E0619] disabled:opacity-50">{invBusy ? "Sending…" : "Send"}</button>
+              </div>
+            ) : <p className="mt-5 text-[13.5px]">You&apos;ve invited {refInfo.cap} friends, the most the programme allows. Thank you.</p>}
+            {invNote && <p className="text-[13px] mt-3 text-[#3a352f]" role="status">{invNote}</p>}
+            <div className="mt-6 bg-[#F7F6F2] border border-[#E1DED7] p-4 text-[13.5px] leading-[1.55]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#6E6A62] mb-2">What they&apos;ll receive</div>
+              <p className="font-lora text-[18px] mb-2">You&apos;re invited to Marquee</p>
+              <p>Hi [Name],</p>
+              <p className="mt-2">I&apos;ve been using Marquee to build my professional profile and storefront, and I thought you&apos;d love it too.</p>
+              <p className="mt-2">It gives you one place to showcase your work, build your professional brand, and turn your knowledge and expertise into more ways to get discovered, hired, booked and paid.</p>
+              <p className="mt-3 font-semibold text-[#670821]">Build Your Marquee →</p>
+              <p className="mt-3">{name.trim() || "Your name"}</p>
+            </div>
+            {refInfo.invites.length > 0 && (
+              <div className="mt-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#6E6A62] mb-1">Invited · {refInfo.invited} of {refInfo.cap}</div>
+                {refInfo.invites.map((i) => <div key={i.email} className="flex justify-between gap-3 text-[13px] py-[6px] border-b border-[#F1EEE8] last:border-0"><span className="truncate">{i.name ? `${i.name} · ` : ""}{i.email}</span><span className={`shrink-0 ${i.joined ? "font-semibold text-[#670821]" : "text-[#9C968C]"}`}>{i.joined ? "Joined" : "Invited"}</span></div>)}
+              </div>
+            )}
+            <div className="mt-5 text-[12px] text-[#6E6A62]">Prefer to text or post it? <button onClick={() => navigator.clipboard?.writeText(refInfo.link)} className="font-semibold text-[#670821] hover:underline">Copy your link</button>: {refInfo.link.replace("https://", "")}</div>
+          </div>
+        </div>
+      )}
 
       {/* ── MAIN ── */}
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
           <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/dashboard"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
+          {refInfo && <button onClick={() => { setInviteOpen(true); setInvNote(""); }} className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[7px] px-[12px] hover:bg-[#4E0619]">Invite friends{refInfo.verified ? ` · ${refInfo.verified} of ${refInfo.goal}` : ""}</button>}
           <button onClick={() => setFb((f) => ({ ...f, open: true, state: "", err: "" }))} className="font-sans text-[13px] font-semibold text-[#670821] bg-[#EDE7FF] py-[7px] px-[12px] hover:bg-[#E0D6FF]">Beta feedback</button>
           <a href="/dashboard" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Dashboard</a>
           {claimed && pubUsername && <a href={`/${pubUsername}`} target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">View profile ↗</a>}

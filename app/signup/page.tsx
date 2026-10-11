@@ -230,6 +230,7 @@ export default function SignupPage() {
                   ? "Create my Marquee →"
                   : "Continue to checkout →"}
             </button>
+            <p className="text-[12.5px] leading-[1.55] text-ink/60 text-center">By continuing, you agree to Marquee&apos;s <Link href="/terms" target="_blank" className="underline underline-offset-2 hover:text-dred">Terms of Service</Link> and <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-dred">Privacy Policy</Link>.</p>
           </form>
         </div>
 

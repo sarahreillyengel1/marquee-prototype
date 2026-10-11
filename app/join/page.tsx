@@ -1,7 +1,7 @@
 "use client";
 // Founding Member sign-up: choose monthly or annual, pay, then create the account.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { foundingSaving } from "@/lib/membership";
 
@@ -12,6 +12,15 @@ const PLANS = [
 
 export default function Join() {
   const [plan, setPlan] = useState<(typeof PLANS)[number]["key"]>("founding_yearly");
+  // a friend's referral code from the link; kept for the visit so it survives a look around the site
+  const [ref, setRef] = useState("");
+  useEffect(() => {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get("ref") || "";
+      const code = (fromUrl || localStorage.getItem("mq_ref") || "").trim().toLowerCase();
+      if (code) { setRef(code); localStorage.setItem("mq_ref", code); }
+    } catch { /* storage blocked */ }
+  }, []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [closed, setClosed] = useState<"" | "notOpen" | "full">("");
@@ -21,7 +30,7 @@ export default function Join() {
   const pay = async () => {
     setErr(""); setBusy(true);
     try {
-      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan }) });
+      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref }) });
       const j = await r.json();
       if (j.url) { window.location.href = j.url; return; }
       if (j.notOpen) setClosed("notOpen"); else if (j.full) setClosed("full"); else setErr(j.error || "We couldn't start the payment. Please try again.");
@@ -79,6 +88,7 @@ export default function Join() {
             <button onClick={pay} disabled={busy} className="block w-full mt-6 px-6 py-[15px] text-[16px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{busy ? "Opening secure payment…" : "Continue to payment"}</button>
             {err && <p className="text-[13px] text-dred mt-3 text-center" role="alert">{err}</p>}
             <p className="text-[13px] leading-[1.55] text-ink/70 mt-4 text-center">You&apos;ll pay on Stripe&apos;s secure page, then create your account. Cancel anytime.</p>
+            <p className="text-[12.5px] leading-[1.55] text-ink/60 mt-3 text-center">By continuing, you agree to Marquee&apos;s <Link href="/terms" target="_blank" className="underline underline-offset-2 hover:text-dred">Terms of Service</Link> and <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-dred">Privacy Policy</Link>.</p>
             <p className="text-[13px] leading-[1.55] text-ink/70 mt-6 text-center">Access is limited.</p>
           </>
         )}

@@ -226,7 +226,7 @@ export async function sendReminderConfirmation(to: string, about: "pro" | "found
    The wording is Sarah's. Change it only on her say-so. */
 
 // The footer on emails to members: who we are and where to find us. No address, no "why you got this" line (Sarah, 2 Oct 2026).
-const memberFoot = `Marquee Identity, Inc. &middot; <a href="https://marquee.bio" style="color:#7d7a74;">marquee.bio</a> &middot; <a href="https://www.instagram.com/marquee.bio/" style="color:#7d7a74;">Instagram</a> &middot; <a href="mailto:hello@marquee.bio" style="color:#7d7a74;">hello@marquee.bio</a>`;
+const memberFoot = `Marquee Identity, Inc. &middot; <a href="https://marquee.bio" style="color:#7d7a74;">marquee.bio</a> &middot; <a href="https://www.instagram.com/marquee.bio/" style="color:#7d7a74;">Instagram</a> &middot; <a href="mailto:hello@marquee.bio" style="color:#7d7a74;">hello@marquee.bio</a><br /><a href="https://marquee.bio/terms" style="color:#7d7a74;">Terms</a> &middot; <a href="https://marquee.bio/privacy" style="color:#7d7a74;">Privacy</a>`;
 const preheader = (t: string) => `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(t)}</div>`;
 const wineButton = (href: string, label: string) => `<a href="${esc(href)}" style="display:inline-block;background:#670821;color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;padding:14px 24px;">${esc(label)} &rarr;</a>`;
 
@@ -275,6 +275,27 @@ export async function sendGettingStarted(to: string, firstName: string) {
     `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/getting-started.pdf", "Open the guide")}</div>` +
     p("I&rsquo;ll also reach out shortly to offer some one-on-one help getting your Marquee set up. In the meantime, feel free to jump in and start exploring.") +
     `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p><p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;color:#6E6A62;">Founder &amp; CEO, Marquee</p>`, memberFoot), "sarah@marquee.bio");
+}
+
+/** A member's invitation to a friend. Sarah's words; sent from Marquee in the member's name, replies go to the member. */
+export async function sendReferralInvite(m: { to: string; friendName: string; memberName: string; memberEmail: string; memberProfile: string; link: string }) {
+  const html = `
+  <div style="margin:0;padding:0;background:#F7F6F2;">${preheader(`${m.memberName} invited you to Marquee.`)}
+    <div style="max-width:560px;margin:0 auto;padding:36px 20px 40px;font-family:Helvetica,Arial,sans-serif;color:#111111;">
+      <div style="font-size:15px;font-weight:600;letter-spacing:0.25em;color:#111111;margin:0 8px 22px;">MARQUEE</div>
+      <div style="background:#FFFFFF;border:1px solid #E9E6DF;padding:30px 32px 30px;">
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1.1;margin:0 0 22px;">You&rsquo;re invited to Marquee</div>
+        ${p(`Hi ${m.friendName ? esc(first(m.friendName)) : "there"},`)}
+        ${p("I&rsquo;ve been using Marquee to build my professional profile and storefront, and I thought you&rsquo;d love it too.")}
+        ${p("It gives you one place to showcase your work, build your professional brand, and turn your knowledge and expertise into more ways to get discovered, hired, booked and paid.")}
+        <div style="margin:24px 0 26px;">${wineButton(m.link, "Build Your Marquee")}</div>
+        <p style="font-size:15px;line-height:1.5;margin:0;">${esc(m.memberName)}</p>
+        ${m.memberProfile ? `<p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;"><a href="${esc(m.memberProfile)}" style="color:#670821;">${esc(m.memberProfile.replace("https://", ""))}</a></p>` : ""}
+      </div>
+      <p style="font-size:12px;line-height:1.6;color:#7d7a74;margin:18px 8px 0;">Sent by Marquee because ${esc(m.memberName)} asked us to. ${memberFoot}</p>
+    </div>
+  </div>`;
+  return sendEmail(m.to, "You\u2019re invited to Marquee", html, m.memberEmail);
 }
 
 /** Forgot password: the link to choose a new one. */

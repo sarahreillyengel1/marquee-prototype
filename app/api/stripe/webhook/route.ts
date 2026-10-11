@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { mailFor, originOf, type BookingRow } from "@/lib/booking-server";
 import { sendBookingConfirmed, sendMembershipWelcome } from "@/lib/email";
 import { ensureMemberAccount } from "@/lib/membership-server";
+import { recordReferral } from "@/lib/referrals";
 import { PLANS, isPlan } from "@/lib/membership";
 import { payoutAccountReady, stripe, stripeReady } from "@/lib/stripe";
 
@@ -35,7 +36,10 @@ export async function POST(req: Request) {
       const to = (s.customer_details?.email || s.customer_email || "").trim().toLowerCase();
       const name = s.customer_details?.name || "";
       if (to) {
-        try { await ensureMemberAccount(s.id, to, name); } catch (e) { console.error("Member account at payment:", e instanceof Error ? e.message : e); }
+        try {
+          const uid = await ensureMemberAccount(s.id, to, name);
+          if (uid && s.metadata.ref) await recordReferral(s.metadata.ref, uid, to, s.id).catch(() => null);
+        } catch (e) { console.error("Member account at payment:", e instanceof Error ? e.message : e); }
         await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`, name);
       }
     }

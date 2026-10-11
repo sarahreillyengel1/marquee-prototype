@@ -44,6 +44,20 @@ export default function SpotlightAdmin() {
   useEffect(() => { load(); }, []);
 
   const startNew = (type: SpotlightType) => { setDraft(blank(type)); setNote(""); };
+  const [finding, setFinding] = useState(false);
+  const findNew = async () => {
+    setFinding(true); setNote("");
+    const r = await fetch("/api/cron/spotlight", { method: "POST" });
+    const j = await r.json().catch(() => ({}));
+    setFinding(false);
+    setNote(!r.ok ? (j.error || "The search didn't finish.") : `Searched Eventbrite${j.luma ? " and Luma" : ""}: ${j.found} upcoming events matched, ${j.added} new suggestion${j.added === 1 ? "" : "s"} added below.`);
+    load();
+  };
+  const dismiss = async (i: SpotlightItem) => {
+    setBusy(true);
+    await fetch("/api/admin/spotlight", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...i, published: false, source: "dismissed" }) });
+    setBusy(false); load();
+  };
   const edit = (i: SpotlightItem) => { setDraft({ ...i, starts_local: toLocal(i.starts_at) }); setNote(""); };
   const set = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
 
@@ -130,7 +144,8 @@ export default function SpotlightAdmin() {
 
         {SECTIONS.map((sec) => {
           const info = SECTION_INFO[sec];
-          const rows = items.filter((i) => i.type === sec).sort((a, b) => sec === "event" ? String(a.starts_at || "").localeCompare(String(b.starts_at || "")) : a.sort - b.sort || b.created_at.localeCompare(a.created_at));
+          const suggested = sec === "event" ? items.filter((i) => i.type === "event" && !i.published && i.source && !["admin", "dismissed"].includes(i.source)).sort((a, b) => String(a.starts_at || "").localeCompare(String(b.starts_at || ""))) : [];
+          const rows = items.filter((i) => i.type === sec && i.source !== "dismissed" && !suggested.includes(i)).sort((a, b) => sec === "event" ? String(a.starts_at || "").localeCompare(String(b.starts_at || "")) : a.sort - b.sort || b.created_at.localeCompare(a.created_at));
           const open = draft?.type === sec;
           return (
             <section key={sec} className="mb-10">
@@ -138,6 +153,29 @@ export default function SpotlightAdmin() {
                 <div><h2 className="font-lora text-[26px] leading-[1.1]">{info.title}</h2><p className="text-[12.5px] text-[#6E6A62] mt-1">{info.help}</p></div>
                 {!open && <button disabled={busy} onClick={() => startNew(sec)} className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[9px] px-4 hover:bg-[#4E0619] disabled:opacity-50">+ {info.add}</button>}
               </div>
+              {sec === "event" && (
+                <div className="bg-[#EDE7FF] px-4 py-3 my-3">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="text-[13px]"><strong>Suggested events</strong> <span className="text-[#3a352f]">· found on Eventbrite{suggested.length ? ` · ${suggested.length} waiting for you` : ""}. Approve puts one on the page; Dismiss hides it for good.</span></div>
+                    <button disabled={finding || !!busy} onClick={findNew} className="font-sans text-[12.5px] font-semibold border border-[#670821] text-[#670821] bg-white py-[7px] px-3 hover:bg-[#670821] hover:text-white disabled:opacity-50">{finding ? "Searching… (about a minute)" : "Find new events"}</button>
+                  </div>
+                  {suggested.map((i) => (
+                    <div key={i.id} className="flex items-center gap-4 py-[10px] border-t border-white/70 first:border-0">
+                      {i.image_url ? <img src={i.image_url} alt="" className="w-[52px] h-[40px] object-cover shrink-0" /> : <div className="w-[52px] h-[40px] bg-white shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] text-[#3a352f]"><span className="font-semibold uppercase tracking-[0.1em] text-[#670821]">{i.kind}</span> · {when(String(i.starts_at))}{i.place ? ` · ${i.place}` : ""}{i.price ? ` · ${i.price}` : ""} · <span className="capitalize">{i.source}</span></div>
+                        <a href={i.url || "#"} target="_blank" rel="noopener" className="font-semibold text-[14.5px] hover:underline block truncate">{i.title}</a>
+                        {i.org && <div className="text-[12px] text-[#6E6A62] truncate">{i.org}</div>}
+                      </div>
+                      <div className="text-[12.5px] whitespace-nowrap shrink-0">
+                        <button disabled={!!busy} onClick={() => toggle(i, { published: true })} className="font-semibold text-white bg-[#670821] py-[6px] px-3 hover:bg-[#4E0619] mr-3 disabled:opacity-50">Approve</button>
+                        <button disabled={!!busy} onClick={() => edit(i)} className="font-semibold hover:underline mr-3">Edit</button>
+                        <button disabled={!!busy} onClick={() => dismiss(i)} className="text-[#6E6A62] hover:underline">Dismiss</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {open && !draft?.id && renderForm()}
               {rows.length === 0 && !open && <p className="py-4 text-[13.5px] text-[#9C968C]">Nothing here yet.</p>}
               {rows.map((i) => draft?.id === i.id ? <div key={i.id}>{renderForm()}</div> : (
