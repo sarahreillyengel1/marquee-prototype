@@ -6,6 +6,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { ARCHETYPES } from "@/lib/archetypes";
 import { BookingSetup } from "./BookingSetup";
+import { SalesPanel } from "./SalesPanel";
 import { SiteScan } from "./SiteScan";
 import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
 import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES, ROLE_TYPES, ENTRY_KINDS } from "@/lib/company-tags";
@@ -56,7 +57,8 @@ const TOUR_HINTS: Record<string, string> = {
   "Long Bio": "The full narrative, in your own words.",
 };
 const RELATIONSHIPS = ["Manager", "Peer", "Direct report", "Client", "Mentor", "Partner", "Investor", "Me"]; // "Me" = a quote in your own words
-const STORE_KINDS = ["Template", "Guide", "Course", "Ebook", "Book", "Download"];
+const STORE_KINDS = ["Template", "Guide", "Course", "Ebook", "Book", "Download", "Workshop"];
+const newId = () => "p" + Math.random().toString(36).slice(2, 10);
 const MEDIA_KINDS = ["Press", "Talk", "Podcast", "Writing", "Portfolio", "Video", "Deck"];
 const MEDIA_FEATURED = 4;
 // Branded fallback colors when a media item has no cover image (never gray).
@@ -153,7 +155,7 @@ const BLANK = {
   testis: [] as { quote: string; author: string; role: string; relationship: string; featured: boolean }[],
   edu: [] as { school: string; degree: string; field: string; year: string }[],
   certs: [] as string[],
-  products: [] as { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string }[],
+  products: [] as { id?: string; kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string; sell?: "marquee" | "link"; image?: string; file?: string; fileName?: string; deliverUrl?: string; meetingLink?: string; eventLabel?: string }[],
   longBio: "", powers: [] as { statement: string; proof: string; keywords: string[] }[],
   hidden: [] as string[],
   reach: [] as { key: string; handle: string; followers: string; engagement: string; url: string }[],
@@ -368,14 +370,17 @@ export default function BuildPreview() {
   const rmCert = (i: number) => setCerts((c) => c.filter((_, j) => j !== i));
 
   // Store — productized offerings you sell.
-  type Product = { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string };
+  // sell: "marquee" = bought on the page through Marquee checkout; "link" = links out. file/deliverUrl/meetingLink never reach the public profile.
+  type Product = { id?: string; kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string; sell?: "marquee" | "link"; image?: string; file?: string; fileName?: string; deliverUrl?: string; meetingLink?: string; eventLabel?: string };
   const [products, setProducts] = useState<Product[]>([
     { kind: "Template", title: "The GTM Launch Kit", blurb: "Notion templates + checklists to launch a category.", price: "48", featured: true },
     { kind: "Guide", title: "Positioning Playbook", blurb: "My step-by-step framework for category creation.", price: "29", featured: true },
     { kind: "Course", title: "Community-Led Growth", blurb: "A 4-week cohort on building distribution.", price: "250", featured: false },
   ]);
+  // products saved before selling existed: a link means "links out", otherwise it sells on Marquee
+  const sellOf = (p: Product) => p.sell || (p.url ? "link" : "marquee");
   const upProduct = (i: number, patch: Partial<Product>) => setProducts((m) => m.map((x, j) => (j === i ? { ...x, ...patch } : x)));
-  const addProduct = () => setProducts((m) => [...m, { kind: "Template", title: "", blurb: "", price: "", featured: false }]);
+  const addProduct = () => setProducts((m) => [...m, { id: newId(), kind: "Template", title: "", blurb: "", price: "", featured: false, sell: "marquee" }]);
   type ReachP = { key: string; handle: string; followers: string; engagement: string; url: string };
   const [reach, setReach] = useState<ReachP[]>([]);
   const [audAge, setAudAge] = useState("");
@@ -516,6 +521,20 @@ export default function BuildPreview() {
       return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
     } finally { setUploading(false); }
   };
+  // a product's file goes to the private "products" bucket; only a buyer gets a link to it, after paying
+  const uploadProductFile = async (file: File, productId: string): Promise<{ path: string; name: string } | null> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    if (file.size > 50 * 1024 * 1024) { alert("That file is over 50 MB. Please upload a smaller file, or sell it as a link."); return null; }
+    setUploading(true);
+    try {
+      const safe = file.name.replace(/[^A-Za-z0-9._-]+/g, "-").slice(0, 120) || "file";
+      const path = `${user.id}/${productId}/${safe}`;
+      const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true });
+      if (error) { console.error("upload failed", error); alert("Upload failed — " + error.message); return null; }
+      return { path, name: file.name };
+    } finally { setUploading(false); }
+  };
   const hydrate = (d: Partial<typeof BLANK>) => {
     setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
     setCity(d.city ?? ""); setLoc(d.loc ?? "Remote"); setOpenNow(d.openNow ?? true); setDob(d.dob ?? "");
@@ -526,7 +545,7 @@ export default function BuildPreview() {
     setImpacts(d.impacts ?? []); setSkills(d.skills ?? []); setIndustries(d.industries ?? []); setLearning(d.learning ?? []);
     const gm = (xs: string[]) => Array.from(new Set(xs.map((v) => (v === "Growth" ? "Growth mindset" : v))));
     setVals(gm(d.vals ?? [])); setVFeatured(gm(d.vFeatured ?? [])); setMedia(d.media ?? []); setTestis(d.testis ?? []);
-    setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts(d.products ?? []); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
+    setEdu(d.edu ?? []); setCerts(d.certs ?? []); setProducts((d.products ?? []).map((p) => (p.id ? p : { ...p, id: newId() }))); setLongBio(d.longBio ?? ""); setPowers(d.powers ?? []); setHidden(d.hidden ?? []);
     setReach(d.reach ?? []); setAudAge(d.audAge ?? ""); setAudGender(d.audGender ?? ""); setAudGeo(d.audGeo ?? ""); setCalLink(d.calLink ?? ""); setActions(d.actions ?? []); setSpot({ ...BLANK.spotlight, ...(d.spotlight ?? {}), links: d.spotlight?.links ?? [] }); setLook(d.look ?? "classic"); setPrevious(d.previous ?? []); setPhotoPos(d.photoPos ?? { x: 50, y: 25 }); setPhotoZoom(d.photoZoom ?? 1); setEnnWing(d.ennWing ?? "");
   };
   useEffect(() => {
@@ -534,6 +553,7 @@ export default function BuildPreview() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { if (!cancelled) setLoaded(true); return; }
+      draftUser.current = user.id;
       const { data, error } = await supabase.from("builder_drafts").select("data,updated_at").eq("user_id", user.id).maybeSingle();
       if (cancelled) return;
       // On a load failure, STOP: never hydrate BLANK (autosave would then overwrite the real draft).
@@ -555,6 +575,19 @@ export default function BuildPreview() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // The draft on screen belongs to the account that loaded it. If a different account signs in
+  // (someone shares a computer, or signs out and back in as someone else without reloading),
+  // nothing is saved under the new account: the page reloads and shows that account's own draft.
+  const draftUser = useRef<string | null>(null);
+  // the moment a different account signs in (shared computer, helping someone set up), reload: never show or save one person's draft under another
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const id = session?.user?.id || null;
+      if (draftUser.current && id && id !== draftUser.current) window.location.reload();
+    });
+    return () => sub.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!loaded) return;
@@ -562,6 +595,8 @@ export default function BuildPreview() {
     saveTimer.current = setTimeout(async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      if (draftUser.current && user.id !== draftUser.current) { window.location.reload(); return; }
+      if (!draftUser.current) draftUser.current = user.id;
       setSaveState("saving");
       const now = new Date().toISOString();
       const { error } = await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: now });
@@ -1003,7 +1038,7 @@ export default function BuildPreview() {
 
           {active === "Mobile Links" && (() => {
             const ICONS: [string, string][] = [["calendar", "Calendar"], ["news", "Newsletter"], ["rocket", "Rocket"], ["handshake", "Handshake"], ["grid", "Four squares"], ["bag", "Shopping bag"], ["play-circle", "Play"], ["book", "Book"], ["link", "Link"], ["star", "Star"], ["heart", "Heart"], ["send", "Send"], ["users", "People"], ["compass", "Compass"], ["dollar", "Dollar"]];
-            const DESTS = [{ v: "link", label: "A link (URL)" }, { v: "contact", label: "Work with me" }, { v: "shop", label: "My Shop page" }, { v: "media", label: "My Media page" }, { v: "experience", label: "My Experience page" }, { v: "profile", label: "My full profile" }];
+            const DESTS = [{ v: "link", label: "A link (URL)" }, { v: "product", label: "A product, with Buy" }, { v: "contact", label: "Work with me" }, { v: "shop", label: "My Shop page" }, { v: "media", label: "My Media page" }, { v: "experience", label: "My Experience page" }, { v: "profile", label: "My full profile" }];
             const TYPE_ICON: Record<string, string> = { Contact: "handshake", Hire: "handshake", Partner: "handshake", Book: "calendar", Read: "news", Listen: "play-circle", Watch: "play-circle", Learn: "book", Explore: "compass", Shop: "bag", Buy: "bag", Invest: "rocket", Follow: "users", Join: "users" };
             const fromCtas = () => setSpot((c) => ({ ...c, links: actions.filter((a) => a.label.trim()).map((a) => ({ icon: TYPE_ICON[a.type] || "link", title: a.label, sub: "", dest: a.dest === "link" ? "link" : a.dest === "bio" ? "experience" : a.dest === "work-with-me" ? "contact" : a.dest, url: a.url, highlight: false })) }));
             const addr = pubUsername ? `marquee.bio/${pubUsername}/links` : "marquee.bio/your-name/links";
@@ -1038,7 +1073,13 @@ export default function BuildPreview() {
                         <input value={l.sub} onChange={(e) => upSpot(i, { sub: e.target.value })} placeholder="Small line underneath (optional), e.g. 30 minutes · pick a time" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                         <div className="grid grid-cols-[200px_1fr] gap-[10px] items-center">
                           <select value={l.dest} onChange={(e) => upSpot(i, { dest: e.target.value })} aria-label="Where it goes" className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{DESTS.map((d) => <option key={d.v} value={d.v}>{d.label}</option>)}</select>
-                          {l.dest === "link" ? <input value={l.url} onChange={(e) => upSpot(i, { url: e.target.value })} placeholder="https://…" className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /> : <span className="text-[12px] text-[#a8a29a]">Opens that part of your profile.</span>}
+                          {l.dest === "link" ? <input value={l.url} onChange={(e) => upSpot(i, { url: e.target.value })} placeholder="https://…" className="font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                            : l.dest === "product" ? (
+                              <select value={l.url} onChange={(e) => { const pr = products.find((x) => x.id === e.target.value); upSpot(i, { url: e.target.value, ...(pr && !l.title.trim() ? { title: pr.title, sub: pr.price === "0" || !pr.price ? "Free" : `$${pr.price}`, icon: "bag" } : {}) }); }} aria-label="Which product" className="font-inter text-[13px] py-[9px] px-[10px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">
+                                <option value="">Choose a product…</option>
+                                {products.filter((x) => x.title.trim() && sellOf(x) === "marquee").map((x) => <option key={x.id} value={x.id}>{x.title}{x.price ? ` · $${x.price}` : " · Free"}</option>)}
+                              </select>
+                            ) : <span className="text-[12px] text-[#a8a29a]">Opens that part of your profile.</span>}
                         </div>
                         <div className="flex items-center justify-between mt-3">
                           <label className={tick}><input type="checkbox" checked={l.highlight} onChange={(e) => upSpot(i, { highlight: e.target.checked })} /> Highlight this one</label>
@@ -1532,9 +1573,10 @@ export default function BuildPreview() {
           {active === "Shop" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Productize your expertise — templates, guides, courses, downloads. Each one links out to where people buy it. They show on the Shop page of your profile.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Templates, guides, courses, downloads, workshops. Sell them right on your page, with checkout through Marquee, or link out to where they are sold. Marquee takes 5% on sales made here, plus card processing. They show on the Shop page of your profile and can be buttons on your Mobile Links.</p>
+              <SalesPanel />
               <SiteScan mode="shop" website={socials.website} have={products.map((p) => p.url || "").filter(Boolean)} emptySocials={[]}
-                onAdd={(items) => setProducts((m) => [...m.filter((x) => x.title.trim() || (x.url || "").trim()), ...items.map((it) => ({ kind: STORE_KINDS.includes(it.kind) ? it.kind : "Download", title: it.title, blurb: "", price: "", featured: false, url: it.url }))])}
+                onAdd={(items) => setProducts((m) => [...m.filter((x) => x.title.trim() || (x.url || "").trim()), ...items.map((it) => ({ id: newId(), kind: STORE_KINDS.includes(it.kind) ? it.kind : "Download", title: it.title, blurb: "", price: "", featured: false, url: it.url, sell: "link" as const }))])}
                 onSocials={() => {}} />
               <div className="space-y-4 max-w-[980px]">
                 {products.map((p, i) => (
@@ -1550,11 +1592,41 @@ export default function BuildPreview() {
                     </div>
                     <input value={p.title} onChange={(e) => upProduct(i, { title: e.target.value })} placeholder="Title, e.g. The GTM Launch Kit" className="w-full font-sans font-semibold text-[14.5px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
                     <input value={p.blurb} onChange={(e) => upProduct(i, { blurb: e.target.value })} placeholder="One line on what it is" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] mb-2 focus:outline-none focus:border-brand-ink" />
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-sans text-[14px] text-[#7d7a74]">$</span>
-                      <input value={p.price} onChange={(e) => upProduct(i, { price: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0 = free" inputMode="numeric" className="w-[110px] font-sans text-[14px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-sans text-[14px] text-[#7d7a74]">$</span>
+                        <input value={p.price} onChange={(e) => upProduct(i, { price: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0 = free" inputMode="numeric" className="w-[110px] font-sans text-[14px] py-[8px] px-[10px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                      </div>
+                      <div className="inline-flex border border-[#E1DED7]">
+                        <button onClick={() => upProduct(i, { sell: "marquee" })} className={`font-sans text-[12px] py-[7px] px-[12px] ${sellOf(p) === "marquee" ? "bg-brand-ink text-white" : "bg-white text-[#7d7a74] hover:text-brand-ink"}`}>Sell on Marquee</button>
+                        <button onClick={() => upProduct(i, { sell: "link" })} className={`font-sans text-[12px] py-[7px] px-[12px] border-l border-[#E1DED7] ${sellOf(p) === "link" ? "bg-brand-ink text-white" : "bg-white text-[#7d7a74] hover:text-brand-ink"}`}>Links out</button>
+                      </div>
+                      <label className="font-sans text-[12px] text-[#7d7a74] cursor-pointer hover:text-brand-ink">
+                        {p.image ? <span className="inline-flex items-center gap-2"><img src={p.image} alt="" className="w-7 h-7 object-cover border border-[#E1DED7]" /> Change picture</span> : "+ Add a picture"}
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const url = await uploadImg(f, `product-${p.id || i}`); if (url) upProduct(i, { image: url }); e.target.value = ""; }} />
+                      </label>
                     </div>
-                    <input value={p.url || ""} onChange={(e) => upProduct(i, { url: e.target.value })} placeholder="Link — where people buy it (Amazon, Gumroad, your site…)" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    {sellOf(p) === "link" ? (
+                      <input value={p.url || ""} onChange={(e) => upProduct(i, { url: e.target.value })} placeholder="Link — where people buy it (Amazon, Gumroad, your site…)" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" />
+                    ) : (
+                      <div className="border border-[#E1DED7] bg-[#F7F6F2] p-[12px] space-y-2">
+                        <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-[#6E6A62]">What the buyer gets{p.kind === "Workshop" ? " · workshop" : ""}</div>
+                        {p.kind === "Workshop" && (<>
+                          <input value={p.eventLabel || ""} onChange={(e) => upProduct(i, { eventLabel: e.target.value })} placeholder="When, e.g. Nov 12 · 2:00 PM ET · 90 minutes" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+                          <input value={p.meetingLink || ""} onChange={(e) => upProduct(i, { meetingLink: e.target.value })} placeholder="Meeting link (Zoom, Google Meet) — sent only to people who paid" className="w-full font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />
+                        </>)}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="font-sans text-[12.5px] font-semibold text-brand-ink cursor-pointer border border-[#E1DED7] bg-white py-[7px] px-[12px] hover:border-brand-ink">
+                            {uploading ? "Uploading…" : p.file ? "Replace the file" : p.kind === "Workshop" ? "Attach materials (optional)" : "Upload the file"}
+                            <input type="file" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const up = await uploadProductFile(f, p.id || `p${i}`); if (up) upProduct(i, { file: up.path, fileName: up.name }); e.target.value = ""; }} />
+                          </label>
+                          {p.file && <span className="text-[12.5px] text-[#3a352f]">{p.fileName || p.file.split("/").pop()} <button onClick={() => upProduct(i, { file: undefined, fileName: undefined })} className="text-[#7d7a74] hover:text-[#AB0000] ml-1">remove</button></span>}
+                          {p.kind !== "Workshop" && <span className="text-[12px] text-[#a8a29a]">or</span>}
+                          {p.kind !== "Workshop" && <input value={p.deliverUrl || ""} onChange={(e) => upProduct(i, { deliverUrl: e.target.value })} placeholder="A private link (Notion, Drive, a course page) — sent after purchase" className="flex-1 min-w-[240px] font-inter text-[13px] py-[8px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" />}
+                        </div>
+                        {!p.file && !p.deliverUrl && p.kind !== "Workshop" && <div className="text-[12px] text-[#a8a29a]">Add a file or a link, or the buyer only gets a receipt.</div>}
+                      </div>
+                    )}
                   </div>
                 ))}
                 <button onClick={addProduct} className="w-full font-sans text-[13px] text-[#7d7a74] py-4 border-2 border-dashed border-[#E1DED7] hover:border-brand-ink hover:text-brand-ink">+ Add a product</button>

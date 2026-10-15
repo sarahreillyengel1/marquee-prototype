@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
-import { mailFor, originOf, type BookingRow } from "@/lib/booking-server";
+import { mailFor, originOf, ownerOf, type BookingRow } from "@/lib/booking-server";
+import { deliveryFor, orderMoney, secretsOf, type OrderRow } from "@/lib/orders";
+import { sendOrderDelivered, sendSaleNotice } from "@/lib/email";
 import { sendBookingConfirmed, sendMembershipWelcome } from "@/lib/email";
 import { ensureMemberAccount } from "@/lib/membership-server";
 import { recordReferral } from "@/lib/referrals";
@@ -43,6 +45,25 @@ export async function POST(req: Request) {
         await sendMembershipWelcome(to, PLANS[s.metadata.plan].display, `${originOf(req)}/join/welcome?session_id=${s.id}`, name);
       }
     }
+    const orderId = s.metadata?.order_id;
+    if (orderId && s.payment_status === "paid") {
+      // a product sold: mark it paid once, then deliver to the buyer and tell the seller
+      const email = (s.customer_details?.email || s.customer_email || "").trim().toLowerCase();
+      const name = s.customer_details?.name || "";
+      const { data } = await db.from("orders").update({ status: "paid", stripe_payment_intent: typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id || null, ...(email ? { buyer_email: email } : {}), ...(name ? { buyer_name: name } : {}), delivered_at: new Date().toISOString() })
+        .eq("id", orderId).eq("status", "pending_payment").select("*");
+      const o = (data || [])[0] as OrderRow | undefined;
+      if (o) {
+        const owner = await ownerOf(db, o.username);
+        if (owner) {
+          const origin = originOf(req);
+          const delivery = deliveryFor(origin, o, await secretsOf(db, o.owner_id, o.product_id));
+          const base = { ownerName: owner.name, ownerEmail: owner.email, username: o.username, buyerName: o.buyer_name || "", buyerEmail: o.buyer_email, productTitle: o.product_title, paid: orderMoney(o.price_cents) };
+          await sendOrderDelivered({ ...base, delivery, thanksUrl: `${origin}/${o.username}/thanks?o=${o.access_token}` });
+          await sendSaleNotice({ ...base, salesUrl: `${origin}/build-preview` });
+        }
+      }
+    }
     if (id && s.payment_status === "paid") {
       // only the first delivery confirms and emails; repeats find nothing left to update
       const { data } = await db.from("bookings").update({ status: "confirmed", stripe_payment_intent: typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id || null })
@@ -51,6 +72,8 @@ export async function POST(req: Request) {
       if (b) { const mail = await mailFor(db, b, originOf(req)); if (mail) await sendBookingConfirmed(mail); }
     }
   } else if (event.type === "checkout.session.expired") {
+    const orderId = (event.data.object as Stripe.Checkout.Session).metadata?.order_id;
+    if (orderId) await db.from("orders").update({ status: "cancelled" }).eq("id", orderId).eq("status", "pending_payment");
     const id = (event.data.object as Stripe.Checkout.Session).metadata?.booking_id;
     if (id) await db.from("bookings").update({ status: "cancelled", cancelled_at: new Date().toISOString(), cancelled_by: "unpaid" }).eq("id", id).eq("status", "pending_payment");
   } else if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {

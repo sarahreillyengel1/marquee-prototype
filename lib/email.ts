@@ -155,6 +155,50 @@ export interface BookingMail {
 const invite = (ics: string, name = "invite.ics"): Attachment[] => [{ filename: name, content: Buffer.from(ics, "utf8").toString("base64"), content_type: "text/calendar; charset=utf-8; method=REQUEST" }];
 const first = (n: string) => { const f = (n || "").trim().split(/\s+/)[0] || n; return f ? f[0].toUpperCase() + f.slice(1) : f; }; // "sarah" -> "Sarah"
 
+/* ─────────────── Shop emails ─────────────── */
+export interface OrderMail {
+  ownerName: string; ownerEmail: string; username: string;
+  buyerName: string; buyerEmail: string; productTitle: string;
+  paid: string | null;   // "$49", or null when free
+}
+export type Delivery = { kind: "file" | "link" | "workshop" | "none"; downloadUrl?: string; url?: string; when?: string; meetingLink?: string };
+
+/** The buyer gets what they bought: a download, a link, or the workshop details. */
+export async function sendOrderDelivered(m: OrderMail & { delivery: Delivery; thanksUrl: string }) {
+  const d = m.delivery;
+  let how = "";
+  if (d.kind === "file" && d.downloadUrl) how = p("Your download is ready.") + button(d.downloadUrl, "Download");
+  else if (d.kind === "link" && d.url) how = p("Here is your link.") + button(d.url, "Open it");
+  else if (d.kind === "workshop") how = card(row("When", esc(d.when || "Details to follow")) + (d.meetingLink ? row("Where", `<a href="${esc(d.meetingLink)}" style="color:#111111;">${esc(d.meetingLink)}</a>`) : row("Where", `${esc(first(m.ownerName))} will send the link before it starts.`))) + (d.downloadUrl ? button(d.downloadUrl, "Download the materials") : "");
+  else how = p(`${esc(first(m.ownerName))} will be in touch with the details.`);
+  const html = shell(
+    p(`Hi ${esc(first(m.buyerName) || "there")},`) + p(`Thank you for ${m.paid ? "your purchase" : "picking this up"} from <strong>${esc(m.ownerName)}</strong>.`) +
+    card(row("Item", esc(m.productTitle)) + (m.paid ? row("Paid", esc(m.paid)) : "")) + how +
+    p(`<span style="font-size:14px;color:#6E6A62;">You can always come back to it here: <a href="${esc(m.thanksUrl)}" style="color:#111111;">${esc(m.thanksUrl)}</a>. Questions? Reply to this email to reach ${esc(first(m.ownerName))}.</span>`),
+    `Sold through <a href="https://marquee.bio/${esc(m.username)}" style="color:#7d7a74;">marquee.bio/${esc(m.username)}</a>`);
+  return sendEmail(m.buyerEmail, `${m.paid ? "Your purchase" : "Your download"}: ${m.productTitle}`, html, m.ownerEmail);
+}
+
+/** The seller hears about every sale, with the customer's details. */
+export async function sendSaleNotice(m: OrderMail & { salesUrl: string }) {
+  if (!m.ownerEmail) return { skipped: true as const };
+  const html = shell(
+    p(`Hi ${esc(first(m.ownerName))},`) + p(`<strong>${esc(m.buyerName || m.buyerEmail)}</strong> ${m.paid ? "bought" : "picked up"} <strong>${esc(m.productTitle)}</strong>.`) +
+    card(row("Customer", `${esc(m.buyerName || "")}${m.buyerName ? " · " : ""}<a href="mailto:${esc(m.buyerEmail)}" style="color:#111111;">${esc(m.buyerEmail)}</a>`) + row("Item", esc(m.productTitle)) + (m.paid ? row("Paid", esc(m.paid)) : row("Price", "Free"))) +
+    p("It has been delivered to them by email. Reply to this email to reach them directly.") + button(m.salesUrl, "See your sales"),
+    `From your shop at <a href="https://marquee.bio/${esc(m.username)}" style="color:#7d7a74;">marquee.bio/${esc(m.username)}</a>`);
+  return sendEmail(m.ownerEmail, `${m.paid ? "Sale" : "New download"}: ${m.productTitle}`, html, m.buyerEmail);
+}
+
+/** A refund went through: the buyer is told, and the seller gets a copy. */
+export async function sendOrderRefunded(m: OrderMail) {
+  const toBuyer = shell(p(`Hi ${esc(first(m.buyerName) || "there")},`) + p(`<strong>${esc(m.ownerName)}</strong> refunded your purchase of <strong>${esc(m.productTitle)}</strong>${m.paid ? ` (${esc(m.paid)})` : ""}. It will show on your card in a few days.`),
+    `Sold through <a href="https://marquee.bio/${esc(m.username)}" style="color:#7d7a74;">marquee.bio/${esc(m.username)}</a>`);
+  const toOwner = shell(p(`Hi ${esc(first(m.ownerName))},`) + p(`You refunded <strong>${esc(m.productTitle)}</strong> to ${esc(m.buyerName || m.buyerEmail)}${m.paid ? ` (${esc(m.paid)})` : ""}. Marquee's fee was returned too.`), `From your shop at <a href="https://marquee.bio/${esc(m.username)}" style="color:#7d7a74;">marquee.bio/${esc(m.username)}</a>`);
+  const [a, b] = await Promise.all([sendEmail(m.buyerEmail, `Refunded: ${m.productTitle}`, toBuyer, m.ownerEmail), m.ownerEmail ? sendEmail(m.ownerEmail, `Refund sent: ${m.productTitle}`, toOwner) : Promise.resolve(null)]);
+  return { buyer: a, owner: b };
+}
+
 /** Booking confirmed — one email to the visitor, one to the owner. */
 export async function sendBookingConfirmed(m: BookingMail) {
   const join = m.meetingLink ? row("Where", `<a href="${esc(m.meetingLink)}" style="color:#111111;">${esc(m.meetingLink)}</a>`) : row("Where", `${esc(first(m.ownerName))} will send the call link.`);

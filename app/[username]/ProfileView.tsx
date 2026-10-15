@@ -28,6 +28,7 @@ import "./profile-design.css";
 import { ARCHETYPE_DESC } from "@/lib/archetypes";
 import { DEMO_PROFILES } from "@/lib/demo-profiles";
 import { BookingPicker, RequestForm, useSlots } from "./Booking";
+import { BuyButton } from "./BuyButton";
 import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role, StoreItem } from "@/lib/profile-types";
 
 /* ─────────────── icons (ported from marquee-app/src/icons.tsx) ─────────────── */
@@ -800,7 +801,7 @@ function ProfilePage() {
                   <div className="store-kind">{p.kind}</div>
                   <div className="store-title">{p.title}</div>
                   {p.blurb && <p className="store-blurb">{p.blurb}</p>}
-                  <div className="store-foot"><span className="store-price">{priceLabel}</span>{p.url && <span className="store-go">View <Icon name="arrow-up-right" style={{ width: 13, height: 13 }} /></span>}</div>
+                  <div className="store-foot"><span className="store-price">{priceLabel}</span>{p.sell === "marquee" ? <BuyButton username={profile.slug} product={p} className="store-go store-buy" preview={profile.sample}>{p.price === "0" ? "Get it" : "Buy"}</BuyButton> : p.url && <span className="store-go">View <Icon name="arrow-up-right" style={{ width: 13, height: 13 }} /></span>}</div>
                 </>
               );
               return p.url
@@ -1260,8 +1261,12 @@ function ShopPage() {
                 <div className="ww-ic"><Icon name={SHOP_ICON[p.kind] || "file"} /></div>
                 <div><h3 className="wwp-t">{p.title}</h3><div className="wwp-p">{[p.kind, priceLabel].filter(Boolean).join(" · ")}</div></div>
               </div>
+              {p.image && <img className="wwp-img" src={p.image} alt="" />}
               {p.blurb && <p className="wwp-d">{p.blurb}</p>}
-              {p.url
+              {p.eventLabel && <p className="wwp-d"><strong>When:</strong> {p.eventLabel}</p>}
+              {p.sell === "marquee"
+                ? <BuyButton username={profile.slug} product={p} className="wwp-btn" preview={profile.sample}>{cta}</BuyButton>
+                : p.url
                 ? <a className="wwp-btn" href={p.url} target="_blank" rel="noopener" style={{ textDecoration: "none" }}>{cta} <Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></a>
                 : profile.sample
                   ? <button type="button" className="wwp-btn" onClick={() => toast("Sample profile: on a real profile this opens the checkout page.")}>{cta} <Icon name="arrow-up-right" style={{ width: 15, height: 15 }} /></button>

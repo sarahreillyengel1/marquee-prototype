@@ -29,7 +29,7 @@ export interface BuilderSnapshot {
   testis: { quote: string; author: string; role: string; relationship: string; featured: boolean }[];
   edu: { school: string; degree: string; field: string; year: string }[];
   certs: string[];
-  products: { kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string }[];
+  products: { id?: string; kind: string; title: string; blurb: string; price: string; featured: boolean; url?: string; sell?: "marquee" | "link"; image?: string; eventLabel?: string; file?: string; fileName?: string; deliverUrl?: string; meetingLink?: string }[];
   longBio: string;
   powers: { statement: string; proof: string; keywords: string[] }[];
   hidden?: string[];
@@ -185,10 +185,11 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     return { type: a.type, label: a.label.trim(), destination: a.dest, internal: true };
   });
 
-  const store: StoreItem[] = (s.products || []).filter((p) => p.title?.trim()).map((p, i) => ({
-    id: `pr${i}`, kind: p.kind || "Product", title: p.title, featured: !!p.featured,
-    blurb: p.blurb || undefined, price: p.price || undefined, url: absUrl(p.url),
-  }));
+  const store: StoreItem[] = (s.products || []).filter((p) => p.title?.trim()).map((p, i) => { const sell = p.sell || (p.url ? "link" : "marquee"); return ({
+    id: p.id || `pr${i}`, kind: p.kind || "Product", title: p.title, featured: !!p.featured,
+    blurb: p.blurb || undefined, price: p.price || undefined, url: sell === "marquee" ? undefined : absUrl(p.url),
+    sell: sell === "marquee" ? "marquee" : undefined, image: p.image || undefined, eventLabel: p.eventLabel || undefined,
+  }); });
 
   const reach: ReachStat[] = (s.reach || []).filter((p) => (p.followers || "").trim() || (p.handle || "").trim()).map((p) => ({
     platform: p.key, handle: p.handle || undefined, followers: p.followers || "",

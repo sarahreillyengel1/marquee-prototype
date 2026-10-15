@@ -831,3 +831,15 @@
 .mq-root .spot-full{ margin-top:22px; font-size:13px; font-weight:600; color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
 .mq-root .spot-brand{ display:inline-flex; flex-direction:column; align-items:center; gap:5px; margin-top:26px; padding:8px 14px; font-size:12px; font-weight:600; letter-spacing:.24em; color:var(--ink); text-decoration:none; }
 .mq-root .spot-brand span{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-style:italic; font-size:14px; letter-spacing:0; font-weight:400; color:var(--gray); }
+
+/* ── Buying on the page ── */
+.mq-root .wwp-img{ width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid var(--line2); margin:0 0 14px; display:block; }
+.mq-root .store-buy{ font:inherit; font-size:12px; font-weight:600; background:none; border:0; padding:0; cursor:pointer; color:var(--pur); display:inline-flex; align-items:center; gap:4px; }
+.mq-root .buy-free{ display:flex; flex-direction:column; gap:8px; margin-top:auto; }
+.mq-root .buy-free input{ font:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--line2); background:var(--card); color:var(--ink); }
+.mq-root .buy-err{ font-size:12.5px; color:#AB0000; margin-top:6px; }
+.mq-root .spot-prod{ gap:12px; }
+.mq-root .spot-img{ overflow:hidden; }
+.mq-root .spot-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.mq-root .spot-buy{ font:inherit; font-family:var(--font-poppins),'Inter',sans-serif; font-size:12.5px; font-weight:600; background:var(--h-bar); color:var(--h-bar-ink); border:0; padding:9px 12px; border-radius:10px; cursor:pointer; white-space:nowrap; flex:0 0 auto; }
+.mq-root .spot-prod .buy-free{ width:100%; }

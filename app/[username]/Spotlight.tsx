@@ -6,6 +6,7 @@
 import type { CSSProperties } from "react";
 import type { Profile, SpotlightLink } from "@/lib/profile-types";
 import { Icon, photoStyle, socialIcon } from "./ProfileView";
+import { BuyButton, buyLabel } from "./BuyButton";
 import "./profile-design.css";
 
 const TYPE_ICON: Record<string, string> = { Contact: "handshake", Hire: "handshake", Partner: "handshake", Book: "calendar", Read: "news", Listen: "play-circle", Watch: "play-circle", Learn: "book", Explore: "compass", Shop: "bag", Buy: "bag", Invest: "rocket", Follow: "users", Join: "users", Attend: "calendar", Sponsor: "star", Apply: "send", Donate: "heart" };
@@ -47,13 +48,23 @@ export function Spotlight({ profile, preview }: { profile: Profile; preview?: bo
         {socials.length > 0 && <div className="spot-soc">{socials.map((x) => <a key={x.kind} href={x.url} target="_blank" rel="noopener" aria-label={x.kind} onClick={stop}><Icon name={socialIcon[x.kind]} /></a>)}</div>}
 
         <div className="spot-links">
-          {links.map((l, i) => (
+          {links.map((l, i) => {
+            const prod = l.dest === "product" ? (profile.store || []).find((x) => x.id === l.url && x.sell === "marquee") : null;
+            if (l.dest === "product") return prod ? (
+              <div key={i} className={"spot-link spot-prod" + (l.highlight ? " hi" : "")}>
+                {prod.image ? <span className="spot-ic spot-img"><img src={prod.image} alt="" /></span> : <span className="spot-ic"><Icon name={l.icon || "bag"} /></span>}
+                <span className="spot-tx"><span className="t">{l.title || prod.title}</span>{(l.sub || prod.blurb) && <span className="s">{l.sub || prod.blurb}</span>}</span>
+                <BuyButton username={profile.slug} product={prod} className="spot-buy" preview={preview}>{buyLabel(prod)}</BuyButton>
+              </div>
+            ) : null;
+            return (
             <a key={i} className={"spot-link" + (l.highlight ? " hi" : "")} href={hrefOf(l)} target={l.dest === "link" ? "_blank" : undefined} rel={l.dest === "link" ? "noopener" : undefined} onClick={stop}>
               <span className="spot-ic"><Icon name={l.icon || "link"} /></span>
               <span className="spot-tx"><span className="t">{l.title}</span>{l.sub && <span className="s">{l.sub}</span>}</span>
               <Icon name="arrow-up-right" style={{ width: 16, height: 16, flex: "0 0 16px" } as CSSProperties} />
             </a>
-          ))}
+            );
+          })}
         </div>
 
         {sp?.pages !== false && pages.length > 1 && (

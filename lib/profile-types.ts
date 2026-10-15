@@ -122,6 +122,12 @@ export interface StoreItem {
   blurb?: string
   price?: string
   url?: string
+  /** "marquee": bought on the page through Marquee checkout; "link" (or unset): links out to where it is sold */
+  sell?: 'marquee' | 'link'
+  /** product picture (public) */
+  image?: string
+  /** for a workshop: when it happens, as the member wrote it ("Nov 12 · 2:00 PM ET") */
+  eventLabel?: string
 }
 
 export interface ReachStat {
