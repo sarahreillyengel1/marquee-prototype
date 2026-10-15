@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         if (found.data.length) return NextResponse.json({ promo: found.data[0].code });
       } catch (e) { console.error("Promo lookup:", e instanceof Error ? e.message : e); }
     }
-    return NextResponse.json({ error: "We don't recognize that code. Check the spelling, or email hello@marquee.bio and we'll sort it out." }, { status: 400 });
+    return NextResponse.json({ error: "That code doesn't match our records. Check for typos and try again, or email hello@marquee.bio." }, { status: 400 });
   }
   if (row.redeemed_at) return NextResponse.json({ error: "That code has already been used." }, { status: 400 });
 
