@@ -63,7 +63,7 @@ export default function BrandShell({
           </div>
           <div className="mt-12 pt-[22px] border-t border-hair flex justify-between flex-wrap gap-[14px] text-[13px] text-ink/55">
             <span>© 2026 Marquee Identity, Inc.</span>
-            <span><Link href="/privacy" className="hover:text-dred">Privacy</Link> &nbsp;·&nbsp; <Link href="/terms" className="hover:text-dred">Terms</Link> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have a code? Sign in →</Link></span>
+            <span><Link href="/privacy" className="hover:text-dred">Privacy</Link> &nbsp;·&nbsp; <Link href="/terms" className="hover:text-dred">Terms</Link> &nbsp;·&nbsp; <Link href="/login" className="hover:text-dred">Sign in</Link></span>
           </div>
         </div>
       </footer>
