@@ -20,9 +20,20 @@ export async function GET(req: Request) {
     if (!owner || !offer) return NextResponse.json(closed);
     const s = await settingsOf(db, owner.ownerId);
     if (!s.open) return NextResponse.json(closed);
-    const days = computeSlots(s.settings, offer.durationMin, await busyOf(db, username));
+    const busy = await busyOf(db, username);
+    let pick = offer;
+    let days = computeSlots(s.settings, pick.durationMin, busy);
+    // Nothing fits at this length, but a shorter one still does (a 60-minute slot gone, 20 minutes
+    // left in the window): open on the length that has times, when the visitor did not ask for one.
+    if (!days.length && !minutes && offer.sessions.length > 1) {
+      for (const alt of [...offer.sessions].sort((a, b) => a.minutes - b.minutes)) {
+        if (alt.minutes === offer.durationMin) continue;
+        const d = computeSlots(s.settings, alt.minutes, busy);
+        if (d.length) { pick = { ...offer, durationMin: alt.minutes, priceCents: alt.priceCents }; days = d; break; }
+      }
+    }
     // a priced offer is paid at booking only once the person has connected Stripe
-    const payNow = offer.priceCents > 0 && stripeReady() && s.stripeReady && !!s.stripeAccount;
-    return NextResponse.json({ open: days.length > 0, timezone: s.settings.timezone, durationMin: offer.durationMin, priceCents: offer.priceCents, payNow, sessions: offer.sessions, days });
+    const payNow = pick.priceCents > 0 && stripeReady() && s.stripeReady && !!s.stripeAccount;
+    return NextResponse.json({ open: days.length > 0, timezone: s.settings.timezone, durationMin: pick.durationMin, priceCents: pick.priceCents, payNow, sessions: offer.sessions, days });
   } catch { return NextResponse.json(closed); }
 }

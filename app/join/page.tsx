@@ -14,11 +14,16 @@ export default function Join() {
   const [plan, setPlan] = useState<(typeof PLANS)[number]["key"]>("founding_yearly");
   // a friend's referral code from the link; kept for the visit so it survives a look around the site
   const [ref, setRef] = useState("");
+  // a discount code from Stripe, typed on the sign-up page or in the link: applied at checkout
+  const [promo, setPromo] = useState("");
   useEffect(() => {
     try {
-      const fromUrl = new URLSearchParams(window.location.search).get("ref") || "";
+      const q = new URLSearchParams(window.location.search);
+      const fromUrl = q.get("ref") || "";
       const code = (fromUrl || localStorage.getItem("mq_ref") || "").trim().toLowerCase();
       if (code) { setRef(code); localStorage.setItem("mq_ref", code); }
+      const p = (q.get("promo") || q.get("code") || localStorage.getItem("mq_promo") || "").trim().toUpperCase().slice(0, 60);
+      if (p) { setPromo(p); localStorage.setItem("mq_promo", p); }
     } catch { /* storage blocked */ }
   }, []);
   const [busy, setBusy] = useState(false);
@@ -30,7 +35,7 @@ export default function Join() {
   const pay = async () => {
     setErr(""); setBusy(true);
     try {
-      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref }) });
+      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref, promo }) });
       const j = await r.json();
       if (j.url) { window.location.href = j.url; return; }
       if (j.notOpen) setClosed("notOpen"); else if (j.full) setClosed("full"); else setErr(j.error || "We couldn't start the payment. Please try again.");
@@ -55,6 +60,7 @@ export default function Join() {
         {!closed && <span className="inline-block text-[11.5px] font-bold tracking-[0.16em] uppercase px-[13px] py-[7px] rounded-full bg-dred text-white">Private beta · Open now</span>}
         <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)] mt-5">Become a Founding Member.</h1>
         <p className="text-[16px] leading-[1.55] mt-4">Full access to Marquee Pro now, at a price that stays locked for as long as your membership stays active.</p>
+        {promo && !closed && <p className="mt-3 inline-block text-[13.5px] bg-white border border-hair px-3 py-2">Your code <b>{promo}</b> will be applied on the payment page.</p>}
 
         {closed ? (
           <div className="bg-white border border-hair rounded-[10px] p-7 mt-8">

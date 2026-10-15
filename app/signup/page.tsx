@@ -44,6 +44,8 @@ export default function SignupPage() {
         setLoading(false);
         return;
       }
+      const r = await res.json().catch(() => ({}));
+      if (r.promo) { router.push(`/join?promo=${encodeURIComponent(r.promo)}`); return; }
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,

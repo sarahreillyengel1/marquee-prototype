@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { sendBetaWelcome } from "@/lib/email";
+import { stripe, stripeReady } from "@/lib/stripe";
 
 // POST /api/signup-code { code, email, password, first_name, last_name } -> { ok }
 // Creates the account for someone joining with an invite code. The account is made here, already
@@ -20,7 +21,17 @@ export async function POST(req: Request) {
 
   const db = createServerSupabase();
   const { data: row } = await db.from("beta_codes").select("code,redeemed_at").eq("code", code).maybeSingle();
-  if (!row) return NextResponse.json({ error: "That code isn't valid. Need one? Join the waitlist." }, { status: 400 });
+  if (!row) {
+    // Not an invite code. A discount code made in Stripe (MARQUEE-MEGAN, $20 off) belongs at checkout:
+    // send them to pay with it already applied, rather than telling them the code is wrong.
+    if (stripeReady()) {
+      try {
+        const found = await stripe().promotionCodes.list({ code, active: true, limit: 1 });
+        if (found.data.length) return NextResponse.json({ promo: found.data[0].code });
+      } catch (e) { console.error("Promo lookup:", e instanceof Error ? e.message : e); }
+    }
+    return NextResponse.json({ error: "We don't recognize that code. Check the spelling, or email hello@marquee.bio and we'll sort it out." }, { status: 400 });
+  }
   if (row.redeemed_at) return NextResponse.json({ error: "That code has already been used." }, { status: 400 });
 
   const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { first_name: first, last_name: last, full_name: `${first} ${last}` },

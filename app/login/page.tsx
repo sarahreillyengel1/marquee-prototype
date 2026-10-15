@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetMsg, setResetMsg] = useState("");
+  // someone is already signed in on this browser: say who, so nobody lands inside another person's account
+  const [signedInAs, setSignedInAs] = useState("");
 
   async function sendReset() {
     setError(""); setResetMsg("");
@@ -22,6 +24,8 @@ export default function LoginPage() {
   }
   const router = useRouter();
   const supabase = createBrowserSupabase();
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setSignedInAs(data.user?.email || "")); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  const signOutFirst = async () => { await supabase.auth.signOut(); setSignedInAs(""); };
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +63,11 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl p-8 border border-brand-stone">
           <h2 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Welcome back</h2>
           <p className="text-brand-ink/60 text-sm mb-6">Log in to your Marquee.</p>
+          {signedInAs && (
+            <div className="mb-5 p-3 border border-brand-stone bg-[#F7F6F2] text-[13px] text-brand-ink">
+              This browser is signed in as <b>{signedInAs}</b>. <Link href="/build-preview" className="underline">Continue as {signedInAs}</Link>, or <button type="button" onClick={signOutFirst} className="underline">sign out</button> to use a different account.
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
