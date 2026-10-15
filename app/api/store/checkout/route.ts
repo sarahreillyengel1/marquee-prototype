@@ -30,6 +30,8 @@ export async function POST(req: Request) {
 
   if (price === 0) {
     if (!name || !validEmail(email)) return NextResponse.json({ error: "Please add your name and a valid email." }, { status: 400 });
+    const { data: again } = await db.from("orders").select("access_token").eq("username", username).eq("product_id", product.id).eq("buyer_email", email).eq("status", "free").order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (again?.access_token) return NextResponse.json({ ok: true, free: true, thanksUrl: `/${username}/thanks?o=${again.access_token}` });
     const { data: row, error } = await db.from("orders").insert({
       username, owner_id: owner.ownerId, product_id: product.id, product_title: product.title, product_kind: product.kind,
       buyer_name: name, buyer_email: email, price_cents: 0, fee_cents: 0, status: "free", delivered_at: new Date().toISOString(),

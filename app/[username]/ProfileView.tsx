@@ -322,7 +322,7 @@ function Sidebar() {
       <div className="nav-lbl">Settings</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/build-preview"; }}><Icon name="settings" />Profile settings</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => toast("Privacy controls coming soon")}><Icon name="lock" />Privacy</div>
-      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => toast("Analytics coming soon")}><Icon name="chart" />Analytics</div>
+      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/analytics"; }}><Icon name="chart" />Analytics</div>
       <div className="strength">
         <div className="ring">
           <svg width="76" height="76"><circle cx="38" cy="38" r="32" fill="none" stroke="#E9E6DF" strokeWidth="7" /><circle cx="38" cy="38" r="32" fill="none" stroke="#2E2C28" strokeWidth="7" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset} transform="rotate(-90 38 38)" /></svg>

@@ -47,9 +47,9 @@ export function SalesPanel() {
   if (rows.length === 0) return <div className="border border-[#E1DED7] bg-white p-[18px] mb-6 max-w-[980px] text-[13px] text-[#7d7a74]"><span className="font-semibold text-brand-ink">Sales.</span> Nothing sold yet. Products set to sell on Marquee show up here the moment someone buys.</div>;
 
   // one line per customer: what they bought, how much, when they last bought
-  const customers = Object.values(rows.reduce<Record<string, { name: string; email: string; n: number; cents: number; last: string; items: string[] }>>((acc, r) => {
-    const k = r.buyer_email.toLowerCase(); const c = acc[k] || (acc[k] = { name: r.buyer_name || "", email: r.buyer_email, n: 0, cents: 0, last: r.created_at, items: [] });
-    c.n += 1; if (r.status === "paid") c.cents += r.price_cents; if (!c.name && r.buyer_name) c.name = r.buyer_name; if (!c.items.includes(r.product_title)) c.items.push(r.product_title); if (r.created_at > c.last) c.last = r.created_at; return acc;
+  const customers = Object.values(rows.reduce<Record<string, { name: string; email: string; n: number; cents: number; refunded: number; last: string; items: string[] }>>((acc, r) => {
+    const k = r.buyer_email.toLowerCase(); const c = acc[k] || (acc[k] = { name: r.buyer_name || "", email: r.buyer_email, n: 0, cents: 0, refunded: 0, last: r.created_at, items: [] });
+    c.n += 1; if (r.status === "paid") c.cents += r.price_cents; if (r.status === "refunded") c.refunded += r.price_cents; if (!c.name && r.buyer_name) c.name = r.buyer_name; if (!c.items.includes(r.product_title)) c.items.push(r.product_title); if (r.created_at > c.last) c.last = r.created_at; return acc;
   }, {}));
 
   const btn = "font-sans text-[12px] font-semibold border border-[#E1DED7] bg-white py-[7px] px-[12px] hover:border-brand-ink";
@@ -87,7 +87,7 @@ export function SalesPanel() {
           {customers.sort((a, b) => b.last.localeCompare(a.last)).map((c) => (
             <div key={c.email} className="py-[10px] grid grid-cols-[1fr_auto] gap-3 items-center text-[13.5px]">
               <div className="min-w-0"><div className="font-semibold">{c.name || c.email}</div><div className="text-[12.5px] text-[#7d7a74] truncate"><a href={`mailto:${c.email}`} className="hover:text-brand-ink">{c.email}</a> · {c.items.join(", ")}</div></div>
-              <div className="text-right whitespace-nowrap"><div className="font-semibold">{c.cents ? money(c.cents) : "Free"}</div><div className="text-[12px] text-[#7d7a74]">{c.n} {c.n === 1 ? "order" : "orders"} · {when(c.last).split(",")[0]}</div></div>
+              <div className="text-right whitespace-nowrap"><div className="font-semibold">{c.cents ? money(c.cents) : c.refunded ? <span className="line-through text-[#a8a29a]">{money(c.refunded)}</span> : "Free"}</div><div className="text-[12px] text-[#7d7a74]">{c.n} {c.n === 1 ? "order" : "orders"} · {when(c.last).split(",")[0]}</div></div>
             </div>
           ))}
         </div>

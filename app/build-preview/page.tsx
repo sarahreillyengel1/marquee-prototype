@@ -6,7 +6,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { ARCHETYPES } from "@/lib/archetypes";
 import { BookingSetup } from "./BookingSetup";
-import { SalesPanel } from "./SalesPanel";
 import { SiteScan } from "./SiteScan";
 import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
 import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES, ROLE_TYPES, ENTRY_KINDS } from "@/lib/company-tags";
@@ -620,7 +619,7 @@ export default function BuildPreview() {
   const publish = async () => {
     const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
-    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight", "community", "community-feedback"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
+    if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight", "community", "community-feedback", "analytics"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
     setPublishing(true); setPubResult(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -712,10 +711,10 @@ export default function BuildPreview() {
       {/* ── MAIN ── */}
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
-          <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/dashboard"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
+          <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/analytics"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
           {refInfo && <button onClick={() => { setInviteOpen(true); setInvNote(""); }} className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[7px] px-[12px] hover:bg-[#4E0619]">Invite friends{refInfo.verified ? ` · ${refInfo.verified} of ${refInfo.goal}` : ""}</button>}
           <button onClick={() => setFb((f) => ({ ...f, open: true, state: "", err: "" }))} className="font-sans text-[13px] font-semibold text-[#670821] bg-[#EDE7FF] py-[7px] px-[12px] hover:bg-[#E0D6FF]">Beta feedback</button>
-          <a href="/dashboard" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Dashboard</a>
+          <a href="/analytics" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Analytics</a>
           {claimed && pubUsername && <a href={`/${pubUsername}`} target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">View profile ↗</a>}
           <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
           <button onClick={() => setShowPublish(true)} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 inline-flex items-center gap-2">{claimed ? "Update →" : "Publish →"}</button>
@@ -1573,8 +1572,7 @@ export default function BuildPreview() {
           {active === "Shop" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Templates, guides, courses, downloads, workshops. Sell them right on your page, with checkout through Marquee, or link out to where they are sold. Marquee takes 5% on sales made here, plus card processing. They show on the Shop page of your profile and can be buttons on your Mobile Links.</p>
-              <SalesPanel />
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Templates, guides, courses, downloads, workshops. Sell them right on your page, with checkout through Marquee, or link out to where they are sold. Marquee takes 5% on sales made here, plus card processing. They show on the Shop page of your profile and can be buttons on your Mobile Links. Sales and customers are in <a href="/analytics" className="underline">Analytics</a>.</p>
               <SiteScan mode="shop" website={socials.website} have={products.map((p) => p.url || "").filter(Boolean)} emptySocials={[]}
                 onAdd={(items) => setProducts((m) => [...m.filter((x) => x.title.trim() || (x.url || "").trim()), ...items.map((it) => ({ id: newId(), kind: STORE_KINDS.includes(it.kind) ? it.kind : "Download", title: it.title, blurb: "", price: "", featured: false, url: it.url, sell: "link" as const }))])}
                 onSocials={() => {}} />
