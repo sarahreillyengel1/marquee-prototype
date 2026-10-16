@@ -1,10 +1,10 @@
 "use client";
+// Sign in. Same look as /join: beige page, wordmark, Lora heading, pill inputs, vermillion button.
 
 import { useEffect, useState } from "react";
 import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { SignalM } from "@/components/icons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,97 +31,41 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setError(error.message); setLoading(false); return; }
     // Return the user to where they were headed (e.g. /build-preview), else the builder.
     const next = new URLSearchParams(window.location.search).get("next");
     const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/build-preview";
     router.push(dest);
   }
 
+  const input = "w-full rounded-full border-[1.5px] border-hair bg-white px-5 py-[12px] text-[15px] focus:outline-none focus:border-ink";
+  const label = "block text-[11px] font-semibold tracking-[0.18em] uppercase text-ink/60 mb-[6px]";
+
   return (
-    <div className="brand-body min-h-screen font-inter flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      <div className="absolute -top-16 -right-16 w-96 opacity-10 pointer-events-none hidden md:block">
-        <SignalM className="w-full h-auto" color="#C7B5FF" />
+    <main className="min-h-screen bg-beige font-inter text-ink px-5 py-10">
+      <div className="max-w-[560px] mx-auto">
+        <Link href="/" className="block text-[16.5px] font-medium tracking-[0.26em] mb-10">MARQUEE</Link>
+        <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)]">Welcome back.</h1>
+        <p className="text-[16px] leading-[1.55] mt-4">Log in to your Marquee.</p>
+
+        {signedInAs && (
+          <div className="mt-6 bg-white border border-hair px-4 py-3 text-[13.5px] leading-[1.55]">
+            This browser is signed in as <b>{signedInAs}</b>. <Link href="/build-preview" className="underline underline-offset-2 hover:text-dred">Continue as {signedInAs}</Link>, or <button type="button" onClick={signOutFirst} className="underline underline-offset-2 hover:text-dred">sign out</button> to use a different account.
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="mt-7 space-y-4">
+          <div><label htmlFor="login-email" className={label}>Email</label><input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className={input} /></div>
+          <div><label htmlFor="login-password" className={label}>Password</label><input id="login-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" className={input} /></div>
+          {error && <p className="text-[13px] leading-[1.5] text-dred" role="alert">{error}</p>}
+          {resetMsg && <p className="text-[13px] leading-[1.5] text-ink" role="status">{resetMsg}</p>}
+          <button type="submit" disabled={loading} className="block w-full !mt-6 px-6 py-[15px] text-[16px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50">{loading ? "Logging in…" : "Log in"}</button>
+          <p className="text-[13.5px] text-center !mt-5"><button type="button" onClick={sendReset} className="underline underline-offset-2 hover:text-dred">Forgot password?</button></p>
+        </form>
+
+        <p className="text-[13px] mt-10 text-center">Not a member yet? <Link href="/join" className="underline underline-offset-2 hover:text-dred">Join Marquee</Link></p>
       </div>
-
-      <div className="w-full max-w-md relative z-10">
-        <Link href="/" className="block mb-10 text-center">
-          <span className="wordmark text-xl text-brand-ink">MARQUEE</span>
-        </Link>
-
-        <div className="bg-white rounded-2xl p-8 border border-brand-stone">
-          <h2 className="font-inter font-bold tracking-tight text-3xl text-brand-ink mb-2">Welcome back</h2>
-          <p className="text-brand-ink/60 text-sm mb-6">Log in to your Marquee.</p>
-          {signedInAs && (
-            <div className="mb-5 p-3 border border-brand-stone bg-[#F7F6F2] text-[13px] text-brand-ink">
-              This browser is signed in as <b>{signedInAs}</b>. <Link href="/build-preview" className="underline">Continue as {signedInAs}</Link>, or <button type="button" onClick={signOutFirst} className="underline">sign out</button> to use a different account.
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-1.5">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                className="w-full px-4 py-2.5 rounded-xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-brand-ink/60 mb-1.5">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="w-full px-4 py-2.5 rounded-xl border border-brand-stone bg-white text-brand-ink focus:outline-none focus:border-brand-ink transition-colors"
-              />
-            </div>
-
-            {error && (
-              <div className="text-sm bg-brand-vermillion/10 text-brand-vermillion rounded-lg px-4 py-3">
-                {error}
-              </div>
-            )}
-            {resetMsg && (
-              <div className="text-sm bg-brand-sage/15 text-brand-ink rounded-lg px-4 py-3">
-                {resetMsg}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-6 py-3 rounded-full bg-brand-ink text-white font-medium hover:bg-brand-ink/90 transition-colors disabled:opacity-50"
-            >
-              {loading ? "Logging in…" : "Log in →"}
-            </button>
-            <button type="button" onClick={sendReset} className="w-full text-sm text-brand-ink/60 hover:text-brand-ink pt-1">
-              Forgot password?
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+    </main>
   );
 }
