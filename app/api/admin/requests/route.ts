@@ -11,7 +11,7 @@ import { sendInviteCode } from "@/lib/email";
 export const dynamic = "force-dynamic";
 const ADMINS = (process.env.ADMIN_EMAILS || "sarah@campsix.co,sarah@marquee.bio").split(",").map((e) => e.trim().toLowerCase());
 // the one code everyone approved receives; it lives in Stripe under the beta coupon
-export const INVITE_CODE = (process.env.BETA_INVITE_CODE || "MARQUEE-BETA").toUpperCase();
+const INVITE_CODE =(process.env.BETA_INVITE_CODE || "MARQUEE-BETA").toUpperCase();
 
 async function allowed() {
   const auth = await createSupabaseServer();
