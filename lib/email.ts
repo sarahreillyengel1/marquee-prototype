@@ -375,18 +375,16 @@ export async function sendBetaRequestNotice(m: { name: string; email: string; li
     `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/admin/requests", "Open requests")}</div>`, "Sent from the request form on marquee.bio/join"), m.email);
 }
 
-/** To the person: Sarah approved the request. Her words. The link carries the code so it is applied on arrival. */
+/** To the person: Sarah approved the request. Her words. The button carries the code so it is applied on arrival. */
 export async function sendInviteCode(to: string, name: string, code: string) {
   const n = first(name || "");
   const link = `https://marquee.bio/join?code=${encodeURIComponent(code)}`;
-  return sendEmail(to, "Your Marquee invite code", shell(
+  return sendEmail(to, "Your Marquee Invite Code", shell(
     p(`Hi ${esc(n || "there")},`) +
     p("You&rsquo;re invited to join the Marquee private beta!") +
-    p("Here&rsquo;s your invite code:") +
-    `<p style="font-size:22px;font-weight:700;letter-spacing:.1em;margin:0 0 16px;">${esc(code)}</p>` +
-    p("Your code gives you your first month free and access to Founding Member pricing.") +
-    p(`<strong>Join Marquee:</strong> <a href="${esc(link)}" style="color:#670821;">marquee.bio/join</a>`) +
-    p("Enter your code, choose your plan, and create your account.") +
-    p("We&rsquo;re excited to have you!") +
+    p("As an early member, you&rsquo;ll receive your first month free and access to exclusive Founding Member pricing, locked in for as long as your membership is active.") +
+    p(`Your invite code: <strong style="letter-spacing:.08em;">${esc(code)}</strong>`) +
+    `<div style="margin:22px 0 24px;">${wineButton(link, "Join Marquee")}</div>` +
+    p("We&rsquo;re excited to welcome you!") +
     `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
 }
