@@ -375,7 +375,7 @@ export default function HomePage() {
           </div>
           <div className="mt-10 flex justify-between flex-wrap gap-[14px] text-[13px] text-ink">
             <div>© 2026 Marquee Identity, Inc.</div>
-            <div><Link href="/privacy" className="hover:text-dred">Privacy</Link> &nbsp;·&nbsp; <Link href="/terms" className="hover:text-dred">Terms</Link> &nbsp;·&nbsp; <Link href="/signup" className="hover:text-dred">Have an invite code? →</Link></div>
+            <div><Link href="/privacy" className="hover:text-dred">Privacy</Link> &nbsp;·&nbsp; <Link href="/terms" className="hover:text-dred">Terms</Link> &nbsp;·&nbsp; <Link href="/login" className="hover:text-dred">Sign in</Link></div>
           </div>
         </div>
       </footer>

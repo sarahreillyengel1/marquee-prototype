@@ -363,3 +363,30 @@ export async function sendBetaFeedback(m: { kind: string; message: string; page?
     card(row("Message", esc(m.message).replace(/\n/g, "<br />")) + (m.page ? row("Sent from", esc(m.page)) : "")) +
     p("Reply to this email to answer them directly."), "Sent from the beta contact form"), m.email);
 }
+
+/* ─────────────── Invite code requests (marquee.bio/join) ─────────────── */
+
+/** To Sarah: someone asked for a code. The request waits on /admin/requests. */
+export async function sendBetaRequestNotice(m: { name: string; email: string; linkedin: string }) {
+  const to = process.env.BETA_INBOX || "sarah@marquee.bio";
+  return sendEmail(to, `Code request · ${m.name}`, shell(
+    p(`<strong>${esc(m.name)}</strong> asked for an invite code.`) +
+    card(row("Email", esc(m.email)) + row("LinkedIn", `<a href="${esc(m.linkedin)}" style="color:#670821;">${esc(m.linkedin)}</a>`)) +
+    `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/admin/requests", "Open requests")}</div>`, "Sent from the request form on marquee.bio/join"), m.email);
+}
+
+/** To the person: Sarah approved the request. Her words. The link carries the code so it is applied on arrival. */
+export async function sendInviteCode(to: string, name: string, code: string) {
+  const n = first(name || "");
+  const link = `https://marquee.bio/join?code=${encodeURIComponent(code)}`;
+  return sendEmail(to, "Your Marquee invite code", shell(
+    p(`Hi ${esc(n || "there")},`) +
+    p("You&rsquo;re invited to join the Marquee private beta!") +
+    p("Here&rsquo;s your invite code:") +
+    `<p style="font-size:22px;font-weight:700;letter-spacing:.1em;margin:0 0 16px;">${esc(code)}</p>` +
+    p("Your code gives you your first month free and access to Founding Member pricing.") +
+    p(`<strong>Join Marquee:</strong> <a href="${esc(link)}" style="color:#670821;">marquee.bio/join</a>`) +
+    p("Enter your code, choose your plan, and create your account.") +
+    p("We&rsquo;re excited to have you!") +
+    `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
+}
