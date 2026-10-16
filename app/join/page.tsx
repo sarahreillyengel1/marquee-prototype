@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const PLANS = [
-  { key: "founding_monthly", name: "Monthly", price: "$20", per: "/month", save: "Save 31% off the regular $29/month price.", withCode: "$0 today. Then $20/month starting next month." },
-  { key: "founding_yearly", name: "Annual", price: "$200", per: "/year", save: "Save 28% off the regular $279/year price.", withCode: "Join today and save $20. Get your first year of Marquee for just $180." },
+  { key: "founding_monthly", name: "Monthly", price: "$20", per: "/month", withCode: "$0 today. Then $20/month starting next month." },
+  { key: "founding_yearly", name: "Annual", price: "$200", per: "/year", withCode: "Join today and save $20. Get your first year of Marquee for just $180." },
 ] as const;
 type PlanKey = (typeof PLANS)[number]["key"];
 type View = "join" | "request" | "requested";
@@ -102,7 +102,6 @@ export default function Join() {
   const input = "w-full rounded-full border-[1.5px] border-hair bg-white px-5 py-[12px] text-[15px] focus:outline-none focus:border-ink";
   const label = "block text-[11px] font-semibold tracking-[0.18em] uppercase text-ink/60 mb-[6px]";
   const redBtn = "block w-full px-6 py-[15px] text-[16px] rounded-full font-semibold bg-red text-white hover:bg-dred transition-colors disabled:opacity-50";
-  const plansShown = promo ? PLANS.filter((p) => p.withCode) : PLANS;
 
   return (
     <main className="min-h-screen bg-beige font-inter text-ink px-5 py-10">
@@ -129,8 +128,7 @@ export default function Join() {
         ) : view === "request" ? (
           <>
             <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)] mt-5">Request your invite code.</h1>
-            <p className="text-[16px] leading-[1.55] mt-4 font-semibold">We&apos;re welcoming new members to Marquee!</p>
-            <p className="text-[16px] leading-[1.55] mt-2">Tell us a little about yourself to request a code and get your first month free.</p>
+            <p className="text-[16px] leading-[1.55] mt-4">Tell us a little about yourself to request a code and get your first month free.</p>
             <form onSubmit={request} noValidate className="mt-7 space-y-4">
               <div><label htmlFor="rq-name" className={label}>Name</label><input id="rq-name" type="text" autoComplete="name" value={rq.name} onChange={(e) => setRq({ ...rq, name: e.target.value })} className={input} /></div>
               <div><label htmlFor="rq-email" className={label}>Email</label><input id="rq-email" type="email" autoComplete="email" value={rq.email} onChange={(e) => setRq({ ...rq, email: e.target.value })} className={input} /></div>
@@ -153,47 +151,41 @@ export default function Join() {
             {promo ? (
               <>
                 <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)] mt-5">Welcome to Marquee!</h1>
-                <p className="text-[16px] leading-[1.55] mt-4">Your code has been applied. Your first month is free!</p>
+                <p className="text-[16px] leading-[1.55] mt-4">Your code has been applied. Enjoy your first month free.</p>
                 <p className="text-[13px] text-ink/70 mt-2">Code <b className="text-ink">{promo}</b> · <button onClick={clearCode} className="underline underline-offset-2 hover:text-dred">use a different code</button></p>
               </>
             ) : (
               <>
                 <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)] mt-5">Join Marquee.</h1>
-                <p className="text-[16px] leading-[1.55] mt-4">Get full access to Marquee with Founding Member pricing.</p>
-                <div className="grid sm:grid-cols-2 gap-3 mt-7">
-                  <form onSubmit={applyCode} noValidate className="bg-white rounded-[10px] p-5 border-[1.5px] border-hair">
-                    <h2 className="text-[15px] font-semibold">Have a code?</h2>
-                    <p className="text-[13px] leading-[1.5] text-ink/70 mt-1">Enter your code to get your first month free.</p>
-                    <label htmlFor="join-code" className="sr-only">Your code</label>
-                    <input id="join-code" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} value={codeInput} onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setCodeErr(""); }} placeholder="Enter your code" className={`${input} mt-4 py-[10px] text-[14px] tracking-[0.06em]`} />
-                    {codeErr && <p className="text-[12.5px] leading-[1.45] text-dred mt-2" role="alert">{codeErr}</p>}
-                    <button type="submit" disabled={checking} className="block w-full mt-3 px-5 py-[11px] text-[14px] rounded-full font-semibold bg-ink text-white hover:bg-dred transition-colors disabled:opacity-50">{checking ? "Checking…" : "Apply Code"}</button>
-                  </form>
-                  <div className="bg-white rounded-[10px] p-5 border-[1.5px] border-hair flex flex-col">
-                    <h2 className="text-[15px] font-semibold">Need a code?</h2>
-                    <p className="text-[13px] leading-[1.5] text-ink/70 mt-1">Request one to join our private beta and get your first month free.</p>
-                    <button type="button" onClick={() => { setView("request"); window.scrollTo({ top: 0 }); }} className="block w-full mt-auto pt-[11px] pb-[11px] px-5 text-[14px] rounded-full font-semibold border-[1.5px] border-ink text-ink hover:bg-ink hover:text-white transition-colors" style={{ marginTop: "auto" }}>Request a Code</button>
-                  </div>
-                </div>
+                <p className="text-[16px] leading-[1.55] mt-4">Enter your invite code to get started and receive your first month free.</p>
+                <form onSubmit={applyCode} noValidate className="mt-7">
+                  <label htmlFor="join-code" className="sr-only">Your code</label>
+                  <input id="join-code" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} value={codeInput} onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setCodeErr(""); }} placeholder="Enter your code" className={`${input} tracking-[0.06em]`} />
+                  {codeErr && <p className="text-[13px] leading-[1.5] text-dred mt-3" role="alert">{codeErr}</p>}
+                  <button type="submit" disabled={checking} className={`${redBtn} mt-3`}>{checking ? "Checking…" : "Apply Code"}</button>
+                </form>
+                <p className="text-[13.5px] mt-5 text-center">Don&apos;t have a code? <button type="button" onClick={() => { setView("request"); window.scrollTo({ top: 0 }); }} className="underline underline-offset-2 hover:text-dred">Request one.</button></p>
               </>
             )}
 
+            {promo && (<>
             <fieldset className="mt-8">
               <legend className="text-[12px] font-bold tracking-[0.18em] uppercase text-dred mb-3">Choose your plan</legend>
               <div className="grid sm:grid-cols-2 gap-3">
-                {plansShown.map((p) => (
+                {PLANS.map((p) => (
                   <label key={p.key} className={`block bg-white rounded-[10px] p-5 cursor-pointer border-[1.5px] ${plan === p.key ? "border-dred shadow-[0_10px_26px_rgba(124,18,38,0.12)]" : "border-hair hover:border-ink"}`}>
                     <span className="flex items-center gap-2"><input type="radio" name="plan" value={p.key} checked={plan === p.key} onChange={() => setPlan(p.key)} className="accent-[#7C1226]" /><span className="text-[14.5px] font-semibold">{p.name}</span></span>
                     <span className="block mt-3"><span className="font-lora text-[34px] leading-none">{p.price}</span><span className="text-[14px] text-dred"> {p.per}</span></span>
-                    <span className="block text-[13px] leading-[1.45] text-ink/70 mt-3">{promo ? p.withCode : p.save}</span>
+                    <span className="block text-[13px] leading-[1.45] text-ink/70 mt-3">{p.withCode}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
             <button onClick={pay} disabled={busy} className={`${redBtn} mt-6`}>{busy ? "Opening secure payment…" : "Continue to Payment"}</button>
             {err && <p className="text-[13px] text-dred mt-3 text-center" role="alert">{err}</p>}
-            <p className="text-[13px] leading-[1.55] text-ink/70 mt-4 text-center">{promo ? "You'll enter your payment information securely through Stripe. Cancel anytime." : "Your Founding Member price stays the same as long as your membership is active. Cancel anytime."}</p>
+            <p className="text-[13px] leading-[1.55] text-ink/70 mt-4 text-center">You&apos;ll enter your payment information securely through Stripe. Cancel anytime.</p>
             <p className="text-[12.5px] leading-[1.55] text-ink/60 mt-3 text-center">By continuing, you agree to Marquee&apos;s <Link href="/terms" target="_blank" className="underline underline-offset-2 hover:text-dred">Terms of Service</Link> and <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-dred">Privacy Policy</Link>.</p>
+            </>)}
           </>
         )}
         <p className="text-[13px] mt-10 text-center">Already a member? <Link href="/login" className="underline underline-offset-2 hover:text-dred">Sign in</Link></p>
