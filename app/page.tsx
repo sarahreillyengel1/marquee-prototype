@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import WaitlistModal from "@/components/WaitlistModal";
 import Pricing from "@/components/Pricing";
 import { IconInstagram } from "@/components/icons";
@@ -60,14 +59,6 @@ const STATS = [
   ["77%", "of recruiters rely on LinkedIn, where discovery stops at a job title.", "Jobvite"],
   ["50%", "of professionals will have portfolio careers by 2030.", "OECD"],
   ["1 in 3", "working Americans now have a side hustle.", "MarketWatch"],
-];
-
-const BIZ = [
-  ["Superpowers over resumes", "Surface proven execution speed, practical expertise, and core strengths."],
-  ["Driven by forward-looking signals", "Traditional platforms focus on past job titles. Marquee shows active goals, real-time bandwidth, and current focus areas."],
-  ["Flexible work formats", "Connect with top talent for fractional leadership, project work, advisory roles, speaking engagements, content partnerships, and board seats."],
-  ["Cultural alignment first", "Filter by leadership style, public presence, and shared core values to ensure lasting, high-impact partnerships."],
-  ["Direct contact with upfront insights", "View rates, explicit availability, and preferred engagement formats so you can reach out directly."],
 ];
 
 const FAQS = [
@@ -275,40 +266,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FOR BUSINESS (blue) ── */}
-      <section id="business" className={`${SECTION} bg-blue`}>
-        <div className={`${WRAP} grid md:grid-cols-[.9fr_1.1fr] gap-[clamp(30px,5vw,64px)] items-start`}>
-          <div>
-            <div className={EYEBROW}>For businesses &amp; recruiters</div>
-            <h2 className={`${H2} mt-4`}>Discover the human beyond the title.</h2>
-            <p className={`${LEDE} mt-4`}>Search by skills, superpowers, core values, leadership style, industry experience and impact.</p>
-            <div className="mt-8"><button onClick={() => apply("business")} className={`${BTN} bg-dred text-white hover:bg-red`}>Join the waitlist</button></div>
-          </div>
-          <div>
-            {BIZ.map(([b, s]) => (
-              <div key={b} className="py-[18px] border-b border-hair last:border-0">
-                <b className="block text-[16.5px] mb-[5px]">{b}</b>
-                <span className="text-[15px] leading-[1.55]">{s}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── THE PROFESSIONAL STACK (white) ── */}
-      <section className={SECTION}>
-        <div className={`${WRAP} text-center`}>
-          <div className={EYEBROW}>The professional stack</div>
-          <h2 className={`${H2} mt-4 max-w-[960px] mx-auto`}>Your work lives everywhere. Your full story lives nowhere.</h2>
-          <p className={`${LEDE} mt-[18px] max-w-[860px] mx-auto`}>Professionals are missing out on income, visibility, and high-impact opportunities because their identity is scattered across multiple tools. When the world only sees disconnected fragments of what you do, no single place captures your true capabilities, your full story, or how to work with you today.</p>
-          <div className="mx-auto max-w-[720px] overflow-hidden mt-4" style={{ aspectRatio: "740 / 545" }}>
-            <Image src="/images/marquee-stack-graphic.png" alt="A professional surrounded by the disconnected tools their identity is scattered across: LinkedIn, resume, personal website, newsletter, link in bio, portfolio, speaking, advisory, booking, products, projects, and media mentions." width={740} height={740} className="w-full h-auto block" priority />
-          </div>
-          <div className="text-[30px] text-dred leading-none mt-4 mb-6">↓</div>
-          <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred sm:text-[17px] sm:!px-[34px] sm:!py-[18px]`}>Get one link for your professional story</Link>
-          <div className={`${SCRIPT} text-dred mt-5`}>marquee.bio/yourname</div>
-        </div>
-      </section>
+      {/* "For businesses & recruiters" and "The professional stack" are archived in components/archive/HomeSections.tsx */}
 
       {/* ── FAQ (beige) ── */}
       <section className="py-[clamp(32px,5vw,68px)] bg-beige">
@@ -360,7 +318,6 @@ export default function HomePage() {
                 <li><a href="#pricing" className="hover:text-dred">Pricing</a></li>
                 <li><a href="#earn" className="hover:text-dred">Monetize your expertise</a></li>
                 <li><a href="#blueprint" className="hover:text-dred">Career Blueprint</a></li>
-                <li><a href="#business" className="hover:text-dred">For businesses &amp; recruiters</a></li>
               </ul>
             </div>
             <div>

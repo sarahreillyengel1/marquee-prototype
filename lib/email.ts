@@ -258,7 +258,7 @@ export async function sendRequestEmails(m: { ownerName: string; ownerEmail: stri
 /** "Remind Me" — confirms we have their email and says what happens next. */
 export async function sendReminderConfirmation(to: string, about: "pro" | "founding") {
   const body = about === "pro"
-    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now. Access is limited.") + button("https://marquee.bio/join", "Become a Founding Member")
+    ? p("You asked us to remind you when <strong>Marquee Pro</strong> opens.") + p("We will email you on December 1 with your link to join.") + p("Want in sooner? Founding Member sign-up is open now. Access is limited.") + wineButton("https://marquee.bio/join", "Become a Founding Member")
     : p("You asked about <strong>Founding Member</strong> sign-up.") + p("We will email you the moment it opens, with your link to join.");
   return sendEmail(to, about === "pro" ? "We'll remind you when Marquee Pro opens" : "We'll tell you when Founding Member sign-up opens", shell(p("Hi there,") + body, "Sent by Marquee"));
 }
@@ -277,7 +277,7 @@ const wineButton = (href: string, label: string) => `<a href="${esc(href)}" styl
 async function sendWelcome(to: string, firstName: string, buildUrl: string) {
   const name = first(firstName || "");
   const html = `
-  <div style="margin:0;padding:0;background:#F7F6F2;">${preheader("Your Marquee is ready.")}
+  <div style="margin:0;padding:0;background:#F7F6F2;">${preheader("Your account is ready. Start building your Marquee.")}
     <div style="max-width:560px;margin:0 auto;padding:36px 20px 40px;font-family:Helvetica,Arial,sans-serif;color:#111111;">
       <div style="font-size:15px;font-weight:600;letter-spacing:0.25em;color:#111111;margin:0 8px 22px;">MARQUEE</div>
       <div style="background:#670821;padding:38px 32px 34px;">
@@ -285,11 +285,13 @@ async function sendWelcome(to: string, firstName: string, buildUrl: string) {
       </div>
       <div style="background:#FFFFFF;border:1px solid #E9E6DF;border-top:none;padding:30px 32px 30px;">
         ${p(`Hi ${name ? esc(name) : "there"},`)}
-        ${p("Welcome to Marquee. We&rsquo;re so happy to have you join us as a Founding Member.")}
-        ${p("We created Marquee to help professionals capture the value of their knowledge and expertise &mdash; and turn it into more ways to be discovered, hired, booked and paid.")}
-        <div style="margin:24px 0 28px;">${wineButton(buildUrl, "Build your Marquee")}</div>
-        ${p("Once you&rsquo;re verified, we&rsquo;ll send you a Getting Started Guide with everything you need to get set up.")}
-        ${p("As you build and explore, hit reply anytime with feedback, ideas or questions. Your input will help shape Marquee from the beginning.")}
+        ${p("Welcome to Marquee! We&rsquo;re happy to have you as a Founding Member.")}
+        ${p("We created Marquee to help professionals showcase their knowledge and expertise, and turn it into more ways to be discovered, hired, booked, and paid.")}
+        ${p("Your account is ready! Start building your professional profile and storefront.")}
+        <div style="margin:6px 0 26px;">${wineButton(buildUrl, "Build Your Marquee")}</div>
+        ${p("We&rsquo;ve also put together a Getting Started Guide to help you make the most of Marquee.")}
+        <div style="margin:6px 0 26px;">${wineButton("https://marquee.bio/getting-started.pdf", "Open the Guide")}</div>
+        ${p("As you build and explore, feel free to reply with feedback, ideas, or questions. Your input will help shape Marquee from the beginning.")}
         <p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>
         <p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;color:#6E6A62;">Founder &amp; CEO, Marquee</p>
       </div>
@@ -330,8 +332,8 @@ export async function sendReferralInvite(m: { to: string; friendName: string; me
       <div style="background:#FFFFFF;border:1px solid #E9E6DF;padding:30px 32px 30px;">
         <div style="font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1.1;margin:0 0 22px;">You&rsquo;re invited to Marquee</div>
         ${p(`Hi ${m.friendName ? esc(first(m.friendName)) : "there"},`)}
-        ${p("I&rsquo;ve been using Marquee to build my professional profile and storefront, and I thought you&rsquo;d love it too.")}
-        ${p("It gives you one place to showcase your work, build your professional brand, and turn your knowledge and expertise into more ways to get discovered, hired, booked and paid.")}
+        ${p("I&rsquo;d like to invite you to join me on Marquee!")}
+        ${p("Marquee is a new platform where professionals can showcase their work, build their professional brand, offer services, take bookings, and sell products.")}
         <div style="margin:24px 0 26px;">${wineButton(m.link, "Build Your Marquee")}</div>
         <p style="font-size:15px;line-height:1.5;margin:0;">${esc(m.memberName)}</p>
         ${m.memberProfile ? `<p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;"><a href="${esc(m.memberProfile)}" style="color:#670821;">${esc(m.memberProfile.replace("https://", ""))}</a></p>` : ""}
@@ -382,9 +384,9 @@ export async function sendInviteCode(to: string, name: string, code: string) {
   return sendEmail(to, "Your Marquee Invite Code", shell(
     p(`Hi ${esc(n || "there")},`) +
     p("You&rsquo;re invited to join the Marquee private beta!") +
-    p("As an early member, you&rsquo;ll receive your first month free and access to exclusive Founding Member pricing, locked in for as long as your membership is active.") +
     p(`Your invite code: <strong style="letter-spacing:.08em;">${esc(code)}</strong>`) +
+    p("Your code gives you your first month free and access to Founding Member pricing.") +
     `<div style="margin:22px 0 24px;">${wineButton(link, "Join Marquee")}</div>` +
-    p("We&rsquo;re excited to welcome you!") +
+    p("We can&rsquo;t wait to welcome you!") +
     `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
 }

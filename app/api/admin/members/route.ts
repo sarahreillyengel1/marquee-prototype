@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import { sendGettingStarted } from "@/lib/email";
 import { stripe, stripeReady } from "@/lib/stripe";
 import { ensureMemberAccount, paidSession } from "@/lib/membership-server";
 import { grantReferralRewardIfDue } from "@/lib/referrals";
@@ -157,11 +156,10 @@ export async function POST(req: Request) {
     // verifying a member also gives them the Verified badge on their profile
     const { error } = await db.auth.admin.updateUserById(id, { app_metadata: { ...app, reviewed_at: now, reviewed_by: myEmail, verified: true, verified_by: `${myEmail}, ${now.slice(0, 10)}` } });
     if (error) return NextResponse.json({ error: "Couldn't save that. Please try again." }, { status: 500 });
-    const firstName = String((u.user_metadata as { first_name?: string; full_name?: string } | null)?.first_name || (u.user_metadata as { full_name?: string } | null)?.full_name || "");
-    const sent = await sendGettingStarted(u.email || "", firstName).catch(() => null);
+    // the Getting Started Guide now goes out with the welcome email, so verifying sends nothing
     // if someone referred this member, this verification may complete their 6
     const reward = await grantReferralRewardIfDue(id).catch(() => null);
-    return NextResponse.json({ ok: true, emailed: !!(sent && "ok" in sent && sent.ok), reward });
+    return NextResponse.json({ ok: true, reward });
   }
 
   if (action === "reward_done") {

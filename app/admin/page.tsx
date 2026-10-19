@@ -42,7 +42,7 @@ export default function Admin() {
     const r = await fetch("/api/admin/members", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id: m.id }) });
     const j = await r.json().catch(() => ({}));
     setBusy("");
-    setNote(!r.ok ? (j.error || "That didn't work.") : action === "reward_done" ? `${m.name || m.email}: referral reward marked as given.` : action === "verify" ? `${m.name || m.email} verified. ${j.emailed ? "Getting Started guide sent." : "The guide email did NOT send — email it to them yourself."}${j.reward?.reached ? (j.reward.credited ? " Their referrer just reached 6: a $20 credit was added to that member's Stripe account." : " Their referrer just reached 6, but Stripe refused the credit: add it in Stripe and mark done.") : ""}` : `${m.name || m.email} removed: ${(j.notes || []).join(", ")}.`);
+    setNote(!r.ok ? (j.error || "That didn't work.") : action === "reward_done" ? `${m.name || m.email}: referral reward marked as given.` : action === "verify" ? `${m.name || m.email} verified.${j.reward?.reached ? (j.reward.credited ? " Their referrer just reached 6: a $20 credit was added to that member's Stripe account." : " Their referrer just reached 6, but Stripe refused the credit: add it in Stripe and mark done.") : ""}` : `${m.name || m.email} removed: ${(j.notes || []).join(", ")}.`);
     load();
   };
   const dropWait = async (email: string) => {
@@ -77,7 +77,7 @@ export default function Admin() {
           <Stat n={d.reminders.length} t="Remind me, Dec 1" s="For Marquee Pro" />
         </div>
 
-        {waiting.length > 0 && <div className="bg-[#EDE7FF] border border-[#C7B5FF] px-5 py-[13px] mb-5 text-[14px]"><strong>{waiting.length} new {waiting.length === 1 ? "member needs" : "members need"} your review:</strong> {waiting.map((m) => m.name || m.email).join(", ")}. Verify to send the Getting Started guide, or remove.</div>}
+        {waiting.length > 0 && <div className="bg-[#EDE7FF] border border-[#C7B5FF] px-5 py-[13px] mb-5 text-[14px]"><strong>{waiting.length} new {waiting.length === 1 ? "member needs" : "members need"} your review:</strong> {waiting.map((m) => m.name || m.email).join(", ")}. Verify, or remove.</div>}
         {note && <div className="bg-white border border-[#E1DED7] border-l-[3px] border-l-[#670821] px-5 py-[12px] mb-5 text-[14px]" role="status">{note}</div>}
         <div className="bg-white border border-[#E1DED7] px-5 py-4 mb-5">
           <div className="text-[13.5px] font-semibold mb-1">Someone paid but isn&apos;t listed below?</div>
@@ -100,7 +100,7 @@ export default function Admin() {
                     : m.isAdmin ? <span className="text-[#9C968C]">Team</span>
                     : <>
                       {m.reviewedAt ? <span className="text-[12.5px] text-[#3a352f]">Verified {day(m.reviewedAt)} · guide sent</span>
-                        : <button disabled={!!busy} onClick={() => act(m, "verify")} className="font-sans text-[12.5px] font-semibold bg-[#670821] text-white py-[7px] px-[11px] hover:bg-[#4E0619] disabled:opacity-50">{busy === m.id + "verify" ? "Sending…" : "Verify & send guide"}</button>}
+                        : <button disabled={!!busy} onClick={() => act(m, "verify")} className="font-sans text-[12.5px] font-semibold bg-[#670821] text-white py-[7px] px-[11px] hover:bg-[#4E0619] disabled:opacity-50">{busy === m.id + "verify" ? "Saving…" : "Verify"}</button>}
                       <button disabled={!!busy} onClick={() => act(m, "remove")} className="ml-3 font-sans text-[12.5px] font-semibold text-[#670821] hover:underline disabled:opacity-50">{busy === m.id + "remove" ? "Removing…" : "Remove"}</button>
                     </>}
                 </td>
