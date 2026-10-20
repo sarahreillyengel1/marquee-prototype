@@ -139,3 +139,11 @@ body {
   font-weight: 500;
   letter-spacing: 0.25em;
 }
+
+/* Home hero example: the pieces settle in one after another, and the activity cards swap. */
+@keyframes hv-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes hv-swap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.hero-visual .hv-desk { animation: hv-in .7s ease-out backwards; }
+.hero-visual .hv-phone { animation: hv-in .7s .25s ease-out backwards; }
+.hero-visual .hv-swap { animation: hv-swap .45s ease-out backwards; }
+@media (prefers-reduced-motion: reduce) { .hero-visual * { animation: none !important; } }

@@ -157,14 +157,18 @@ export default function Join() {
             ) : (
               <>
                 <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6vw,46px)] mt-5">Join Marquee.</h1>
-                <p className="text-[16px] leading-[1.55] mt-4">Enter your invite code to get started and receive your first month free.</p>
+                <p className="text-[16px] leading-[1.55] mt-4">Enter your invite code to get your first month free and access Founding Member pricing.</p>
                 <form onSubmit={applyCode} noValidate className="mt-7">
                   <label htmlFor="join-code" className="sr-only">Your code</label>
                   <input id="join-code" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} value={codeInput} onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setCodeErr(""); }} placeholder="Enter your code" className={`${input} tracking-[0.06em]`} />
                   {codeErr && <p className="text-[13px] leading-[1.5] text-dred mt-3" role="alert">{codeErr}</p>}
                   <button type="submit" disabled={checking} className={`${redBtn} mt-3`}>{checking ? "Checking…" : "Apply Code"}</button>
                 </form>
-                <p className="text-[13.5px] mt-5 text-center">Don&apos;t have a code? <button type="button" onClick={() => { setView("request"); window.scrollTo({ top: 0 }); }} className="underline underline-offset-2 hover:text-dred">Request one.</button></p>
+                <div className="mt-7 bg-white border border-hair rounded-[10px] p-5 text-center">
+                  <p className="text-[15px] font-semibold">Don&apos;t have a code?</p>
+                  <p className="text-[14px] leading-[1.55] text-ink/80 mt-1">Request access to the private beta and get your first month free, plus Founding Member pricing of $20/month or $200/year.</p>
+                  <button type="button" onClick={() => { setView("request"); window.scrollTo({ top: 0 }); }} className="inline-block mt-4 px-6 py-[11px] rounded-full font-semibold text-[14px] border-[1.5px] border-ink text-ink hover:bg-ink hover:text-white transition-colors">Request Access</button>
+                </div>
               </>
             )}
 

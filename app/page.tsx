@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import WaitlistModal from "@/components/WaitlistModal";
 import Pricing from "@/components/Pricing";
 import { IconInstagram } from "@/components/icons";
@@ -17,6 +18,13 @@ const SCRIPT = "font-script leading-none text-[clamp(23px,5vw,44px)]";
 const LEDE = "text-[clamp(15px,2vw,18px)] leading-[1.55]";
 const BTN = "inline-block px-5 py-[10px] text-[13.5px] sm:px-6 sm:py-[13px] sm:text-[15px] rounded-full font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
+const FOR = [
+  { h: "I\u2019m a founder or entrepreneur.", body: "Build your professional presence and manage your businesses and brands, each with its own Marquee." },
+  { h: "I\u2019m a fractional leader, consultant, or freelancer.", body: "Showcase your work, services, rates, and availability so clients can hire or book you directly." },
+  { h: "I\u2019m building my professional brand.", body: "Bring your experience, expertise, content, newsletter, podcast, affiliate links, and products together." },
+  { h: "I\u2019m a coach, advisor, or expert.", body: "Offer sessions, advisory services, workshops, and programs with direct bookings and payments." },
+];
+
 const QUOTES: [string, string][] = [
   ["I pivoted my career, but my resume and LinkedIn were stuck in my past role—they didn't reflect my real capabilities. I was getting screened out by AI filters and missing opportunities. My Marquee bio finally shows who I am, and I'm excited to share it.", "The career pivot"],
   ["I'm a full-time executive, but I have expertise and a perspective that goes beyond my job title. I'm not looking for a new role, but I am open to advisory work, 1:1 calls, and growing my newsletter. LinkedIn gives me no space to showcase how I work outside my day job, and Marquee gives me a place for all of it.", "The full-time executive"],
@@ -25,41 +33,15 @@ const QUOTES: [string, string][] = [
   ["I'm an entrepreneur with multiple streams—advisory, workshops, and project work. Creators have had link-in-bio checkout tools for years, and I needed that exact same capability for my professional services. Marquee gives me one link where clients can see my rates and pay me directly.", "The entrepreneur"],
 ];
 
-const PILLARS = [
-  { h: "Identity", lead: "Who you are, beyond the resume and chronological work history.", body: "Marquee captures the full story—your experience, your impact, skills, superpowers, values, and the way you lead.", li: ["Skills & superpowers", "Real-world impact", "How you lead & what you value", "What you're building next", "What you're open to"] },
-  { h: "Discovery", lead: "Found for who you are today, not where you worked yesterday.", body: "Marquee handles discovery differently—focusing on your skills, how you choose to engage, whether you're open right now, and direct requests that put you first.", li: ["Searchable by skill & expertise", "Searchable by how you engage", "Searchable by availability", "No feed, no InMail, no spam", "Every request reaches you first"] },
-  { h: "Opportunity", lead: "Monetize your expertise.", body: "Every way to work with you on a single page, complete with your rates, so you can earn income from your expertise.", li: ["Consulting, advisory, & fractional roles", "Speaking & office hours", "Digital products, workshops, & courses", "Your custom storefront", "Your terms, your rates"] },
-];
-
 const STEPS = [
-  ["01", "Import your resume", "We parse your work history into a clean starting structure so you aren't building from scratch."],
-  ["02", "Build your profile", "Answer targeted questions about your experience, how you lead, and your impact."],
-  ["03", "Build your brand", "Add your media, products, the ways people can work with you, and your rates."],
-  ["04", "Share one link", "Put marquee.bio/yourname in your bios and email signature so people can find you, hire you, and book your time."],
+  ["Scan what you already have.", "Marquee scans your website, resume, LinkedIn, podcast and media, and helps you populate your pages and links."],
+  ["Build your bio.", "Answer specific questions about your work history, professional skills, leadership and impact."],
+  ["Build your storefront.", "Add the ways people can work with you, your rates and availability, and the products you sell."],
+  ["Share your links.", "Put marquee.bio/yourname in your bios, your signature and everywhere you show up."],
+  ["Get booked, hired and paid.", "Bookings, requests and sales come straight to you, with the payments handled."],
 ];
 
-const MATRIX: [string, string, boolean[]][] = [
-  ["Fractional leadership", "Monthly retainer", [true, true, false, false]],
-  ["Advisory", "Hourly or retainer", [true, true, true, false]],
-  ["Consulting & projects", "Per project", [true, true, false, false]],
-  ["Speaking", "Per engagement", [true, true, false, true]],
-  ["Office hours", "Per session", [true, false, true, false]],
-  ["Board seats", "Terms by conversation", [false, true, false, false]],
-  ["Courses", "One-time", [true, false, true, true]],
-  ["Workshops", "Per group or seat", [true, true, true, false]],
-  ["Digital products", "Ebooks, templates, tools", [true, false, true, true]],
-  ["Membership", "Recurring", [true, false, false, true]],
-  ["Your storefront", "Everything in one place", [true, false, true, true]],
-];
 
-const STATS = [
-  ["75%", "of resumes are never seen by a person.", "Resume.org"],
-  ["85%", "of employers have adopted skills-based hiring.", "2025"],
-  ["93%", "of talent professionals say assessing skills is crucial.", "LinkedIn"],
-  ["77%", "of recruiters rely on LinkedIn, where discovery stops at a job title.", "Jobvite"],
-  ["50%", "of professionals will have portfolio careers by 2030.", "OECD"],
-  ["1 in 3", "working Americans now have a side hustle.", "MarketWatch"],
-];
 
 const FAQS = [
   ["Is this a replacement for LinkedIn?", "No. LinkedIn is where your network lives, and it does that well. Marquee is where your work lives: what you do, how you work, what you charge, and how someone books you. Most people keep both and put their Marquee link in their LinkedIn bio."],
@@ -98,178 +80,94 @@ export default function HomePage() {
       <section className={`${SECTION} pt-[clamp(48px,6vw,86px)]`}>
         <div className={`${WRAP} grid md:grid-cols-[1.1fr_.9fr] gap-[clamp(30px,5vw,72px)] items-center`}>
           <div>
-            <div className={EYEBROW}>The professional identity platform</div>
-            <h1 className={`${H1} mt-[18px]`}>Your work deserves the spotlight.</h1>
-            <div className={`${SCRIPT} text-dred my-[18px]`}>Be known. Not filtered.</div>
-            <p className={`${LEDE} max-w-[560px]`}>Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile. One link.</p>
-            <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center gap-3 mt-8">
-              <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred`}>Sign Up Now</Link>
-              <a href="#blueprint" className={`${BTN} !border-ink text-ink hover:bg-ink hover:text-white`}>Get Free Career Blueprint</a>
+            <h1 className={H1}>One place for every way you work and earn.</h1>
+            <p className="text-[clamp(17px,2.2vw,22px)] font-semibold leading-[1.4] mt-[18px] max-w-[600px]">Your professional profile, link-in-bio, and storefront.</p>
+            <p className={`${LEDE} mt-4 max-w-[600px]`}>Showcase your work, skills, and expertise. Offer services, get hired, book clients, and sell products&mdash;all from your Marquee.</p>
+            <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center gap-4 mt-8">
+              <Link href="/join" className={`${BTN} bg-red text-white hover:bg-dred`}>Claim Yours &rarr;</Link>
+              <span className="text-[16px]"><b>marquee.bio/</b><span className="text-ink/50">yourname</span></span>
             </div>
-            <p className="text-[13px] font-semibold text-dred mt-4">Private beta is open now. Access is limited.</p>
           </div>
-          <div className="hidden md:flex justify-center">
-            <PhonePreview />
+          <div className="hidden md:block">
+            <HeroVisual />
           </div>
         </div>
       </section>
 
-      {/* ── QUOTE ROTATOR (beige) ── */}
-      <section className="bg-beige py-[clamp(44px,5vw,72px)]">
-        <div className={`${WRAP} grid md:grid-cols-[200px_1fr] gap-[clamp(20px,4vw,50px)] items-center`}>
-          <div className={EYEBROW}>Who we&apos;re<br />building for</div>
-          <div>
-            <div className="min-h-[190px] flex flex-col justify-center">
-              <div className="font-lora text-[clamp(19px,1.75vw,25px)] leading-[1.42]">&ldquo;{QUOTES[q][0]}&rdquo;</div>
-              <div className="text-[11.5px] font-bold tracking-[0.14em] uppercase text-dred mt-[18px]">{QUOTES[q][1]}</div>
-            </div>
-            <div className="flex gap-[10px] items-center mt-[22px]">
-              <button onClick={() => setQ((i) => (i - 1 + QUOTES.length) % QUOTES.length)} aria-label="Previous" className="w-[38px] h-[38px] rounded-full border-[1.5px] border-dred text-dred text-[16px] hover:bg-dred hover:text-white transition-colors">←</button>
-              <button onClick={() => setQ((i) => (i + 1) % QUOTES.length)} aria-label="Next" className="w-[38px] h-[38px] rounded-full border-[1.5px] border-dred text-dred text-[16px] hover:bg-dred hover:text-white transition-colors">→</button>
-              <div className="flex gap-[7px] ml-2">
-                {QUOTES.map((_, n) => <button key={n} onClick={() => setQ(n)} aria-label={`Quote ${n + 1}`} className={`w-[7px] h-[7px] rounded-full ${n === q ? "bg-dred" : "bg-dred/30"}`} />)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── WHAT MARQUEE IS (white) ── */}
-      <section id="what" className={SECTION}>
+      {/* ── WHO IT IS FOR (white): pick yourself ── */}
+      <section id="for" className={`${SECTION} bg-beige`}>
         <div className={WRAP}>
-          <div className={EYEBROW}>What Marquee is</div>
-          <h2 className={`${H2} mt-4 max-w-[980px]`}>Three elements of your career that have never lived in one place.</h2>
-          <p className={`${LEDE} mt-4 max-w-[840px]`}>On Marquee, they unite into a single profile so you can be known, get discovered and get paid.</p>
-          <div className="grid md:grid-cols-3 gap-5 mt-11">
-            {PILLARS.map((p) => (
-              <div key={p.h} className="bg-beige border border-beigeLine rounded-[10px] p-[34px]">
-                <h3 className={`${H3} text-dred mb-3`}>{p.h}</h3>
-                <p className="text-[15px] leading-[1.6]"><strong>{p.lead}</strong> {p.body}</p>
-                <ul className="mt-[18px]">
-                  {p.li.map((l) => (
-                    <li key={l} className="text-[14.5px] py-[9px] border-b border-beigeLine last:border-0 flex gap-[10px] items-start">
-                      <span className="w-[6px] h-[6px] rounded-full bg-red mt-2 shrink-0" />{l}
-                    </li>
-                  ))}
-                </ul>
+          <h2 className={`${H2} max-w-[900px]`}>Who it&apos;s for.</h2>
+          <p className={`${LEDE} mt-4 max-w-[720px]`}>For professionals who want to bring together all the ways they work, offer services, and monetize their expertise.</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            {FOR.map((f) => (
+              <div key={f.h} className="bg-[#EDE7FF] rounded-[12px] p-[clamp(20px,2vw,28px)] min-h-[210px] flex flex-col justify-between">
+                <div className="font-lora font-normal leading-[1.12] text-[clamp(22px,1.8vw,26px)]">{f.h}</div>
+                <div className="text-[14px] leading-[1.55] mt-5 text-ink/85">{f.body}</div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── WHAT YOU GET (white): four stacking cards ── */}
+      <section id="what" className={SECTION}>
+        <div className={WRAP}>
+          <h2 className={`${H2} max-w-[980px]`}>What you get.</h2>
+          <p className={`${LEDE} mt-4 max-w-[720px]`}>From your professional profile to your digital storefront. More ways to work. More opportunities.</p>
+          <Showcase />
+        </div>
+      </section>
+
+      {/* ── INSIDE (wine): everything a Marquee holds ── */}
+      <section id="inside" className={`${SECTION} bg-dred text-white`}>
+        <div className={WRAP}>
+          <h2 className={`${H2} max-w-[900px]`}>Our features.</h2>
+          <p className={`${LEDE} mt-4 max-w-[720px] text-white/85`}>Everything you need to showcase your experience, get booked, and get paid. All in one place.</p>
+          <Inside />
         </div>
       </section>
 
       {/* ── HOW IT WORKS (blue) ── */}
-      <section id="how" className={`${SECTION} bg-blue`}>
+      <section id="how" className={`${SECTION} bg-[#EDE7FF]`}>
         <div className={WRAP}>
-          <div className={EYEBROW}>How it works</div>
-          <h2 className={`${H2} mt-4`}>Four simple steps.</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-12 mt-14">
-            {STEPS.map(([n, h, b]) => (
-              <div key={n}>
-                <div className="font-lora text-[clamp(40px,4vw,52px)] text-dred leading-none">{n}</div>
-                <h3 className="font-lora text-[22px] leading-[1.2] mt-4 mb-2">{h}</h3>
-                <p className="text-[15px] leading-[1.6] text-ink/75">{b}</p>
-              </div>
+          <h2 className={H2}>How it works.</h2>
+          <p className={`${LEDE} mt-4 max-w-[720px]`}>From your existing content to a personalized Marquee, ready to share in just a few simple steps.</p>
+          <ol className="grid md:grid-cols-5 gap-3 mt-10">
+            {STEPS.map(([h, b], i) => (
+              <li key={h} className="relative bg-white rounded-[14px] p-[22px] md:p-[24px]">
+                {i < STEPS.length - 1 && <span aria-hidden className="hidden md:block absolute -right-[14px] top-[24px] z-10 text-[18px] leading-none text-ink/35">&rarr;</span>}
+                <h3 className="font-lora font-normal leading-[1.15] text-[clamp(20px,1.6vw,23px)]">{h}</h3>
+                <p className="text-[14px] leading-[1.55] mt-3 text-ink/80">{b}</p>
+              </li>
             ))}
-          </div>
-          <div className="text-center mt-14">
-            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-dred">Your personalized professional link</div>
-            <div className={`${SCRIPT} text-dred mt-2`}>marquee.bio/yourname</div>
-          </div>
+          </ol>
         </div>
       </section>
 
       {/* ── PRICING (beige) ── */}
-      <section id="pricing" className={`${SECTION} bg-beige`}>
+      <section id="pricing" className={SECTION}>
         <div className={`${WRAP} text-center`}>
-          <div className={EYEBROW}>What it costs</div>
-          <h2 className={`${H2} mt-4`}>Pricing.</h2>
-          <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Join now as a Founding Member for $20/month, or get reminded when Marquee Pro opens December 1.</p>
-          <Pricing />
+          <h2 className={H2}>Beta pricing.</h2>
+          <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Join now as a Founding Member for $20/month, and keep that price for as long as your membership is active.</p>
+          <Pricing mode="home" />
+          <p className="text-[14px] text-ink/70 mt-7">When the beta closes, Marquee Pro will be $29/month or $279/year. <Link href="/pricing" className="underline underline-offset-2 text-ink hover:text-dred">See full pricing &rarr;</Link></p>
         </div>
       </section>
 
-      {/* ── MONETIZE (white) ── */}
-      <section id="earn" className={SECTION}>
+      {/* ── COMPARED (beige): Marquee next to what people use today ── */}
+      <section id="compare" className={`${SECTION} bg-beige`}>
         <div className={WRAP}>
-          <div className={EYEBROW}>Monetize your expertise</div>
-          <h2 className={`${H2} mt-4 max-w-[940px]`}>You&apos;ve built the expertise. Now turn it into income.</h2>
-          <p className={`${LEDE} mt-4 max-w-[860px]`}>You already solve problems faster than most, lead rooms, and give high-value advice. Marquee lets you package that knowledge, set your rates, and sell your time or products in one place.</p>
-          <div className="mt-[34px]">
-            <table className="w-full border-collapse bg-white rounded-[10px] overflow-hidden table-fixed">
-              <thead>
-                <tr>
-                  {["Ways to work with you", "Set a rate", "Request a proposal", "Book & pay here", "Link out"].map((h, i) => (
-                    <th key={h} className={`font-bold tracking-[0.05em] md:tracking-[0.1em] uppercase text-dred text-[8.5px] md:text-[11.5px] leading-tight p-[7px_3px] md:p-[16px_10px] border-b-[1.5px] border-dred align-bottom ${i === 0 ? "text-left pl-[10px] md:pl-[22px] w-[34%]" : "text-center"}`}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {MATRIX.map(([label, sub, dots], r) => (
-                  <tr key={label} className={r % 2 === 0 ? "bg-beige" : ""}>
-                    <td className="p-[8px_4px] md:p-[14px_10px] pl-[10px] md:pl-[22px] text-left font-semibold text-[11.5px] md:text-[15px] leading-tight border-b border-beigeLine">
-                      {label}<small className="block font-normal text-[9.5px] md:text-[12.5px] text-dred mt-[2px]">{sub}</small>
-                    </td>
-                    {dots.map((on, c) => (
-                      <td key={c} className="p-[8px_3px] md:p-[14px_10px] text-center border-b border-beigeLine">
-                        <span className={`inline-block w-2 h-2 md:w-3 md:h-3 rounded-full ${on ? "bg-red" : "border-[1.5px] border-beigeLine"}`} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="text-center">
+            <h2 className={`${H2} max-w-[900px] mx-auto`}>The all-in-one business hub for professionals.</h2>
+            <p className={`${LEDE} mt-4 max-w-[760px] mx-auto`}>Bring together everything you need to showcase your expertise, work with clients, and sell your products and services.</p>
           </div>
+          <Compare />
         </div>
       </section>
 
-      {/* ── CAREER BLUEPRINT (dark red) ── */}
-      <section id="blueprint" className={`${SECTION} bg-dred text-white`}>
-        <div className={`${WRAP} grid md:grid-cols-2 gap-[clamp(26px,4vw,58px)] items-center`}>
-          <div>
-            <div className="text-[12px] font-bold tracking-[0.18em] uppercase text-white/80">The Career Blueprint</div>
-            <h2 className={`${H2} mt-4`}>Most career advice starts with the job. This starts with you.</h2>
-            <p className={`${LEDE} mt-6`}>When you&apos;ve been doing the same work for years, or you&apos;re making a career pivot, it&apos;s hard to see your own experience objectively. You&apos;re often too close to recognize what makes you valuable, where your greatest opportunities are, or how everything you&apos;ve built connects to what&apos;s next.</p>
-            <p className={`${LEDE} mt-[14px]`}>Uncover your passions, purpose, and goals, then translate them into a clear direction and a plan.</p>
-            <div className="mt-8"><a href="#apply" className={`${BTN} bg-white text-dred`}>Get Free Career Blueprint</a></div>
-          </div>
-          <div>
-            {[["Step 1", "The Discovery", "35 guided questions designed to map your unique passions, values, and strengths."], ["Step 2", "The Assessment", "Analyzes your experience to identify patterns, surface key leverage, and clarify your core strengths."], ["Step 3", "Your 30-Day Blueprint", "A personalized roadmap with clear recommendations to strengthen your professional brand, increase your visibility, uncover new opportunities, and grow your income."]].map(([s, h, p]) => (
-              <div key={s} className="bg-white text-ink rounded-[10px] p-[24px_26px] mb-[14px] last:mb-0 flex gap-[18px] items-start">
-                <div className="w-[46px] h-[46px] rounded-[10px] bg-beige flex items-center justify-center shrink-0 text-dred font-lora text-[18px]">{s.split(" ")[1]}</div>
-                <div>
-                  <div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-dred">{s}</div>
-                  <h3 className="font-lora text-[22px] mt-1 mb-[7px]">{h}</h3>
-                  <p className="text-[14.5px] leading-[1.55]">{p}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── WHY NOW (white) ── */}
-      <section className={SECTION}>
-        <div className={WRAP}>
-          <div className={EYEBROW}>Why now</div>
-          <h2 className={`${H2} mt-4 max-w-[1000px]`}>The rules of work are being rewritten. Humans need a modern professional identity platform.</h2>
-          <p className={`${LEDE} mt-5 max-w-[900px]`}>Somewhere between ATS filters, AI noise, LinkedIn cringe, and the fading corporate ladder, hiring got less human.</p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-[18px] mt-10">
-            {STATS.map(([v, l, s]) => (
-              <div key={l} className="bg-beige border border-beigeLine rounded-[10px] p-[28px]">
-                <div className="font-lora text-dred leading-none text-[clamp(25px,4vw,42px)]">{v}</div>
-                <div className="text-[15px] leading-[1.5] mt-3">{l}</div>
-                <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-dred/70 mt-3">{s}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* "For businesses & recruiters" and "The professional stack" are archived in components/archive/HomeSections.tsx */}
-
-      {/* ── FAQ (beige) ── */}
-      <section className="py-[clamp(32px,5vw,68px)] bg-beige">
+      {/* ── FAQ (white) ── */}
+      <section className="py-[clamp(32px,5vw,68px)]">
         <div className={WRAP}>
           <div className={EYEBROW}>FAQ</div>
           <div className="mt-6 max-w-[900px]">
@@ -285,15 +183,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CLOSING CTA (red) ── */}
-      <section id="apply" className={`${SECTION} bg-red text-white`}>
+      {/* ── CLOSING CTA (wine) ── */}
+      <section id="apply" className={`${SECTION} bg-dred text-white`}>
         <div className={`${WRAP} text-center`}>
-          <h2 className={`${H2} max-w-[940px] mx-auto`}>Your professional identity in one link.</h2>
-          <div className={`${SCRIPT} mt-[18px]`}>marquee.bio/yourname</div>
-          <div className="flex flex-wrap gap-3 justify-center mt-8">
-            <Link href="/join" className={`${BTN} bg-white text-dred`}>Sign Up Now</Link>
-            <a href="#blueprint" className={`${BTN} !border-white/70 text-white`}>Get Free Career Blueprint</a>
-          </div>
+          <h2 className={H2}>Claim your Marquee.</h2>
+          <div className={`${SCRIPT} mt-5`}>marquee.bio/yourname</div>
+          <div className="mt-8"><Link href="/join" className={`${BTN} bg-red text-white hover:bg-white hover:text-dred`}>Sign Up Now</Link></div>
         </div>
       </section>
 
@@ -315,9 +210,9 @@ export default function HomePage() {
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><a href="#what" className="hover:text-dred">What it is</a></li>
                 <li><a href="#how" className="hover:text-dred">How it works</a></li>
-                <li><a href="#pricing" className="hover:text-dred">Pricing</a></li>
-                <li><a href="#earn" className="hover:text-dred">Monetize your expertise</a></li>
-                <li><a href="#blueprint" className="hover:text-dred">Career Blueprint</a></li>
+                <li><Link href="/pricing" className="hover:text-dred">Pricing</Link></li>
+                <li><Link href="/pricing#earn" className="hover:text-dred">Monetize your expertise</Link></li>
+                <li><Link href="/blueprint" className="hover:text-dred">Career Blueprint</Link></li>
               </ul>
             </div>
             <div>
@@ -344,20 +239,130 @@ export default function HomePage() {
 
 // Hero phone frame. If NEXT_PUBLIC_PROFILE_EMBED_URL is set (deployed profile app, or
 // localhost in dev), iframe the REAL profile; otherwise render a prod-safe self-contained mock.
-function PhonePreview() {
-  const src = process.env.NEXT_PUBLIC_PROFILE_EMBED_URL;
+/* The four things you get: four cards that stack as you scroll, one word each, in brand colour. */
+const BLOCKS = [
+  { word: "Your profile", h: "Your Complete Professional Profile", body: "Bring together all of your professional experience, skills, clients, projects, portfolio, and media in a profile that reflects everything you know and have to offer." },
+  { word: "Your services", h: "Every Way to Work With You", body: "From consulting and freelance projects to fractional roles, advisory, speaking, coaching, and 1:1 sessions. Present your services, rates, and availability, and let clients hire or book you directly." },
+  { word: "Your storefront", h: "Your Storefront", body: "Sell events, courses, workshops, subscriptions, digital products, and more through a personalized storefront with integrated payments." },
+  { word: "Your opportunities", h: "Professional Discovery", soon: true, body: "Get found, hired, and booked through the first professional intelligence platform powered by a comprehensive graph of experience, skills, expertise, services, and rates." },
+];
+function Showcase() {
   return (
-    <div className="relative w-[210px] sm:w-[248px] md:w-[278px] max-w-full aspect-[9/17.5] border-[9px] sm:border-[10px] border-ink rounded-[34px] sm:rounded-[40px] bg-white shadow-[0_26px_60px_rgba(17,17,17,0.16)] overflow-hidden mx-auto">
-      <div className="absolute top-[12px] sm:top-[14px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[104px] h-[20px] sm:h-[22px] bg-ink rounded-full z-20" />
-      {src ? (
-        <iframe src={src} title="Marquee profile preview" loading="lazy" tabIndex={-1} className="w-full h-full border-0 block" />
-      ) : (
-        <div className="h-full flex flex-col items-center justify-center bg-beige px-7 text-center">
-          <div className="font-lora text-[27px] leading-[1.12] text-ink">Claim your<br />Marquee.</div>
-          <div className="mt-5 w-full rounded-full bg-white border border-beigeLine px-4 py-[10px] text-[12.5px] text-gray">marquee.bio/<span className="font-bold text-ink">yourname</span></div>
-          <button className="mt-3 w-full rounded-full bg-dred text-white text-[13px] font-semibold py-[11px]">Claim yours</button>
+    <div className="grid md:grid-cols-2 gap-4 mt-10">
+      {BLOCKS.map((b, i) => (
+        <div key={b.word} className="bg-beige border border-beigeLine rounded-[14px] px-[clamp(22px,3vw,40px)] py-[clamp(24px,2.6vw,34px)] min-h-[250px] flex flex-col justify-between">
+          <div className="font-lora leading-[1] tracking-[-0.02em] text-[clamp(34px,3.6vw,52px)] text-ink">{b.word}.</div>
+          <div className="mt-6">
+            <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred mb-2">0{i + 1} &middot; {b.h}</div>
+            <p className="text-[15px] leading-[1.6] text-ink/85 max-w-[56ch]">{b.body}</p>
+            {b.soon && <span className="inline-block mt-4 text-[10px] font-bold tracking-[0.14em] uppercase bg-[#C7B5FF] text-ink rounded-full px-[9px] py-[4px]">Discovery coming soon</span>}
+          </div>
         </div>
-      )}
+      ))}
+    </div>
+  );
+}
+
+/* Everything inside a Marquee: ten things, with a small line drawing each. Longer ones sit beside longer ones so the rows stay level. */
+const ICON: Record<string, string> = {
+  profile: "M4 4h16v16H4z M9 13a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M7 20c1-3 9-3 10 0",
+  portfolio: "M3 7h18v13H3z M8 7V4h8v3 M3 13h18",
+  services: "M4 5h16v15H4z M4 10h16 M8 3v4 M16 3v4 M9 15l2 2 4-4",
+  storefront: "M3 9l2-5h14l2 5 M3 9v11h18V9 M9 20v-6h6v6",
+  media: "M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M6 11a6 6 0 0 0 12 0 M12 17v4 M9 21h6",
+  links: "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.5 1.5 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5",
+  testimonials: "M4 4h16v12H8l-4 4z M9 9l2 2 4-4",
+  analytics: "M4 20V10 M10 20V4 M16 20v-7 M22 20H2",
+  brands: "M3 7h18v13H3z M9 7V4h6v3 M3 12h18 M12 10v4",
+  design: "M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-2 0-3 3 0 3-2a9 9 0 0 0-5-11z M8 10h.01 M12 7h.01 M16 10h.01",
+};
+const FEATURES = [
+  { i: "profile", h: "A complete professional profile", body: "Showcase your career experience, skills, leadership, impact, and expertise in a profile built for AI-powered professional discovery." },
+  { i: "services", h: "Services & expert sessions", body: "Offer consulting, advisory, expert calls, coaching, speaking, and other professional engagements. Set rates and availability for direct bookings." },
+  { i: "links", h: "Links & social channels", body: "Drive traffic to your website, business, newsletter, social accounts, affiliate pages, and other destinations." },
+  { i: "brands", h: "Manage your brands & businesses", body: "Create and manage multiple Marquees for yourself, your businesses, and your brands—all from one account." },
+  { i: "testimonials", h: "Testimonials & recommendations", body: "Share client testimonials, professional recommendations, and endorsements to build credibility." },
+  { i: "analytics", h: "Analytics & business insights", body: "Track visitors, contacts, bookings, purchases, customers, sales, and revenue." },
+  { i: "portfolio", h: "Portfolio & featured work", body: "Showcase clients, projects, case studies, and examples of your work." },
+  { i: "storefront", h: "Your storefront", body: "Sell digital products, workshops, courses, events, and subscriptions." },
+  { i: "media", h: "Media & features", body: "Feature articles, podcasts, interviews, videos, press, and other media." },
+  { i: "design", h: "Your brand, your design", body: "Customize the look and feel of your Marquee to reflect your personal or business brand.", tag: "Coming soon" },
+];
+function Inside() {
+  return (
+    <div className="grid md:grid-cols-2 gap-x-[clamp(28px,5vw,80px)] gap-y-2 mt-10">
+      {FEATURES.map((f) => (
+        <div key={f.h} className="flex gap-5 py-7 border-t border-white/25">
+          <span className="shrink-0 w-[48px] h-[48px] rounded-full bg-white text-dred flex items-center justify-center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={ICON[f.i]} /></svg>
+          </span>
+          <div>
+            <h3 className="font-lora font-normal leading-[1.15] text-[clamp(21px,1.8vw,26px)]">{f.h}</h3>
+            <p className="text-[15px] leading-[1.6] mt-2 opacity-85 max-w-[46ch]">{f.body}</p>
+            {f.tag && <span className="inline-block mt-3 text-[10.5px] font-bold tracking-[0.14em] uppercase bg-[#C7B5FF] text-ink rounded-full px-[10px] py-[5px]">{f.tag}</span>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* Why Marquee: the separate tools people pay for today, and the one place that replaces them. */
+const TOOLS = [["Linktree", "Links & social channels", "/images/tools/linktree.svg", "#111111"], ["Calendly", "Scheduling & bookings", "/images/tools/calendly.svg", "#006BFF"], ["intro.co", "Paid expert sessions", "", "#111111"], ["Squarespace", "Website & portfolio", "/images/tools/squarespace.svg", "#111111"], ["Shopify", "Storefront & commerce", "/images/tools/shopify.svg", "#96BF48"]];
+function Compare() {
+  return (
+    <div className="mt-10 max-w-[1100px] mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {TOOLS.map(([n, d, src, color]) => (
+          <div key={n} className="bg-white border border-beigeLine rounded-[14px] px-4 py-6 text-center">
+            <span className="inline-flex h-[40px] items-center justify-center">
+              {src ? <span className="block w-[34px] h-[34px]" style={{ backgroundColor: color, WebkitMaskImage: `url(${src})`, maskImage: `url(${src})`, WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskPosition: "center", maskPosition: "center" }} aria-hidden />
+                   : <span className="font-sans font-bold text-[22px] tracking-[-0.02em]">intro.co</span>}
+            </span>
+            <div className="font-semibold text-[15.5px] mt-3">{src ? n : "\u00a0"}</div>
+            <div className="text-[13px] leading-[1.4] text-ink/65 mt-1">{d}</div>
+          </div>
+        ))}
+      </div>
+      <svg aria-hidden viewBox="0 0 1000 90" className="hidden md:block w-full h-[90px]" fill="none" stroke="#111111" strokeWidth="1.5">
+        <path d="M100 0 C100 50 500 30 500 84" /><path d="M300 0 C300 50 500 30 500 84" /><path d="M500 0 V84" /><path d="M700 0 C700 50 500 30 500 84" /><path d="M900 0 C900 50 500 30 500 84" />
+        <circle cx="500" cy="84" r="5" fill="#111111" stroke="none" />
+      </svg>
+      <div className="bg-dred text-white rounded-[999px] px-[clamp(28px,4vw,56px)] py-[20px] text-center mt-4 md:mt-0 w-fit mx-auto">
+        <div className="font-sans font-medium tracking-[0.3em] text-[clamp(18px,2vw,26px)] leading-none">MARQUEE</div>
+      </div>
+    </div>
+  );
+}
+
+/* The hero example: a real profile on a computer, its links page on a phone, and what happens on it. The cards turn through real kinds of activity. */
+const HERO_ACTIONS: [string, string][] = [
+  ["New opportunity", "Fractional CMO \u00b7 6-month engagement"],
+  ["New booking", "60-min Strategy Session \u00b7 $150 \u00b7 Dec 1, 12:00 PM ET"],
+  ["New sale", "Leadership workshop $499"],
+  ["New request", "Speaking Engagement $1000"],
+  ["New opportunity", "Advisory Board Invitation"],
+  ["Booked", "1:1 Call \u00b7 $150 \u00b7 Nov 14, 3:00 PM ET"],
+];
+function HeroVisual() {
+  const [t, setT] = useState(0);
+  useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3200); return () => clearInterval(id); }, []);
+  const n = HERO_ACTIONS.length;
+  const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 1) % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 3) % n], HERO_ACTIONS[(t + 4) % n]];
+  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-4 py-3 text-[12.5px] leading-[1.35] hv-card";
+  const tag = "block text-[10px] font-bold tracking-[0.12em] uppercase text-dred mb-[2px]";
+  const pos = ["left-[4%] top-[-6px]", "left-[2%] top-[30%]", "right-[12%] top-[13%]", "left-[4%] bottom-[0%]", "right-[0%] top-[50%]"];
+  return (
+    <div className="relative w-full max-w-[640px] mx-auto aspect-[640/520] hero-visual">
+      <div className="absolute left-0 top-[26px] w-[82%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+        <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
+      </div>
+      <div className="absolute right-0 bottom-0 w-[31%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+        <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
+      </div>
+      {slots.map(([k, v], i) => (
+        <div key={`${i}-${t}`} className={`${card} ${pos[i]} hv-swap`}><span className={tag}>{k}</span>{v}</div>
+      ))}
     </div>
   );
 }
