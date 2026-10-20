@@ -45,9 +45,14 @@ const STEPS = [
 
 const FAQS = [
   ["Is this a replacement for LinkedIn?", "No. LinkedIn is where your network lives, and it does that well. Marquee is where your work lives: what you do, how you work, what you charge, and how someone books you. Most people keep both and put their Marquee link in their LinkedIn bio."],
-  ["Who is Marquee for?", "Anyone whose value does not fit on one line. Fractional executives, consultants, coaches, advisors, founders, creators, and people in full-time roles who also advise, speak, teach, or sell. If you earn from more than one thing, or you plan to, this was built for you."],
-  ["Who can see my profile?", "You decide. The Career Blueprint produces two things: a private read only you see, including your constraints and what you need to earn, and a public profile with what you choose to show. Nothing moves from one to the other without you."],
-  ["When is it live?", "The Career Blueprint is live now and free. Profiles are in private beta and open now to Founding Members. Access is limited. Marquee Pro opens December 1."],
+  ["Who is Marquee for?", "Anyone whose value does not fit on one line. Fractional executives, consultants, coaches, advisors, founders, creators, and people in full-time roles who also advise, speak, write or sell."],
+  ["Do I need an invite code?", "Yes, during the beta. Request one on the join page and we send it within a day. It gives you your first month free."],
+  ["What does it cost after the beta?", "Founding Members keep $20 a month or $200 a year for as long as their membership is active. Marquee Pro will be $29 a month or $279 a year."],
+  ["Can I take bookings and sell products?", "Yes. Set your rates and availability, and sell workshops, courses, downloads and events from your storefront. Today there is no Marquee fee on bookings or sales. You pay only the card processing cost."],
+  ["What do analytics include?", "Visits to your pages over the last 30 days, how many people that was, where they came from, what they looked at, phone or computer, and country. Plus every booking, sale and customer, with the amounts."],
+  ["Can I have a page for my business too?", "Yes. Each business gets its own address under your account."],
+  ["Who can see my profile?", "Anyone with your link. Everything you publish is public, and anything you hide stays off the page while still counting for search. Nothing is shown until you press Publish."],
+  ["Can I cancel?", "Yes, any time, from your account. Your membership stays active until the end of the period you have paid for, and your pages stay up until then. If you come back later, the Founding Member price will no longer be available."],
 ];
 
 export default function HomePage() {
@@ -170,16 +175,7 @@ export default function HomePage() {
       <section className="py-[clamp(32px,5vw,68px)]">
         <div className={WRAP}>
           <div className={EYEBROW}>FAQ</div>
-          <div className="mt-6 max-w-[900px]">
-            {FAQS.map(([q, a], i) => (
-              <details key={q} open={i === 0} className="border-b border-hair py-[18px] group">
-                <summary className="text-[18px] font-semibold cursor-pointer list-none flex justify-between gap-5 [&::-webkit-details-marker]:hidden">
-                  {q}<span className="text-red text-[24px] leading-none group-open:hidden">+</span><span className="text-red text-[24px] leading-none hidden group-open:inline">–</span>
-                </summary>
-                <p className="mt-3 max-w-[760px] text-[15px] leading-[1.6]">{a}</p>
-              </details>
-            ))}
-          </div>
+          <Faq />
         </div>
       </section>
 
@@ -293,7 +289,7 @@ function Inside() {
   return (
     <div className="grid md:grid-cols-2 gap-x-[clamp(28px,5vw,80px)] gap-y-2 mt-10">
       {FEATURES.map((f) => (
-        <div key={f.h} className="flex gap-5 py-7 border-t border-white/25">
+        <div key={f.h} className="flex gap-5 py-6">
           <span className="shrink-0 w-[48px] h-[48px] rounded-full bg-white text-dred flex items-center justify-center">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={ICON[f.i]} /></svg>
           </span>
@@ -336,6 +332,25 @@ function Compare() {
   );
 }
 
+/* The FAQ: every answer closed, four questions shown, the rest behind one link. */
+function Faq() {
+  const [all, setAll] = useState(false);
+  const shown = all ? FAQS : FAQS.slice(0, 2);
+  return (
+    <div className="mt-6 max-w-[900px]">
+      {shown.map(([q, a]) => (
+        <details key={q} className="border-b border-hair py-[18px] group">
+          <summary className="text-[18px] font-semibold cursor-pointer list-none flex justify-between gap-5 [&::-webkit-details-marker]:hidden">
+            {q}<span className="text-red text-[24px] leading-none group-open:hidden">+</span><span className="text-red text-[24px] leading-none hidden group-open:inline">&ndash;</span>
+          </summary>
+          <p className="mt-3 max-w-[760px] text-[15px] leading-[1.6]">{a}</p>
+        </details>
+      ))}
+      {!all && <button type="button" onClick={() => setAll(true)} className="mt-5 font-semibold text-[14.5px] underline underline-offset-4 hover:text-dred">More questions &darr;</button>}
+    </div>
+  );
+}
+
 /* The hero example: a real profile on a computer, its links page on a phone, and what happens on it. The cards turn through real kinds of activity. */
 const HERO_ACTIONS: [string, string][] = [
   ["New opportunity", "Fractional CMO \u00b7 6-month engagement"],
@@ -352,13 +367,13 @@ function HeroVisual() {
   const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 1) % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 3) % n], HERO_ACTIONS[(t + 4) % n]];
   const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-4 py-[10px] text-[12px] leading-[1.35] hv-card";
   const tag = "block text-[10px] font-bold tracking-[0.12em] uppercase text-dred mb-[2px]";
-  const pos = ["left-[2%] top-[0%]", "left-[0%] top-[38%]", "right-[2%] top-[17%]", "left-[4%] bottom-[1%]", "right-[0%] top-[56%]"];
+  const pos = ["left-[0%] top-[0%]", "left-[-2%] top-[40%]", "right-[-2%] top-[17%]", "left-[2%] bottom-[0%]", "right-[-3%] top-[60%]"];
   return (
-    <div className="relative w-full max-w-[720px] mx-auto aspect-[720/620] hero-visual">
-      <div className="absolute left-0 top-[52px] w-[80%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+    <div className="relative w-full max-w-[760px] mx-auto aspect-[760/700] hero-visual">
+      <div className="absolute left-[4%] top-[70px] w-[76%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
-      <div className="absolute right-0 bottom-0 w-[29%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+      <div className="absolute right-[4%] bottom-[36px] w-[27%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
         <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
       </div>
       {slots.map(([k, v], i) => (

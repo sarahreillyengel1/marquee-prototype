@@ -2,10 +2,10 @@
 //
 // A person opens times on the dates they choose, in their own timezone. A visitor sees them in the
 // visitor's timezone, picks one, and (when the offer has a price and payments are
-// connected) pays at booking. Marquee takes 5% of each paid booking, plus standard payment
+// connected) pays at booking. During the beta Marquee takes no fee; only standard payment
 // processing of 2.9% + 30¢ (what Stripe charges Marquee for the card payment). The rest is the person's.
 
-export const MARQUEE_RATE = 0.05;
+export const MARQUEE_RATE = 0; // no Marquee fee during the beta (Sarah, Oct 20 2026); card processing still applies
 export const PROCESSING_RATE = 0.029;
 export const PROCESSING_FIXED_CENTS = 30;
 /** @deprecated kept for older imports; the fee is now MARQUEE_RATE plus processing */

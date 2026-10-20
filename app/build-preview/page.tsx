@@ -1572,7 +1572,7 @@ export default function BuildPreview() {
           {active === "Shop" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your shop.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Templates, guides, courses, downloads, workshops. Sell them right on your page, with checkout through Marquee, or link out to where they are sold. Marquee takes 5% on sales made here, plus card processing. They show on the Shop page of your profile and can be buttons on your Mobile Links. Sales and customers are in <a href="/analytics" className="underline">Analytics</a>.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">Templates, guides, courses, downloads, workshops. Sell them right on your page, with checkout through Marquee, or link out to where they are sold. Marquee takes no fee on sales during the beta, only card processing. They show on the Shop page of your profile and can be buttons on your Mobile Links. Sales and customers are in <a href="/analytics" className="underline">Analytics</a>.</p>
               <SiteScan mode="shop" website={socials.website} have={products.map((p) => p.url || "").filter(Boolean)} emptySocials={[]}
                 onAdd={(items) => setProducts((m) => [...m.filter((x) => x.title.trim() || (x.url || "").trim()), ...items.map((it) => ({ id: newId(), kind: STORE_KINDS.includes(it.kind) ? it.kind : "Download", title: it.title, blurb: "", price: "", featured: false, url: it.url, sell: "link" as const }))])}
                 onSocials={() => {}} />
