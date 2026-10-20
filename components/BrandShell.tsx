@@ -46,12 +46,12 @@ export default function BrandShell({
               </div>
             </div>
             <FooterCol title="Product" links={[
-              { label: "What it is", href: "/#what" },
+              { label: "Who it's for", href: "/#for" },
+              { label: "What you get", href: "/#what" },
+              { label: "Features", href: "/#inside" },
               { label: "How it works", href: "/#how" },
-              { label: "Monetize", href: "/#earn" },
-              { label: "Career Blueprint", href: "/#blueprint" },
-              { label: "Pricing", href: "/#pricing" },
-              { label: "For business", href: "/#business" },
+              { label: "Pricing", href: "/pricing" },
+              { label: "Career Blueprint", href: "/blueprint" },
             ]} />
             <FooterCol title="Company" links={[
               { label: "Spotlight", href: "/spotlight" },

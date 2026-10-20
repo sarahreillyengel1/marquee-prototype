@@ -208,10 +208,11 @@ export default function HomePage() {
             <div>
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Product</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
-                <li><a href="#what" className="hover:text-dred">What it is</a></li>
+                <li><a href="#for" className="hover:text-dred">Who it&apos;s for</a></li>
+                <li><a href="#what" className="hover:text-dred">What you get</a></li>
+                <li><a href="#inside" className="hover:text-dred">Features</a></li>
                 <li><a href="#how" className="hover:text-dred">How it works</a></li>
                 <li><Link href="/pricing" className="hover:text-dred">Pricing</Link></li>
-                <li><Link href="/pricing#earn" className="hover:text-dred">Monetize your expertise</Link></li>
                 <li><Link href="/blueprint" className="hover:text-dred">Career Blueprint</Link></li>
               </ul>
             </div>
@@ -253,7 +254,7 @@ function Showcase() {
         <div key={b.word} className="bg-beige border border-beigeLine rounded-[14px] px-[clamp(22px,3vw,40px)] py-[clamp(24px,2.6vw,34px)] min-h-[250px] flex flex-col justify-between">
           <div className="font-lora leading-[1] tracking-[-0.02em] text-[clamp(34px,3.6vw,52px)] text-ink">{b.word}.</div>
           <div className="mt-6">
-            <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred mb-2">0{i + 1} &middot; {b.h}</div>
+            <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred mb-2">{i + 1} &middot; {b.h}</div>
             <p className="text-[15px] leading-[1.6] text-ink/85 max-w-[56ch]">{b.body}</p>
             {b.soon && <span className="inline-block mt-4 text-[10px] font-bold tracking-[0.14em] uppercase bg-[#C7B5FF] text-ink rounded-full px-[9px] py-[4px]">Discovery coming soon</span>}
           </div>
@@ -349,15 +350,15 @@ function HeroVisual() {
   useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3200); return () => clearInterval(id); }, []);
   const n = HERO_ACTIONS.length;
   const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 1) % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 3) % n], HERO_ACTIONS[(t + 4) % n]];
-  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-4 py-3 text-[12.5px] leading-[1.35] hv-card";
+  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-4 py-[10px] text-[12px] leading-[1.35] hv-card";
   const tag = "block text-[10px] font-bold tracking-[0.12em] uppercase text-dred mb-[2px]";
-  const pos = ["left-[4%] top-[-6px]", "left-[2%] top-[30%]", "right-[12%] top-[13%]", "left-[4%] bottom-[0%]", "right-[0%] top-[50%]"];
+  const pos = ["left-[2%] top-[0%]", "left-[0%] top-[38%]", "right-[2%] top-[17%]", "left-[4%] bottom-[1%]", "right-[0%] top-[56%]"];
   return (
-    <div className="relative w-full max-w-[640px] mx-auto aspect-[640/520] hero-visual">
-      <div className="absolute left-0 top-[26px] w-[82%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+    <div className="relative w-full max-w-[720px] mx-auto aspect-[720/620] hero-visual">
+      <div className="absolute left-0 top-[52px] w-[80%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
-      <div className="absolute right-0 bottom-0 w-[31%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+      <div className="absolute right-0 bottom-0 w-[29%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
         <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
       </div>
       {slots.map(([k, v], i) => (
