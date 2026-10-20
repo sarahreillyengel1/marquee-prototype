@@ -146,7 +146,6 @@ export default function AboutPage() {
           <h2 className={`${H2} max-w-[760px] mx-auto`}>Claim your Marquee.</h2>
           <div className="flex flex-wrap gap-3 justify-center mt-7">
             <Link href="/join" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold bg-white text-dred">Claim Yours &rarr;</Link>
-            <a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="inline-block px-6 py-[13px] rounded-full text-[15px] font-semibold border-[1.5px] border-white/70 text-white">Subscribe to the newsletter</a>
           </div>
         </div>
       </section>
