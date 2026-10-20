@@ -96,6 +96,9 @@ export default function HomePage() {
           <div className="hidden md:block">
             <HeroVisual />
           </div>
+          <div className="md:hidden mt-4">
+            <HeroVisualMobile />
+          </div>
         </div>
       </section>
 
@@ -309,15 +312,15 @@ const TOOLS = [["Linktree", "Links & social channels", "/images/tools/linktree.s
 function Compare() {
   return (
     <div className="mt-10 max-w-[1100px] mx-auto">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         {TOOLS.map(([n, d, src, color]) => (
-          <div key={n} className="bg-white border border-beigeLine rounded-[14px] px-4 py-6 text-center">
-            <span className="inline-flex h-[40px] items-center justify-center">
+          <div key={n} className="bg-white border border-beigeLine rounded-[14px] px-4 py-4 md:py-6 flex md:block items-center gap-4 text-left md:text-center">
+            <span className="inline-flex h-[40px] w-[40px] md:w-auto shrink-0 items-center justify-center">
               {src ? <span className="block w-[34px] h-[34px]" style={{ backgroundColor: color, WebkitMaskImage: `url(${src})`, maskImage: `url(${src})`, WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskPosition: "center", maskPosition: "center" }} aria-hidden />
-                   : <span className="font-sans font-bold text-[22px] tracking-[-0.02em]">intro.co</span>}
+                   : <span className="font-sans font-bold text-[15px] md:text-[22px] tracking-[-0.02em]">intro</span>}
             </span>
-            <div className="font-semibold text-[15.5px] mt-3">{src ? n : "\u00a0"}</div>
-            <div className="text-[13px] leading-[1.4] text-ink/65 mt-1">{d}</div>
+            <div><div className="font-semibold text-[15.5px] md:mt-3">{src ? n : <><span className="md:hidden">intro.co</span><span className="hidden md:inline">&nbsp;</span></>}</div>
+            <div className="text-[13px] leading-[1.4] text-ink/65 mt-0 md:mt-1">{d}</div></div>
           </div>
         ))}
       </div>
@@ -325,9 +328,29 @@ function Compare() {
         <path d="M100 0 C100 50 500 30 500 84" /><path d="M300 0 C300 50 500 30 500 84" /><path d="M500 0 V84" /><path d="M700 0 C700 50 500 30 500 84" /><path d="M900 0 C900 50 500 30 500 84" />
         <circle cx="500" cy="84" r="5" fill="#111111" stroke="none" />
       </svg>
-      <div className="bg-dred text-white rounded-[999px] px-[clamp(28px,4vw,56px)] py-[20px] text-center mt-4 md:mt-0 w-fit mx-auto">
+      <div className="md:hidden w-px h-10 bg-ink mx-auto" />
+      <div className="bg-dred text-white rounded-[999px] px-[clamp(28px,4vw,56px)] py-[20px] text-center md:mt-0 w-fit mx-auto">
         <div className="font-sans font-medium tracking-[0.3em] text-[clamp(18px,2vw,26px)] leading-none">MARQUEE</div>
       </div>
+    </div>
+  );
+}
+
+/* The hero example on a phone: the links page in a phone, two activity cards. */
+function HeroVisualMobile() {
+  const [t, setT] = useState(0);
+  useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3200); return () => clearInterval(id); }, []);
+  const n = HERO_ACTIONS.length;
+  const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 3) % n]];
+  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-3 py-2 text-[11.5px] leading-[1.35] hv-swap";
+  const tag = "block text-[9.5px] font-bold tracking-[0.12em] uppercase text-dred mb-[1px]";
+  return (
+    <div className="relative w-full max-w-[360px] mx-auto aspect-[360/440]">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[18px] w-[52%] aspect-[9/17.4] rounded-[26px] border-[5px] border-ink bg-white overflow-hidden shadow-[0_22px_50px_rgba(17,17,17,0.18)]">
+        <Image src="/images/home/links.jpg" alt="A Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
+      </div>
+      <div key={`a-${t}`} className={`${card} left-0 top-[52%]`}><span className={tag}>{slots[0][0]}</span>{slots[0][1]}</div>
+      <div key={`b-${t}`} className={`${card} right-0 bottom-[10%]`}><span className={tag}>{slots[1][0]}</span>{slots[1][1]}</div>
     </div>
   );
 }
@@ -369,11 +392,11 @@ function HeroVisual() {
   const tag = "block text-[10px] font-bold tracking-[0.12em] uppercase text-dred mb-[2px]";
   const pos = ["left-[0%] top-[0%]", "left-[-2%] top-[40%]", "right-[-2%] top-[17%]", "left-[2%] bottom-[0%]", "right-[-3%] top-[60%]"];
   return (
-    <div className="relative w-full max-w-[760px] mx-auto aspect-[760/700] hero-visual">
-      <div className="absolute left-[4%] top-[70px] w-[76%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+    <div className="relative w-full max-w-[760px] mx-auto aspect-[760/660] hero-visual">
+      <div className="absolute left-0 top-[64px] w-[84%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
-      <div className="absolute right-[4%] bottom-[36px] w-[27%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+      <div className="absolute right-0 bottom-[24px] w-[28%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
         <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
       </div>
       {slots.map(([k, v], i) => (
