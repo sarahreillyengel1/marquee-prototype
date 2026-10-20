@@ -13,6 +13,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Affonso affiliate tracking, first-party: our /r paths proxy to Affonso so content blockers let it through.
+  async rewrites() {
+    return [
+      { source: "/r/pixel.js", destination: "https://cdn.affonso.io/js/pixel.min.js" },
+      { source: "/r/psl.min.js", destination: "https://cdn.affonso.io/js/psl.min.js" },
+      { source: "/r/track", destination: "https://api.affonso.io/v1/track" },
+      { source: "/r/signups", destination: "https://api.affonso.io/v1/signups" },
+    ];
+  },
   // Retired standalone marketing pages — the v7 homepage covers these on-page.
   async redirects() {
     return [

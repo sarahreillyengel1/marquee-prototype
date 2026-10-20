@@ -65,7 +65,9 @@ export default function Join() {
   const pay = async () => {
     setErr(""); setBusy(true);
     try {
-      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref, promo }) });
+      // the affiliate who sent them, if any: Affonso stores it in a cookie when they land through an affiliate link
+      const affonso = (document.cookie.match(/(?:^|; )affonso_referral=([^;]*)/) || [])[1] || "";
+      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref, promo, affonso: decodeURIComponent(affonso) }) });
       const j = await r.json();
       if (j.url) {
         // the code was checked again on the server; if it no longer works, say so instead of charging full price

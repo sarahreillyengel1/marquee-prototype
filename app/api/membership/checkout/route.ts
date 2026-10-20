@@ -17,6 +17,8 @@ export async function POST(req: Request) {
   // who sent them, from marquee.bio/join?ref=<code>
   const ref = String(body.ref || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60);
   const promo = String(body.promo || "").trim().toUpperCase().slice(0, 60);
+  // the Affonso affiliate referral id from their cookie; Stripe passes it to Affonso through its Stripe connection
+  const affonso = String(body.affonso || "").trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
   if (!stripeReady()) return NextResponse.json({ error: "Sign-up isn't switched on yet.", notOpen: true }, { status: 503 });
   try {
     const prices = await foundingPrices(stripe());
@@ -50,7 +52,8 @@ export async function POST(req: Request) {
       line_items: [{ price: prices[plan], quantity: 1 }],
       ...(promoId ? { discounts: [{ promotion_code: promoId }] } : { allow_promotion_codes: true }),
       subscription_data: { metadata: { plan, founding_member: "true" }, description: PLANS[plan].label },
-      metadata: { plan, kind: "membership", ...(ref ? { ref } : {}) },
+      metadata: { plan, kind: "membership", ...(ref ? { ref } : {}), ...(affonso ? { affonso_referral: affonso } : {}) },
+      ...(affonso ? { client_reference_id: affonso } : {}),
       success_url: `${origin}/join/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/join`,
     });

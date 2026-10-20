@@ -3,6 +3,7 @@ import { DM_Serif_Display, DM_Sans, DM_Mono, Inter, Caveat, Lora, Poppins } from
 import localFont from "next/font/local";
 import PageViews from "@/components/PageViews";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import { AuthLinkHandler } from "@/components/AuthLinkHandler";
 import "./globals.css";
 
@@ -86,6 +87,8 @@ export default function RootLayout({
         <PageViews />
         {children}
         <Analytics />
+        {/* Affonso affiliate tracking, served from our own /r paths so blockers let it through (see next.config.mjs). */}
+        <Script src="/r/pixel.js" data-affonso="cmvhc1aul001kba1ks22q1c1n" data-cookie_duration="30" data-api-base="/r" strategy="afterInteractive" />
       </body>
     </html>
   );
