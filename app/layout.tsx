@@ -67,9 +67,9 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Marquee — Your work deserves the spotlight.",
+  title: "Marquee — The all-in-one business hub for professionals.",
   description:
-    "The professional identity platform for human opportunity. Build your brand, share how you work, monetize your expertise, and be discovered by the right people. One profile, one link.",
+    "The all-in-one business hub for professionals. Your professional profile, link-in-bio, and storefront. Showcase your work, skills, and expertise. Offer services, get hired, book clients, and sell products—all from your Marquee.",
 };
 
 export default function RootLayout({

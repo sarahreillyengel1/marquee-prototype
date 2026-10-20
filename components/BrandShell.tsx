@@ -38,7 +38,7 @@ export default function BrandShell({
           <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
-              <p className="text-[14.5px] text-ink/65 max-w-[300px]">The professional identity platform for human opportunity.</p>
+              <p className="text-[14.5px] text-ink/65 max-w-[300px]">The all-in-one business hub for professionals.</p>
               <div className="flex items-center gap-3 mt-6">
                 <a href="https://www.instagram.com/marquee.bio/" target="_blank" rel="noopener" aria-label="Instagram" className="w-[38px] h-[38px] rounded-full border border-hair hover:bg-ink hover:text-white hover:border-ink transition-colors flex items-center justify-center text-ink">
                   <IconInstagram className="w-4 h-4" />
