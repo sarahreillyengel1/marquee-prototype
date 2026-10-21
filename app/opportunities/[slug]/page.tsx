@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import BrandShell from "@/components/BrandShell";
 import { createServerSupabase } from "@/lib/supabase";
 import { currentUserId } from "@/lib/booking-server";
-import { TYPE_LABEL, FUNCTION_LABEL, SENIORITY_LABEL, payLabel, timeAgo, type Opportunity } from "@/lib/opportunities";
-import { initials, whereLabel } from "../JobCard";
+import { TYPE_LABEL, FUNCTION_LABEL, SENIORITY_LABEL, type Opportunity } from "@/lib/opportunities";
+import { initials, whereLabel, titleCase, cardPay } from "../JobCard";
 import JobActions from "./JobActions";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ async function load(slug: string) {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const j = await load(params.slug);
   if (!j) return { title: "Job not found · Marquee" };
-  const pay = payLabel(j);
+  const pay = cardPay(j);
   return { title: `${j.title} at ${j.company} · Marquee Opportunities`, description: `${TYPE_LABEL[j.work_type] || j.work_type}${whereLabel(j) ? ` · ${whereLabel(j)}` : ""}${pay ? ` · ${pay}` : ""}. ${(j.description || "").slice(0, 150)}` };
 }
 
@@ -32,7 +32,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
   let saved = false;
   if (me) { const { data } = await createServerSupabase().from("saved_opportunities").select("opportunity_id").eq("user_id", me).eq("opportunity_id", j.id).maybeSingle(); saved = !!data; }
   const { data: others } = await createServerSupabase().from("opportunities").select("id,slug,title").eq("status", "published").eq("company", j.company).neq("id", j.id).limit(5);
-  const pay = payLabel(j);
+  const pay = cardPay(j) || "Rate not listed";
   const facts: [string, string][] = [["Pay", pay], ["Hours", j.hours_per_week ? `${j.hours_per_week} a week` : ""], ["Start", j.start_text || ""], ["Length", j.length_text || ""]].filter(([, v]) => v) as [string, string][];
   const Label = ({ children }: { children: React.ReactNode }) => <div className="text-[11px] font-bold tracking-[0.14em] uppercase mb-3">{children}</div>;
 
@@ -46,7 +46,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
             <div className="min-w-0">
               <div className="flex flex-wrap gap-2"><span className="text-[12px] font-semibold bg-[#EDE7FF] text-ink rounded-full px-[10px] py-[4px]">{TYPE_LABEL[j.work_type] || j.work_type}</span>{j.featured && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Featured</span>}{j.require_marquee === "yes" && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Marquee required</span>}</div>
               <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.08] text-[clamp(28px,4vw,42px)] mt-2">{j.title}</h1>
-              <div className="text-[15px] text-ink/75 mt-2">{j.company}{whereLabel(j) ? ` · ${whereLabel(j)}` : ""} · {timeAgo(j.published_at)}</div>
+              <div className="text-[15px] text-ink/75 mt-2">{j.company}{whereLabel(j) ? ` · ${whereLabel(j)}` : ""}</div>
               {facts.length > 0 && <div className="flex flex-wrap gap-x-8 gap-y-3 mt-5">{facts.map(([k, v]) => <div key={k}><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink/60">{k}</div><div className="text-[15px] font-semibold mt-[2px]">{v}</div></div>)}</div>}
             </div>
             <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} />
@@ -60,7 +60,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
             {j.description && <><Label>About the role</Label><p className="text-[15.5px] leading-[1.65] whitespace-pre-line">{j.description}</p></>}
             {j.responsibilities.length > 0 && <div className="mt-8"><Label>What you&apos;ll do</Label><ul className="space-y-2">{j.responsibilities.map((r) => <li key={r} className="flex gap-3 text-[15px] leading-[1.55]"><span className="text-dred mt-[2px]">&bull;</span>{r}</li>)}</ul></div>}
             {j.requirements.length > 0 && <div className="mt-8"><Label>What they&apos;re looking for</Label><ul className="space-y-2">{j.requirements.map((r) => <li key={r} className="flex gap-3 text-[15px] leading-[1.55]"><span className="text-dred mt-[2px]">&bull;</span>{r}</li>)}</ul></div>}
-            {j.skills.length > 0 && <div className="mt-8"><Label>Skills</Label><div className="flex flex-wrap gap-2">{j.skills.map((s) => <span key={s} className="text-[13px] bg-beige rounded-full px-[11px] py-[5px]">{s}</span>)}</div></div>}
+            {j.skills.length > 0 && <div className="mt-8"><Label>Skills</Label><div className="flex flex-wrap gap-2">{j.skills.map((s) => <span key={s} className="text-[13px] font-medium bg-beige rounded-full px-[12px] py-[5px]">{titleCase(s)}</span>)}</div></div>}
             <p className="text-[12.5px] text-ink/50 mt-10">{j.source ? `Found on ${j.source}. ` : ""}{j.last_checked_at ? `Link checked ${new Date(j.last_checked_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}. ` : ""}Marquee links to the company&apos;s own application. We are not the employer.</p>
           </div>
           <aside className="space-y-4">
