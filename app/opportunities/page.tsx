@@ -68,7 +68,7 @@ export default function OpportunitiesBoard() {
   const Side = ({ title, items, set, setter, skip }: { title: string; items: [string, string, (j: JobRow) => boolean][]; set: Set<string>; setter: (s: Set<string>) => void; skip: string }) => (
     <div className="mb-6">
       <div className="text-[11px] font-bold tracking-[0.14em] uppercase mb-2">{title}</div>
-      {items.map(([k, label, f]) => (
+      {items.filter(([, , f]) => !rows.length || set.size || rows.some(f)).map(([k, label, f]) => (
         <label key={k} className="flex items-center gap-[10px] py-[5px] text-[14px] cursor-pointer">
           <input type="checkbox" checked={set.has(k)} onChange={() => toggle(set, setter, k)} className="accent-[#7C1226]" /><span className="flex-1">{label}</span><span className="text-[12px] text-ink/50 tabular-nums">{count(skip, f)}</span>
         </label>
@@ -101,12 +101,12 @@ export default function OpportunitiesBoard() {
       </section>
 
       <section className="bg-paper">
-        <div className={`${WRAP} py-10 grid lg:grid-cols-[220px_1fr] gap-10`}>
+        <div className={`${WRAP} py-10 grid lg:grid-cols-[250px_1fr] gap-10`}>
           <aside className="hidden lg:block">
             <div className="bg-dred text-white rounded-[12px] p-5 mb-7">
               <div className="font-lora text-[20px] leading-[1.15]">Hiring? Post an opportunity.</div>
               <p className="text-[13px] text-white/80 mt-2 leading-[1.5]">Free during the beta. We review every one before it goes live.</p>
-              <Link href="/opportunities/post" className="inline-block mt-4 text-[12px] font-bold tracking-[0.08em] uppercase bg-white text-dred rounded-full px-4 py-[9px]">Post an opportunity</Link>
+              <Link href="/opportunities/post" className="block w-full text-center whitespace-nowrap mt-4 text-[11.5px] font-bold tracking-[0.06em] uppercase bg-white text-dred rounded-full px-3 py-[10px] hover:bg-beige transition-colors">Post an opportunity</Link>
             </div>
             <Side title="Compensation" items={PAY} set={pay} setter={setPay} skip="pay" />
             <Side title="Hours per week" items={HOURS} set={hours} setter={setHours} skip="hours" />
