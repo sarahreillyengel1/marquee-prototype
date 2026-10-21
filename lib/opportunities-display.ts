@@ -16,16 +16,24 @@ export const cardPay = (j: Pick<Row, "pay_min" | "pay_max" | "pay_per" | "pay_no
   return note && note.length <= 16 ? cap(note) : "";
 };
 
-/** A short place, from however the posting wrote it: "Remote (US)", "Raleigh, NC", "New York, NY". */
+/** A short place, from however the posting wrote it: "US · Remote", "Global · Remote", "San Francisco, CA", "New York, NY". */
+const CITIES: [RegExp, string][] = [
+  [/san francisco|\bSF\b|bay area/i, "San Francisco, CA"], [/new york|\bNYC?\b|manhattan|brooklyn/i, "New York, NY"], [/los angeles|\bLA\b|santa monica/i, "Los Angeles, CA"],
+  [/chicago/i, "Chicago, IL"], [/boston|cambridge, ma/i, "Boston, MA"], [/austin/i, "Austin, TX"], [/seattle/i, "Seattle, WA"], [/denver|boulder/i, "Denver, CO"], [/miami/i, "Miami, FL"],
+  [/washington,? d\.?c\.?|\bDC\b/i, "Washington, DC"], [/atlanta/i, "Atlanta, GA"], [/philadelphia/i, "Philadelphia, PA"], [/raleigh|durham/i, "Raleigh, NC"], [/dallas/i, "Dallas, TX"], [/phoenix/i, "Phoenix, AZ"],
+];
 export const shortLocation = (loc: string | null): string => {
   const s = (loc || "").trim();
   if (!s) return "";
   const us = /\b(u\.?s\.?a?|united states|us-based|usa only)\b/i.test(s);
   if (/anywhere|worldwide|global/i.test(s)) return "Global · Remote";
-  if (/remote/i.test(s)) return us ? "US · Remote" : s.length <= 22 ? s : "Remote";
-  if (/^(us|usa|united states)$/i.test(s)) return "US · Remote";
-  if (s.length <= 24) return s.replace(/\bUnited States\b/i, "US");
-  const first = s.split(/[,;(–-]| or /)[0].trim();
+  if (/remote/i.test(s) || /^(us|usa|usa only|united states)$/i.test(s)) return us ? "US · Remote" : s.length <= 22 ? s : "Remote";
+  const hits = CITIES.filter(([re]) => re.test(s)).map(([, name]) => name);
+  if (hits.length === 1) return hits[0];
+  if (hits.length > 1) return `${hits[0].split(",")[0]} or ${hits[1].split(",")[0]}`;
+  if (/^[A-Z]{2}, ?US(A)?$/i.test(s)) return { CA: "California", NY: "New York", TX: "Texas", WA: "Washington", MA: "Massachusetts", IL: "Illinois", CO: "Colorado", FL: "Florida" }[s.slice(0, 2).toUpperCase()] || s.slice(0, 2).toUpperCase();
+  if (s.length <= 24) return s.replace(/\bUnited States\b/i, "US").replace(/, US$/i, "");
+  const first = s.split(/[,;(\u2013-]| or /)[0].trim();
   const state = s.match(/,\s*([A-Z]{2})\b/)?.[1];
   return state && first.length <= 18 ? `${first}, ${state}` : first.slice(0, 24);
 };
@@ -33,7 +41,7 @@ export const shortLocation = (loc: string | null): string => {
 export const placeTags = (j: Pick<Row, "location" | "remote">): string[] => {
   const loc = shortLocation(j.location);
   const r = j.remote && j.remote !== "unknown" ? REMOTE_LABEL[j.remote] : "";
-  return [loc, r && !loc.toLowerCase().includes(r.toLowerCase().replace("on-site", "site")) && !(r === "Remote" && /remote/i.test(loc)) ? r : ""].filter(Boolean);
+  return [loc, r && !/remote/i.test(loc) && !loc.toLowerCase().includes(r.toLowerCase().replace("on-site", "site")) ? r : ""].filter(Boolean);
 };
 export const whereLabel = (j: Pick<Row, "location" | "remote">) => placeTags(j).join(" · ");
 export const timeLabel = (j: Pick<Row, "hours_per_week" | "start_text" | "length_text" | "work_type">) => {
