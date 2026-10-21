@@ -23,6 +23,7 @@ export default function OpportunitiesAdmin() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft" | "posted" | "paused" | "closed" | "gone">("all");
+  const [sort, setSort] = useState<{ key: "title" | "company" | "work_type" | "pay" | "status" | "link" | "date"; dir: 1 | -1 }>({ key: "date", dir: -1 });
 
   const load = async () => {
     const r = await fetch("/api/admin/opportunities").catch(() => null);
@@ -70,11 +71,18 @@ export default function OpportunitiesAdmin() {
     if (res.ok) { setNote("Removed."); load(); } else setNote("Couldn't remove it.");
   };
 
-  const shown = useMemo(() => rows.filter((r) => filter === "all" ? true : filter === "gone" ? r.check_status === "gone" : filter === "posted" ? !!r.posted_by : r.status === filter), [rows, filter]);
+  const shown = useMemo(() => {
+    const list = rows.filter((r) => filter === "all" ? true : filter === "gone" ? r.check_status === "gone" : filter === "posted" ? !!r.posted_by : r.status === filter);
+    const val = (r: Row): string | number => sort.key === "pay" ? (r.pay_max || r.pay_min || 0) * (r.pay_per === "hour" ? 2000 : r.pay_per === "month" ? 12 : 1) : sort.key === "link" ? (r.check_status || "") : sort.key === "date" ? (r.published_at || r.created_at) : String(r[sort.key] || "").toLowerCase();
+    return [...list].sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * sort.dir; });
+  }, [rows, filter, sort]);
+  const sortBy = (key: typeof sort.key) => setSort((c) => ({ key, dir: c.key === key ? (c.dir === 1 ? -1 : 1) : key === "date" || key === "pay" ? -1 : 1 }));
+  const Th = ({ k, children, className = "" }: { k: typeof sort.key; children: React.ReactNode; className?: string }) => <th className={`px-4 py-3 ${className}`}><button type="button" onClick={() => sortBy(k)} className={`uppercase tracking-[0.12em] hover:text-brand-ink ${sort.key === k ? "text-brand-ink" : ""}`}>{children}{sort.key === k ? (sort.dir === 1 ? " ↑" : " ↓") : ""}</button></th>;
   const counts = useMemo(() => ({ published: rows.filter((r) => r.status === "published").length, draft: rows.filter((r) => r.status === "draft").length, gone: rows.filter((r) => r.check_status === "gone").length, waiting: rows.filter((r) => r.status === "draft" && r.posted_by).length }), [rows]);
 
   const btn = "font-sans text-[13px] font-semibold border border-[#E1DED7] bg-white py-[8px] px-[13px] hover:border-brand-ink disabled:opacity-50";
   const dark = "font-sans text-[13px] font-semibold text-white bg-[#670821] py-[9px] px-[15px] hover:bg-[#4E0619] disabled:opacity-50";
+  const small = "font-sans text-[12px] font-semibold border border-[#E1DED7] bg-white py-[6px] px-[10px] hover:border-brand-ink disabled:opacity-50";
   const inp = "w-full font-inter text-[14px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink";
   const lab = "block text-[11px] font-semibold tracking-[0.12em] uppercase text-[#6E6A62] mb-[5px]";
   const Tag = ({ k }: { k: string }) => (found.includes(k) ? <span className="ml-2 align-middle inline-block text-[9.5px] font-bold tracking-[0.1em] uppercase bg-[#EDE7FF] text-[#4B0618] px-[7px] py-[2px]">Scanned</span> : null);
@@ -87,7 +95,7 @@ export default function OpportunitiesAdmin() {
 
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-brand-ink font-inter">
-      <div className="max-w-[1100px] mx-auto px-5 py-10">
+      <div className="max-w-[1320px] mx-auto px-5 py-10">
         <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
           <div>
             <Link href="/admin" className="text-[13px] text-[#7d7a74] hover:text-brand-ink">&larr; Admin</Link>
@@ -197,21 +205,23 @@ export default function OpportunitiesAdmin() {
             {shown.length > 0 && (
               <div className="border border-[#E1DED7] bg-white overflow-x-auto">
                 <table className="w-full text-[13.5px]">
-                  <thead><tr className="text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6E6A62] border-b border-[#E1DED7]"><th className="px-4 py-3">Job</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Pay</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Link</th><th className="px-4 py-3"></th></tr></thead>
+                  <thead><tr className="text-left text-[11px] font-semibold text-[#6E6A62] border-b border-[#E1DED7]"><Th k="title" className="min-w-[280px]">Role</Th><Th k="company">Company</Th><Th k="work_type">Type</Th><Th k="pay">Pay</Th><Th k="status">Status</Th><Th k="date">Date</Th><Th k="link">Link</Th><th className="px-4 py-3"></th></tr></thead>
                   <tbody>
                     {shown.map((r) => (
                       <tr key={r.id} className="border-b border-[#F1EEE8] last:border-0 align-middle">
-                        <td className="px-4 py-3"><div className="font-semibold">{r.title}</div><div className="text-[12.5px] text-[#6E6A62]">{r.company}{r.location ? ` · ${r.location}` : ""}{r.featured ? " · Featured" : ""}{r.require_marquee === "yes" ? " · Marquee required" : ""}</div>{r.posted_by && <div className="text-[12.5px] text-[#670821] mt-[2px]">Posted by {r.poster_name || "a business"} · {r.poster_email}</div>}</td>
+                        <td className="px-4 py-3 min-w-[280px]"><div className="font-semibold">{r.title}</div><div className="text-[12.5px] text-[#6E6A62]">{r.location || ""}{r.featured ? " · Featured" : ""}{r.require_marquee === "yes" ? " · Marquee required" : ""}</div>{r.posted_by && <div className="text-[12.5px] text-[#670821] mt-[2px]">Posted by {r.poster_name || "a business"} · {r.poster_email}</div>}</td>
+                        <td className="px-4 py-3 min-w-[140px]">{r.company}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{TYPE_LABEL[r.work_type]}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{payLabel(r) || "—"}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{r.status}{r.published_at ? <span className="text-[#6E6A62]"> · {when(r.published_at)}</span> : ""}</td>
+                        <td className="px-4 py-3 whitespace-nowrap max-w-[180px] overflow-hidden text-ellipsis" title={payLabel(r)}>{payLabel(r) || "—"}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{r.status}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-[#6E6A62]">{when(r.published_at || r.created_at)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{r.check_status === "gone" ? <span className="text-[#AB0000] font-semibold">gone</span> : r.check_status === "error" ? <span className="text-[#6E6A62]">unreachable</span> : r.last_checked_at ? <span className="text-[#6E6A62]">ok · {when(r.last_checked_at)}</span> : <span className="text-[#6E6A62]">not checked</span>}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="flex gap-2 items-center">
-                            <button onClick={() => edit(r)} className={btn}>Edit</button>
-                            {r.status === "published" ? <button onClick={() => quick(r, { status: "paused" })} className={btn}>Pause</button> : r.status !== "closed" && <button onClick={() => quick(r, { status: "published" })} className={dark}>Publish</button>}
-                            <button onClick={() => quick(r, { featured: !r.featured })} className={btn}>{r.featured ? "Unfeature" : "Feature"}</button>
-                            <button onClick={() => check(r)} className={btn}>Check link</button>
+                          <span className="flex gap-[6px] items-center">
+                            <button onClick={() => edit(r)} className={small}>Edit</button>
+                            {r.status === "published" ? <button onClick={() => quick(r, { status: "paused" })} className={small}>Pause</button> : r.status !== "closed" && <button onClick={() => quick(r, { status: "published" })} className={`${small} !bg-[#670821] !text-white !border-[#670821]`}>Publish</button>}
+                            <button onClick={() => quick(r, { featured: !r.featured })} className={small}>{r.featured ? "Unfeature" : "Feature"}</button>
+                            <button onClick={() => check(r)} className={small}>Check</button>
                             {r.status !== "closed" && <button onClick={() => quick(r, { status: "closed" })} className="text-[12.5px] underline underline-offset-2 hover:text-[#670821]">Close</button>}
                             <button onClick={() => remove(r)} className="text-[12.5px] text-[#6E6A62] hover:text-[#AB0000] underline underline-offset-2">Remove</button>
                           </span>

@@ -693,3 +693,6 @@ It is a curated professional opportunity experience that supports Marquee's broa
 The sourcing engine should be selective, efficient, and continuously improving.
 
 The long-term value comes from connecting those opportunities to Marquee's professional profiles, discovery capabilities, employer relationships, and transactions.
+
+
+**Scope note (21 Oct 2026):** curated roles are US only (US-based or remote for US). No roles outside the US during the beta.
