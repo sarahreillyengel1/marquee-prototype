@@ -75,10 +75,10 @@ export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boole
         <div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">Pay</div>
         {pay ? <div className="font-lora text-[22px] leading-none text-dred whitespace-nowrap overflow-hidden text-ellipsis mt-[4px]" title={pay}>{pay}</div> : <div className="text-[14px] font-semibold text-ink leading-none mt-[6px]">Not listed</div>}
       </div>
-      <div className="col-start-2 col-span-1 sm:col-span-2 grid grid-cols-3 gap-3 border-t border-hair pt-3">
+      <div style={{ gridColumn: "2 / -1" }} className="grid grid-cols-3 gap-3 border-t border-hair pt-3">
         {facts.map(([k, v]) => <div key={k} className="min-w-0"><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">{k}</div><div className="text-[14px] font-semibold text-ink mt-[3px] whitespace-nowrap overflow-hidden text-ellipsis" title={v}>{v}</div></div>)}
       </div>
-      <div className="col-start-2 col-span-1 sm:col-span-2 flex flex-wrap items-center gap-2">
+      <div style={{ gridColumn: "2 / -1" }} className="flex flex-wrap items-center gap-2">
         <span className={`${TAG} bg-[#EDE7FF] text-ink`}>{TYPE_LABEL[j.work_type] || j.work_type}</span>
         {fn && <span className={`${TAG} bg-beige text-ink`}>{fn}</span>}
         {placeTags(j).map((t) => <span key={t} className={`${TAG} bg-blue text-ink`}>{t}</span>)}
