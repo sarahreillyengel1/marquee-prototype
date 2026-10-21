@@ -36,7 +36,7 @@ export default function BrandShell({
       {/* Footer — ink, matches homepage */}
       <footer className="bg-white text-ink border-t border-hair pt-16 pb-9">
         <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]">
-          <div className="grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
+          <div className="grid grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
               <p className="text-[14.5px] text-ink/65 max-w-[300px]">The all-in-one business hub for professionals.</p>
@@ -46,7 +46,7 @@ export default function BrandShell({
                 </a>
               </div>
             </div>
-            <FooterCol title="Product" links={[
+            <FooterCol title="For professionals" links={[
               { label: "Who it's for", href: "/#for" },
               { label: "What you get", href: "/#what" },
               { label: "Features", href: "/#inside" },
@@ -54,6 +54,12 @@ export default function BrandShell({
               { label: "Pricing", href: "/pricing" },
               { label: "Opportunities", href: "/opportunities" },
               { label: "Career Blueprint", href: "/blueprint" },
+            ]} />
+            <FooterCol title="For businesses" links={[
+              { label: "Why Marquee", href: "/business" },
+              { label: "Post an opportunity", href: "/opportunities/post" },
+              { label: "Create a business account", href: "/business/join" },
+              { label: "Your opportunities", href: "/business/opportunities" },
             ]} />
             <FooterCol title="Company" links={[
               { label: "Spotlight", href: "/spotlight" },

@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - send unauthenticated users to LOGIN (existing users),
   // preserving where they were headed so login can return them there.
-  const protectedPaths = ["/onboard", "/dashboard", "/build-preview", "/analytics"];
+  const protectedPaths = ["/onboard", "/dashboard", "/build-preview", "/analytics", "/business/opportunities"];
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
@@ -40,6 +40,14 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // A business account has no profile: keep it on its own pages.
+  if (user && user.app_metadata?.account === "business" && ["/onboard", "/dashboard", "/build-preview", "/analytics"].some((p) => request.nextUrl.pathname.startsWith(p))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/business/opportunities";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
@@ -61,5 +69,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/onboard/:path*", "/dashboard/:path*", "/build-preview/:path*", "/analytics/:path*", "/signup"],
+  matcher: ["/onboard/:path*", "/dashboard/:path*", "/build-preview/:path*", "/analytics/:path*", "/business/opportunities/:path*", "/signup"],
 };

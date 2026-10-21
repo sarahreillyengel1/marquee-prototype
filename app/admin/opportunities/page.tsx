@@ -3,11 +3,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { WORK_TYPES, TYPE_LABEL, FUNCTIONS, FUNCTION_LABEL, SENIORITY, SENIORITY_LABEL, REMOTE, REMOTE_LABEL, PAY_PER, payLabel, type Opportunity } from "@/lib/opportunities";
+import { WORK_TYPES, TYPE_LABEL, FUNCTIONS, FUNCTION_LABEL, SENIORITY, SENIORITY_LABEL, REMOTE, REMOTE_LABEL, PAY_PER, REQUIRE_LABEL, payLabel, type Opportunity } from "@/lib/opportunities";
 
 type Row = Opportunity;
 type Draft = Omit<Partial<Row>, "id"> & { id?: number; responsibilities: string[]; requirements: string[]; skills: string[] };
-const EMPTY: Draft = { title: "", company: "", company_url: "", company_blurb: "", work_type: "full-time", function: "other", seniority: "other", location: "", remote: "unknown", pay_min: null, pay_max: null, pay_per: "", pay_note: "", hours_per_week: null, start_text: "", length_text: "", description: "", responsibilities: [], requirements: [], skills: [], apply_url: "", source: "", source_url: "", deadline: "", featured: false, status: "draft" };
+const EMPTY: Draft = { title: "", company: "", company_url: "", company_blurb: "", work_type: "full-time", function: "other", seniority: "other", location: "", remote: "unknown", pay_min: null, pay_max: null, pay_per: "", pay_note: "", hours_per_week: null, start_text: "", length_text: "", description: "", responsibilities: [], requirements: [], skills: [], apply_url: "", source: "", source_url: "", deadline: "", featured: false, status: "draft", require_marquee: "optional" };
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
 
 export default function OpportunitiesAdmin() {
@@ -22,7 +22,7 @@ export default function OpportunitiesAdmin() {
   const [d, setD] = useState<Draft>(EMPTY);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const [filter, setFilter] = useState<"all" | "published" | "draft" | "paused" | "closed" | "gone">("all");
+  const [filter, setFilter] = useState<"all" | "published" | "draft" | "posted" | "paused" | "closed" | "gone">("all");
 
   const load = async () => {
     const r = await fetch("/api/admin/opportunities").catch(() => null);
@@ -70,8 +70,8 @@ export default function OpportunitiesAdmin() {
     if (res.ok) { setNote("Removed."); load(); } else setNote("Couldn't remove it.");
   };
 
-  const shown = useMemo(() => rows.filter((r) => filter === "all" ? true : filter === "gone" ? r.check_status === "gone" : r.status === filter), [rows, filter]);
-  const counts = useMemo(() => ({ published: rows.filter((r) => r.status === "published").length, draft: rows.filter((r) => r.status === "draft").length, gone: rows.filter((r) => r.check_status === "gone").length }), [rows]);
+  const shown = useMemo(() => rows.filter((r) => filter === "all" ? true : filter === "gone" ? r.check_status === "gone" : filter === "posted" ? !!r.posted_by : r.status === filter), [rows, filter]);
+  const counts = useMemo(() => ({ published: rows.filter((r) => r.status === "published").length, draft: rows.filter((r) => r.status === "draft").length, gone: rows.filter((r) => r.check_status === "gone").length, waiting: rows.filter((r) => r.status === "draft" && r.posted_by).length }), [rows]);
 
   const btn = "font-sans text-[13px] font-semibold border border-[#E1DED7] bg-white py-[8px] px-[13px] hover:border-brand-ink disabled:opacity-50";
   const dark = "font-sans text-[13px] font-semibold text-white bg-[#670821] py-[9px] px-[15px] hover:bg-[#4E0619] disabled:opacity-50";
@@ -92,9 +92,9 @@ export default function OpportunitiesAdmin() {
           <div>
             <Link href="/admin" className="text-[13px] text-[#7d7a74] hover:text-brand-ink">&larr; Admin</Link>
             <h1 className="font-lora text-[32px] leading-[1.05] mt-2">Opportunities</h1>
-            <p className="text-[14px] text-[#7d7a74] mt-1">{counts.published} live · {counts.draft} drafts{counts.gone ? ` · ${counts.gone} flagged gone` : ""}. Live ones show at <a href="/opportunities" target="_blank" className="underline">marquee.bio/opportunities</a>.</p>
+            <p className="text-[14px] text-[#7d7a74] mt-1">{counts.published} live · {counts.draft} drafts{counts.waiting ? ` · ${counts.waiting} posted by businesses, waiting on you` : ""}{counts.gone ? ` · ${counts.gone} flagged gone` : ""}. Live ones show at <a href="/opportunities" target="_blank" className="underline">marquee.bio/opportunities</a>.</p>
           </div>
-          <div className="flex gap-2">{view !== "list" && <button onClick={() => { setView("list"); setNote(""); }} className={btn}>Back to list</button>}{view === "list" && <button onClick={() => { setD(EMPTY); setFound([]); setView("import"); setNote(""); }} className={dark}>+ Add a job</button>}</div>
+          <div className="flex gap-2">{view !== "list" && <button onClick={() => { setView("list"); setNote(""); }} className={btn}>Back to list</button>}{view === "list" && <button onClick={() => { setD(EMPTY); setFound([]); setView("import"); setNote(""); }} className={dark}>+ Add an opportunity</button>}</div>
         </div>
         {state === "notable" && <div className="border border-[#E1DED7] bg-white p-5 text-[14px] mb-6">The <code>opportunities</code> table doesn&rsquo;t exist yet. Run <code>lib/opportunities-schema.sql</code> in Supabase, then refresh.</div>}
         {note && <div className="text-[13.5px] mb-4 text-[#3a352f]">{note}</div>}
@@ -102,12 +102,12 @@ export default function OpportunitiesAdmin() {
         {view === "import" && (
           <div className="grid md:grid-cols-[1fr_340px] gap-6 items-start">
             <div className="bg-white border border-[#E1DED7] p-6">
-              <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#670821]">Add a job</div>
+              <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#670821]">Add an opportunity</div>
               <h2 className="font-lora text-[26px] leading-[1.1] mt-2">Start from the listing.</h2>
               <p className="text-[14px] text-[#6E6A62] mt-2">Paste the link, or the text if the page won&rsquo;t open. The fields get filled from what the posting says, nothing more. You check them next.</p>
               <div className="flex gap-2 mt-5">{(["link", "text"] as const).map((m) => <button key={m} type="button" onClick={() => setMode(m)} className={`${btn} ${mode === m ? "!border-brand-ink bg-[#F7F6F2]" : ""}`}>{m === "link" ? "Paste a link" : "Paste the text"}</button>)}</div>
               {mode === "link" ? (
-                <div className="mt-4"><label className={lab}>Job listing link</label><input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" className={inp} /></div>
+                <div className="mt-4"><label className={lab}>Listing link</label><input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" className={inp} /></div>
               ) : (
                 <div className="mt-4"><label className={lab}>The posting</label><textarea value={text} onChange={(e) => setText(e.target.value)} rows={12} placeholder="Paste the whole job description here" className={inp} /></div>
               )}
@@ -122,7 +122,7 @@ export default function OpportunitiesAdmin() {
             <div className="bg-white border border-[#E1DED7] p-6 space-y-6">
               <div><h2 className="font-lora text-[26px] leading-[1.1]">Check the details.</h2>{found.length > 0 && <p className="text-[13.5px] text-[#6E6A62] mt-1">Fields marked Scanned came from the listing. Edit anything. Empty ones were not in the posting.</p>}</div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><label className={lab}>Job title<Tag k="title" /></label><input value={d.title || ""} onChange={(e) => set({ title: e.target.value })} className={inp} /></div>
+                <div><label className={lab}>Role title<Tag k="title" /></label><input value={d.title || ""} onChange={(e) => set({ title: e.target.value })} className={inp} /></div>
                 <div><label className={lab}>Company<Tag k="company" /></label><input value={d.company || ""} onChange={(e) => set({ company: e.target.value })} className={inp} /></div>
                 <div><label className={lab}>Company site</label><input value={d.company_url || ""} onChange={(e) => set({ company_url: e.target.value })} placeholder="https://…" className={inp} /></div>
                 <div><label className={lab}>One line about the company</label><input value={d.company_blurb || ""} onChange={(e) => set({ company_blurb: e.target.value })} className={inp} /></div>
@@ -162,7 +162,11 @@ export default function OpportunitiesAdmin() {
                 <div><label className={lab}>Application link (Apply on company site)</label><input value={d.apply_url || ""} onChange={(e) => set({ apply_url: e.target.value })} placeholder="https://…" className={inp} /></div>
                 <div><label className={lab}>Found on</label><input value={d.source || ""} onChange={(e) => set({ source: e.target.value })} placeholder="fractionaljobs.io" className={inp} /></div>
               </div>
-              <label className="flex items-center gap-2 text-[13.5px]"><input type="checkbox" checked={!!d.featured} onChange={(e) => set({ featured: e.target.checked })} /> Featured</label>
+              <div className="grid sm:grid-cols-2 gap-4 items-end">
+                <div><label className={lab}>Marquee to apply</label><select value={d.require_marquee || "optional"} onChange={(e) => set({ require_marquee: e.target.value })} className={inp}>{Object.entries(REQUIRE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+                <label className="flex items-center gap-2 text-[13.5px] pb-[10px]"><input type="checkbox" checked={!!d.featured} onChange={(e) => set({ featured: e.target.checked })} /> Featured</label>
+              </div>
+              {d.posted_by && <div className="bg-[#EDE7FF] p-4 text-[13.5px]">Posted by <b>{d.poster_name || "a business"}</b> · {d.poster_email}. Publishing emails them that it is live.</div>}
               <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[#F1EEE8]">
                 <button type="button" onClick={() => save("published")} disabled={busy} className={dark}>{busy ? "Saving…" : "Publish"}</button>
                 <button type="button" onClick={() => save(d.status === "published" ? "published" : "draft")} disabled={busy} className={btn}>{d.status === "published" ? "Save changes" : "Save draft"}</button>
@@ -187,7 +191,7 @@ export default function OpportunitiesAdmin() {
         {view === "list" && (
           <>
             <div className="flex gap-2 flex-wrap items-center mb-4">
-              {(["all", "published", "draft", "paused", "closed", "gone"] as const).map((f) => <button key={f} type="button" onClick={() => setFilter(f)} className={`${btn} ${filter === f ? "!border-brand-ink bg-white" : "bg-transparent"}`}>{f === "gone" ? "Flagged gone" : f[0].toUpperCase() + f.slice(1)}</button>)}
+              {(["all", "published", "draft", "posted", "paused", "closed", "gone"] as const).map((f) => <button key={f} type="button" onClick={() => setFilter(f)} className={`${btn} ${filter === f ? "!border-brand-ink bg-white" : "bg-transparent"}`}>{f === "gone" ? "Flagged gone" : f === "posted" ? "Posted by businesses" : f[0].toUpperCase() + f.slice(1)}</button>)}
             </div>
             {shown.length === 0 && state === "ok" && <div className="border border-[#E1DED7] bg-white p-6 text-[14px] text-[#7d7a74]">{rows.length ? "Nothing here." : "No opportunities yet. Add the first one."}</div>}
             {shown.length > 0 && (
@@ -197,7 +201,7 @@ export default function OpportunitiesAdmin() {
                   <tbody>
                     {shown.map((r) => (
                       <tr key={r.id} className="border-b border-[#F1EEE8] last:border-0 align-middle">
-                        <td className="px-4 py-3"><div className="font-semibold">{r.title}</div><div className="text-[12.5px] text-[#6E6A62]">{r.company}{r.location ? ` · ${r.location}` : ""}{r.featured ? " · Featured" : ""}</div></td>
+                        <td className="px-4 py-3"><div className="font-semibold">{r.title}</div><div className="text-[12.5px] text-[#6E6A62]">{r.company}{r.location ? ` · ${r.location}` : ""}{r.featured ? " · Featured" : ""}{r.require_marquee === "yes" ? " · Marquee required" : ""}</div>{r.posted_by && <div className="text-[12.5px] text-[#670821] mt-[2px]">Posted by {r.poster_name || "a business"} · {r.poster_email}</div>}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{TYPE_LABEL[r.work_type]}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{payLabel(r) || "—"}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{r.status}{r.published_at ? <span className="text-[#6E6A62]"> · {when(r.published_at)}</span> : ""}</td>

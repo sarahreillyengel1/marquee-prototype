@@ -85,7 +85,7 @@ export default function OpportunitiesBoard() {
               <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.18em] uppercase text-dred"><span className="inline-flex w-[26px] h-[26px] rounded-full bg-dred text-white items-center justify-center font-lora text-[15px] leading-none" aria-hidden>$</span>Opportunities</div>
               <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,5vw,50px)] mt-2">Find your next opportunity. However you work.</h1>
             </div>
-            <p className="text-[14.5px] leading-[1.5] text-ink/75 md:max-w-[300px] md:text-right">Explore curated full-time, fractional, consulting, project, and advisory opportunities from companies looking for experienced professionals.</p>
+            <div className="md:max-w-[300px] md:text-right"><p className="text-[14.5px] leading-[1.5] text-ink/75">Explore curated full-time, fractional, consulting, project, and advisory opportunities from companies looking for experienced professionals.</p><Link href="/opportunities/post" className="lg:hidden inline-block mt-3 text-[12.5px] font-semibold underline underline-offset-2 hover:text-dred">Hiring? Post an opportunity</Link></div>
           </div>
           <div className="mt-7 bg-white rounded-[14px] border border-hair p-[6px] grid md:grid-cols-[1.4fr_1fr_auto] gap-[6px]">
             <input value={q} onChange={(e) => { setQ(e.target.value); setShown(20); }} placeholder="Role, company or skill" className="px-5 py-[13px] text-[15px] rounded-[10px] focus:outline-none focus:bg-beige" />
@@ -104,9 +104,9 @@ export default function OpportunitiesBoard() {
         <div className={`${WRAP} py-10 grid lg:grid-cols-[220px_1fr] gap-10`}>
           <aside className="hidden lg:block">
             <div className="bg-dred text-white rounded-[12px] p-5 mb-7">
-              <div className="font-lora text-[20px] leading-[1.15]">Hiring? Tell us about the role.</div>
-              <p className="text-[13px] text-white/80 mt-2 leading-[1.5]">Send us the listing and we&apos;ll put it in front of the right people.</p>
-              <a href="mailto:hello@marquee.bio?subject=A%20role%20for%20Marquee%20Opportunities" className="inline-block mt-4 text-[12px] font-bold tracking-[0.08em] uppercase bg-white text-dred rounded-full px-4 py-[9px]">Send a role</a>
+              <div className="font-lora text-[20px] leading-[1.15]">Hiring? Post an opportunity.</div>
+              <p className="text-[13px] text-white/80 mt-2 leading-[1.5]">Free during the beta. We review every one before it goes live.</p>
+              <Link href="/opportunities/post" className="inline-block mt-4 text-[12px] font-bold tracking-[0.08em] uppercase bg-white text-dred rounded-full px-4 py-[9px]">Post an opportunity</Link>
             </div>
             <Side title="Compensation" items={PAY} set={pay} setter={setPay} skip="pay" />
             <Side title="Hours per week" items={HOURS} set={hours} setter={setHours} skip="hours" />

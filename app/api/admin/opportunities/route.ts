@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import { WORK_TYPES, FUNCTIONS, SENIORITY, REMOTE, PAY_PER, slugify, fetchPostingText, extractOpportunity, checkPosting } from "@/lib/opportunities";
+import { sendOpportunityLive } from "@/lib/email";
+import { WORK_TYPES, FUNCTIONS, SENIORITY, REMOTE, PAY_PER, REQUIRE, slugify, fetchPostingText, extractOpportunity, checkPosting } from "@/lib/opportunities";
 
 // Marquee team only. Opportunities:
 //   GET                                     -> every row, newest first
@@ -71,17 +72,20 @@ export async function POST(req: Request) {
       source: orNull(str(r.source, 80)), source_url: orNull(str(r.source_url, 500)),
       deadline: /^\d{4}-\d{2}-\d{2}$/.test(str(r.deadline, 10)) ? str(r.deadline, 10) : null,
       featured: !!r.featured,
+      require_marquee: pick(REQUIRE, r.require_marquee, "optional"),
       status: ["draft", "published", "paused", "closed"].includes(str(r.status, 12)) ? str(r.status, 12) : "draft",
       updated_at: new Date().toISOString(),
     };
     const id = typeof r.id === "number" ? r.id : null;
     if (id) {
-      const { data: cur } = await db.from("opportunities").select("published_at").eq("id", id).maybeSingle();
+      const { data: cur } = await db.from("opportunities").select("published_at,status,poster_email,poster_name,slug").eq("id", id).maybeSingle();
       const extra: Record<string, unknown> = {};
       if (row.status === "published" && !cur?.published_at) extra.published_at = new Date().toISOString();
       if (row.status === "closed") extra.closed_at = new Date().toISOString();
       const { data, error } = await db.from("opportunities").update({ ...row, ...extra }).eq("id", id).select("*").single();
       if (error) return NextResponse.json({ error: "Couldn't save." }, { status: 500 });
+      // a business posted it and Sarah just made it live: tell them
+      if (row.status === "published" && cur?.status !== "published" && cur?.poster_email) sendOpportunityLive(cur.poster_email, cur.poster_name || "", row.title, cur.slug).catch(() => null);
       return NextResponse.json({ row: data });
     }
     const base = slugify(`${company} ${title}`) || `job-${Date.now()}`;

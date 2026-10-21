@@ -390,3 +390,36 @@ export async function sendInviteCode(to: string, name: string, code: string) {
     p("We can&rsquo;t wait to welcome you!") +
     `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
 }
+
+/* ─────────────── Opportunities posted by businesses (marquee.bio/opportunities/post) ─────────────── */
+
+/** To Sarah: a business posted or edited an opportunity. It waits on /admin/opportunities. */
+export async function sendOpportunityNotice(m: { title: string; company: string; posterName: string; posterEmail: string; edited: boolean; slug: string }) {
+  const to = process.env.BETA_INBOX || "sarah@marquee.bio";
+  return sendEmail(to, `${m.edited ? "Edited" : "New"} opportunity · ${m.title} at ${m.company}`, shell(
+    p(`<strong>${esc(m.posterName || m.posterEmail)}</strong> ${m.edited ? "edited" : "posted"} an opportunity.${m.edited ? "" : " It is a draft until you publish it."}`) +
+    card(row("Role", esc(m.title)) + row("Company", esc(m.company)) + row("Posted by", `${esc(m.posterName)} &middot; ${esc(m.posterEmail)}`)) +
+    `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/admin/opportunities", "Review it")}</div>`, "Sent from the posting form on marquee.bio/opportunities/post"), m.posterEmail);
+}
+
+/** To the business: we have it, Sarah reviews before it goes live. */
+export async function sendOpportunityReceived(to: string, name: string, title: string) {
+  return sendEmail(to, "We received your opportunity", shell(
+    p(`Hi ${esc(first(name) || "there")},`) +
+    p(`Thanks for posting <strong>${esc(title)}</strong> on Marquee.`) +
+    p("We review every opportunity before it goes live, usually within a day. You&rsquo;ll get an email when it&rsquo;s up.") +
+    `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/business/opportunities", "Your opportunities")}</div>` +
+    `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
+}
+
+/** To the business: Sarah published it. */
+export async function sendOpportunityLive(to: string, name: string, title: string, slug: string) {
+  const link = `https://marquee.bio/opportunities/${slug}`;
+  return sendEmail(to, `Your opportunity is live: ${title}`, shell(
+    p(`Hi ${esc(first(name) || "there")},`) +
+    p(`<strong>${esc(title)}</strong> is now live on Marquee.`) +
+    p(`Share it: <a href="${esc(link)}" style="color:#670821;">${esc(link.replace("https://", ""))}</a>`) +
+    `<div style="margin:22px 0 24px;">${wineButton(link, "See it live")}</div>` +
+    p("You can edit or close it any time from your opportunities page.") +
+    `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
+}

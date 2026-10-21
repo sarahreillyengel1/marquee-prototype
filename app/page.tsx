@@ -196,7 +196,7 @@ export default function HomePage() {
       {/* ── FOOTER (white) ── */}
       <footer className="bg-white text-ink border-t border-hair pt-14 pb-6">
         <div className={WRAP}>
-          <div className="grid sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr] gap-10">
+          <div className="grid grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
             <div className="col-span-2 md:col-span-1">
               <div className="text-[16.5px] font-medium tracking-[0.26em] mb-[14px]">MARQUEE</div>
               <p className="text-[14.5px] text-ink max-w-[300px]">The all-in-one business hub for professionals.</p>
@@ -207,7 +207,7 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Product</h4>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">For professionals</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><a href="#for" className="hover:text-dred">Who it&apos;s for</a></li>
                 <li><a href="#what" className="hover:text-dred">What you get</a></li>
@@ -219,12 +219,22 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
+              <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">For businesses</h4>
+              <ul className="space-y-[9px] text-[14.5px] text-ink">
+                <li><Link href="/business" className="hover:text-dred">Why Marquee</Link></li>
+                <li><Link href="/opportunities/post" className="hover:text-dred">Post an opportunity</Link></li>
+                <li><Link href="/business/join" className="hover:text-dred">Create a business account</Link></li>
+                <li><Link href="/business/opportunities" className="hover:text-dred">Your opportunities</Link></li>
+              </ul>
+            </div>
+            <div>
               <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-[14px]">Company</h4>
               <ul className="space-y-[9px] text-[14.5px] text-ink">
                 <li><Link href="/spotlight" className="hover:text-dred">Spotlight</Link></li>
                 <li><Link href="/about" className="hover:text-dred">About</Link></li>
                 <li><a href="https://beknownweekly.substack.com/" target="_blank" rel="noopener" className="hover:text-dred">Newsletter</a></li>
                 <li><a href="mailto:hello@marquee.bio" className="hover:text-dred">Contact</a></li>
+                <li><Link href="/community-feedback" className="hover:text-dred">Community Feedback</Link></li>
               </ul>
             </div>
           </div>

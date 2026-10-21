@@ -8,7 +8,7 @@ export type JobRow = {
   work_type: string; function: string | null; seniority: string | null; location: string | null; remote: string | null;
   pay_min: number | null; pay_max: number | null; pay_per: string | null; pay_note: string | null;
   hours_per_week: number | null; start_text: string | null; length_text: string | null; skills: string[];
-  source: string | null; featured: boolean; published_at: string | null; last_checked_at: string | null; deadline: string | null;
+  source: string | null; featured: boolean; published_at: string | null; last_checked_at: string | null; deadline: string | null; require_marquee?: string | null;
 };
 
 export const initials = (company: string) => company.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -42,6 +42,7 @@ export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boole
         <div className="flex flex-wrap items-center gap-2 mt-3">
           <span className="text-[12px] font-semibold bg-[#EDE7FF] text-ink rounded-full px-[10px] py-[4px]">{TYPE_LABEL[j.work_type] || j.work_type}</span>
           {j.function && <span className="text-[12px] font-semibold bg-beige text-ink rounded-full px-[10px] py-[4px]">{FUNCTION_LABEL[j.function]}</span>}
+          {j.require_marquee === "yes" && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Marquee required</span>}
           {j.skills.slice(0, 2).map((s) => <span key={s} className="text-[12px] bg-beige text-ink/80 rounded-full px-[10px] py-[4px]">{s}</span>)}
           <span className="ml-auto flex items-center gap-2">
             {onSave && <button type="button" onClick={() => onSave(j.id, !saved)} aria-label={saved ? "Unsave" : "Save"} className={`w-[34px] h-[34px] rounded-full border flex items-center justify-center transition-colors ${saved ? "bg-ink text-white border-ink" : "border-hair text-ink hover:border-ink"}`}>

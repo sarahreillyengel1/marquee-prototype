@@ -31,11 +31,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { setError(error.message); setLoading(false); return; }
-    // Return the user to where they were headed (e.g. /build-preview), else the builder.
+    // Return the user to where they were headed (e.g. /build-preview), else the builder. A business account goes to its opportunities.
+    const business = data.user?.app_metadata?.account === "business";
     const next = new URLSearchParams(window.location.search).get("next");
-    const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/build-preview";
+    const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : business ? "/business/opportunities" : "/build-preview";
     router.push(dest);
   }
 
@@ -65,6 +66,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-[13px] mt-10 text-center">Not a member yet? <Link href="/join" className="underline underline-offset-2 hover:text-dred">Join Marquee</Link></p>
+        <p className="text-[13px] mt-2 text-center text-ink/60">Hiring? <Link href="/business/join" className="underline underline-offset-2 hover:text-dred">Create a business account</Link></p>
       </div>
     </main>
   );

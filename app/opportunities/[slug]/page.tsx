@@ -44,12 +44,12 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
           <div className="grid md:grid-cols-[auto_1fr_auto] gap-5 md:gap-7 items-start mt-5">
             <div className="w-[56px] h-[56px] rounded-[12px] bg-white text-ink font-semibold text-[17px] flex items-center justify-center">{initials(j.company)}</div>
             <div className="min-w-0">
-              <div className="flex flex-wrap gap-2"><span className="text-[12px] font-semibold bg-[#EDE7FF] text-ink rounded-full px-[10px] py-[4px]">{TYPE_LABEL[j.work_type] || j.work_type}</span>{j.featured && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Featured</span>}</div>
+              <div className="flex flex-wrap gap-2"><span className="text-[12px] font-semibold bg-[#EDE7FF] text-ink rounded-full px-[10px] py-[4px]">{TYPE_LABEL[j.work_type] || j.work_type}</span>{j.featured && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Featured</span>}{j.require_marquee === "yes" && <span className="text-[12px] font-semibold bg-dred text-white rounded-full px-[10px] py-[4px]">Marquee required</span>}</div>
               <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.08] text-[clamp(28px,4vw,42px)] mt-2">{j.title}</h1>
               <div className="text-[15px] text-ink/75 mt-2">{j.company}{whereLabel(j) ? ` · ${whereLabel(j)}` : ""} · {timeAgo(j.published_at)}</div>
               {facts.length > 0 && <div className="flex flex-wrap gap-x-8 gap-y-3 mt-5">{facts.map(([k, v]) => <div key={k}><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink/60">{k}</div><div className="text-[15px] font-semibold mt-[2px]">{v}</div></div>)}</div>}
             </div>
-            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} />
+            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} />
           </div>
         </div>
       </section>
@@ -65,8 +65,8 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
           </div>
           <aside className="space-y-4">
             <div className="bg-[#EDE7FF] rounded-[14px] p-6">
-              <div className="font-semibold text-[15.5px]">Be the one they find next.</div>
-              <p className="text-[14px] leading-[1.55] text-ink/80 mt-2">A Marquee shows your experience, skills, rates and availability in one link, so the next role finds you.</p>
+              <div className="font-semibold text-[15.5px]">{j.require_marquee === "yes" ? "This role asks for your Marquee." : "Be the one they find next."}</div>
+              <p className="text-[14px] leading-[1.55] text-ink/80 mt-2">{j.require_marquee === "yes" ? "The company asks for your Marquee link when you apply. It shows your experience, skills, rates and availability in one place." : "A Marquee shows your experience, skills, rates and availability in one link, so the next role finds you."}</p>
               <Link href={`/join?src=opportunities-${j.slug}`} className="inline-block mt-4 text-[12px] font-bold tracking-[0.08em] uppercase bg-dred text-white rounded-full px-4 py-[10px]">Claim your Marquee</Link>
             </div>
             <div className="bg-white border border-hair rounded-[14px] p-6">

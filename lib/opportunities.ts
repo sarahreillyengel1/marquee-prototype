@@ -22,6 +22,19 @@ export interface Opportunity {
   description: string | null; responsibilities: string[]; requirements: string[]; skills: string[];
   apply_url: string; source: string | null; source_url: string | null; deadline: string | null;
   last_checked_at: string | null; check_status: string | null; published_at: string | null; closed_at: string | null;
+  posted_by?: string | null; poster_email?: string | null; poster_name?: string | null; require_marquee?: string | null;
+}
+export const REQUIRE = ["yes", "optional"] as const;
+export const REQUIRE_LABEL: Record<string, string> = { yes: "Marquee required to apply", optional: "Marquee optional" };
+export const BETA_POST_LIMIT = 2; // open opportunities per hiring account during the beta
+
+// Posting needs a work email. These are personal mail providers.
+const FREE_MAIL = ["gmail.", "googlemail.", "yahoo.", "ymail.", "rocketmail.", "hotmail.", "outlook.", "live.", "msn.", "aol.", "icloud.", "me.com", "mac.com", "proton.", "protonmail.", "pm.me", "gmx.", "mail.com", "mail.ru", "yandex.", "zoho.", "hey.com", "fastmail.", "duck.com", "tutanota.", "tuta.", "comcast.", "verizon.", "att.net", "sbcglobal.", "cox.net", "qq.com", "163.com", "126.com", "example."];
+export function isBusinessEmail(email: string): boolean {
+  const at = email.lastIndexOf("@"); if (at < 1) return false;
+  const domain = email.slice(at + 1).toLowerCase();
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) return false;
+  return !FREE_MAIL.some((f) => domain === f || domain.startsWith(f) || domain.endsWith("." + f) || domain.endsWith("." + f.replace(/\.$/, "")));
 }
 
 export const slugify = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70);

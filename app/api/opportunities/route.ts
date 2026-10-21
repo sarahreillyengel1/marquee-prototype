@@ -5,7 +5,7 @@ import { currentUserId } from "@/lib/booking-server";
 // Public. GET /api/opportunities -> every published job, featured first then newest, plus the viewer's saved ids.
 // POST { id, save: true|false } (signed in) -> save or unsave.
 export const dynamic = "force-dynamic";
-const PUBLIC_COLS = "id,slug,title,company,company_url,company_blurb,work_type,function,seniority,location,remote,pay_min,pay_max,pay_per,pay_note,hours_per_week,start_text,length_text,skills,source,featured,published_at,last_checked_at,deadline";
+const PUBLIC_COLS = "id,slug,title,company,company_url,company_blurb,work_type,function,seniority,location,remote,pay_min,pay_max,pay_per,pay_note,hours_per_week,start_text,length_text,skills,source,featured,published_at,last_checked_at,deadline,require_marquee";
 
 export async function GET() {
   const db = createServerSupabase();
