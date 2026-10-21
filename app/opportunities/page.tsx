@@ -4,20 +4,41 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BrandShell from "@/components/BrandShell";
 import JobCard, { type JobRow } from "./JobCard";
+import { shortLocation } from "@/lib/opportunities-display";
 import { WORK_TYPES, TYPE_LABEL, FUNCTIONS, FUNCTION_LABEL, SENIORITY, SENIORITY_LABEL } from "@/lib/opportunities";
 
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
 const PLACES: [string, string][] = [["remote", "Remote"], ["hybrid", "Hybrid"], ["onsite", "On-site"]];
+const top = (j: JobRow) => j.pay_max || j.pay_min || 0;
 const PAY: [string, string, (j: JobRow) => boolean][] = [
-  ["y100", "$100K+ / year", (j) => j.pay_per === "year" && (j.pay_max || j.pay_min || 0) >= 100000],
-  ["m5", "$5K+ / month", (j) => j.pay_per === "month" && (j.pay_max || j.pay_min || 0) >= 5000],
-  ["h150", "$150+ / hour", (j) => j.pay_per === "hour" && (j.pay_max || j.pay_min || 0) >= 150],
+  ["h100", "$100+ an hour", (j) => j.pay_per === "hour" && top(j) >= 100],
+  ["h150", "$150+ an hour", (j) => j.pay_per === "hour" && top(j) >= 150],
+  ["h200", "$200+ an hour", (j) => j.pay_per === "hour" && top(j) >= 200],
+  ["m5", "$5K+ a month", (j) => j.pay_per === "month" && top(j) >= 5000],
+  ["m10", "$10K+ a month", (j) => j.pay_per === "month" && top(j) >= 10000],
+  ["y100", "$100K+ a year", (j) => j.pay_per === "year" && top(j) >= 100000],
+  ["y150", "$150K+ a year", (j) => j.pay_per === "year" && top(j) >= 150000],
+  ["y200", "$200K+ a year", (j) => j.pay_per === "year" && top(j) >= 200000],
 ];
 const HOURS: [string, string, (j: JobRow) => boolean][] = [
-  ["u10", "Under 10", (j) => !!j.hours_per_week && j.hours_per_week < 10],
-  ["10-20", "10–20", (j) => !!j.hours_per_week && j.hours_per_week >= 10 && j.hours_per_week <= 20],
-  ["20-40", "20–40", (j) => !!j.hours_per_week && j.hours_per_week > 20 && j.hours_per_week <= 40],
+  ["u10", "Under 10 a week", (j) => !!j.hours_per_week && j.hours_per_week < 10],
+  ["10-20", "10–20 a week", (j) => !!j.hours_per_week && j.hours_per_week >= 10 && j.hours_per_week <= 20],
+  ["20-40", "20–40 a week", (j) => !!j.hours_per_week && j.hours_per_week > 20 && j.hours_per_week <= 40],
+  ["ft", "Full-time", (j) => j.work_type === "full-time"],
 ];
+/** Location options come from the roles on the board: the remote kinds first, then the cities that appear. */
+const locationItems = (rows: JobRow[]): [string, string, (j: JobRow) => boolean][] => {
+  const fixed: [string, string, (j: JobRow) => boolean][] = [
+    ["us-remote", "US · Remote", (j) => shortLocation(j.location) === "US · Remote" || (j.remote === "remote" && !j.location)],
+    ["global-remote", "Global · Remote", (j) => shortLocation(j.location) === "Global · Remote"],
+    ["hybrid", "Hybrid", (j) => j.remote === "hybrid"],
+    ["onsite", "On-site", (j) => j.remote === "onsite"],
+  ];
+  const counts = new Map<string, number>();
+  for (const j of rows) { const l = shortLocation(j.location); if (l && !/remote/i.test(l)) counts.set(l, (counts.get(l) || 0) + 1); }
+  const cities = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([l]) => [`city:${l}`, l, (j: JobRow) => shortLocation(j.location) === l] as [string, string, (j: JobRow) => boolean]);
+  return [...fixed, ...cities];
+};
 
 export default function OpportunitiesBoard() {
   const [rows, setRows] = useState<JobRow[]>([]);
@@ -32,6 +53,7 @@ export default function OpportunitiesBoard() {
   const [hours, setHours] = useState<Set<string>>(new Set());
   const [sen, setSen] = useState<Set<string>>(new Set());
   const [fns, setFns] = useState<Set<string>>(new Set());
+  const [locs, setLocs] = useState<Set<string>>(new Set());
   const [shown, setShown] = useState(20);
   const [note, setNote] = useState("");
 
@@ -51,9 +73,11 @@ export default function OpportunitiesBoard() {
     if (skip !== "hours" && hours.size && !HOURS.some(([k, , f]) => hours.has(k) && f(j))) return false;
     if (skip !== "sen" && sen.size && !sen.has(j.seniority || "")) return false;
     if (skip !== "fns" && fns.size && !fns.has(j.function || "")) return false;
+    if (skip !== "locs" && locs.size && !LOCS.some(([k, , f]) => locs.has(k) && f(j))) return false;
     return true;
   };
-  const list = useMemo(() => rows.filter((j) => passes(j)), [rows, q, place, types, places, pay, hours, sen, fns]); // eslint-disable-line react-hooks/exhaustive-deps
+  const LOCS = useMemo(() => locationItems(rows), [rows]);
+  const list = useMemo(() => rows.filter((j) => passes(j)), [rows, q, place, types, places, pay, hours, sen, fns, locs]); // eslint-disable-line react-hooks/exhaustive-deps
   const count = (skip: string, test: (j: JobRow) => boolean) => rows.filter((j) => passes(j, skip) && test(j)).length;
 
   const save = async (id: number, next: boolean) => {
@@ -108,8 +132,9 @@ export default function OpportunitiesBoard() {
               <p className="text-[13px] text-white/80 mt-2 leading-[1.5]">Free during the beta. We review every one before it goes live.</p>
               <Link href="/opportunities/post" className="block w-full text-center whitespace-nowrap mt-4 text-[11.5px] font-bold tracking-[0.06em] uppercase bg-white text-dred rounded-full px-3 py-[10px] hover:bg-beige transition-colors">Post an opportunity</Link>
             </div>
-            <Side title="Compensation" items={PAY} set={pay} setter={setPay} skip="pay" />
-            <Side title="Hours per week" items={HOURS} set={hours} setter={setHours} skip="hours" />
+            <Side title="Location" items={LOCS} set={locs} setter={setLocs} skip="locs" />
+            <Side title="Pay" items={PAY} set={pay} setter={setPay} skip="pay" />
+            <Side title="Hours" items={HOURS} set={hours} setter={setHours} skip="hours" />
             <Side title="Seniority" items={SENIORITY.filter((s) => s !== "other").map((s) => [s, SENIORITY_LABEL[s], (j: JobRow) => j.seniority === s] as [string, string, (j: JobRow) => boolean])} set={sen} setter={setSen} skip="sen" />
             <Side title="Function" items={FUNCTIONS.filter((f) => f !== "other").map((f) => [f, FUNCTION_LABEL[f], (j: JobRow) => j.function === f] as [string, string, (j: JobRow) => boolean])} set={fns} setter={setFns} skip="fns" />
           </aside>
