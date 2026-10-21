@@ -54,11 +54,13 @@ const TAG = "text-[13px] font-semibold rounded-full px-[12px] py-[5px] whitespac
 export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boolean; onSave?: (id: number, next: boolean) => void }) {
   const pay = cardPay(j);
   const fn = j.function ? FUNCTION_LABEL[j.function] : "";
-  const skills = j.skills.map(titleCase).filter((s) => s.toLowerCase() !== fn.toLowerCase() && s.length <= 30).slice(0, 2);
+  const skills = j.skills.map(titleCase).filter((s) => s.toLowerCase() !== fn.toLowerCase() && s.length <= 30).slice(0, 3);
+  const place = placeTags(j);
   const facts: [string, string][] = [
+    ["Type", TYPE_LABEL[j.work_type] || j.work_type],
     ["Hours", j.hours_per_week ? `${j.hours_per_week} a week` : j.work_type === "full-time" ? "Full-time" : "Not listed"],
-    ["Start", j.start_text ? cap(j.start_text) : "Not listed"],
-    ["Length", j.length_text ? cap(j.length_text) : j.work_type === "full-time" ? "Ongoing" : "Not listed"],
+    ["Location", place.join(" · ") || "Not listed"],
+    j.start_text ? ["Start", cap(j.start_text)] : ["Length", j.length_text ? cap(j.length_text) : j.work_type === "full-time" ? "Ongoing" : "Not listed"],
   ];
   return (
     <article className="bg-white border border-hair rounded-[14px] p-5 sm:p-6 grid grid-cols-[46px_1fr] sm:grid-cols-[46px_1fr_200px] gap-x-4 sm:gap-x-5 gap-y-4 items-start">
@@ -75,13 +77,11 @@ export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boole
         <div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">Pay</div>
         {pay ? <div className="font-lora text-[22px] leading-none text-dred whitespace-nowrap overflow-hidden text-ellipsis mt-[4px]" title={pay}>{pay}</div> : <div className="text-[14px] font-semibold text-ink leading-none mt-[6px]">Not listed</div>}
       </div>
-      <div style={{ gridColumn: "2 / -1" }} className="grid grid-cols-3 gap-3 border-t border-hair pt-3">
+      <div style={{ gridColumn: "2 / -1" }} className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-hair pt-3">
         {facts.map(([k, v]) => <div key={k} className="min-w-0"><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">{k}</div><div className="text-[14px] font-semibold text-ink mt-[3px] whitespace-nowrap overflow-hidden text-ellipsis" title={v}>{v}</div></div>)}
       </div>
       <div style={{ gridColumn: "2 / -1" }} className="flex flex-wrap items-center gap-2">
-        <span className={`${TAG} bg-[#EDE7FF] text-ink`}>{TYPE_LABEL[j.work_type] || j.work_type}</span>
-        {fn && <span className={`${TAG} bg-beige text-ink`}>{fn}</span>}
-        {placeTags(j).map((t) => <span key={t} className={`${TAG} bg-blue text-ink`}>{t}</span>)}
+        {fn && <span className={`${TAG} bg-[#EDE7FF] text-ink`}>{fn}</span>}
         {skills.map((s) => <span key={s} className={`${TAG} bg-beige text-ink`}>{s}</span>)}
         <span className="ml-auto flex items-center gap-2">
           {onSave && <button type="button" onClick={() => onSave(j.id, !saved)} aria-label={saved ? "Unsave" : "Save"} className={`w-[34px] h-[34px] rounded-full border flex items-center justify-center transition-colors ${saved ? "bg-ink text-white border-ink" : "border-hair text-ink hover:border-ink"}`}>

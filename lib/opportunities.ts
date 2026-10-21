@@ -42,7 +42,7 @@ export const slugify = (s: string) => s.toLowerCase().normalize("NFKD").replace(
 /** "$8K–$10K / mo", "$210K–$240K", "$150 / hr", "$30K project", or the note when there are no numbers. */
 export function payLabel(o: { pay_min: number | null; pay_max: number | null; pay_per: string | null; pay_note: string | null }): string {
   const k = (n: number) => (n >= 10000 && n % 1000 === 0 ? `$${Math.round(n / 1000)}K` : n >= 10000 ? `$${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : `$${n.toLocaleString()}`);
-  const per = o.pay_per === "hour" ? " / hr" : o.pay_per === "month" ? " / mo" : o.pay_per === "project" ? " project" : "";
+  const per = o.pay_per === "hour" ? " / hr" : o.pay_per === "month" ? " / mo" : o.pay_per === "year" ? " / yr" : o.pay_per === "project" ? " project" : "";
   if (o.pay_min && o.pay_max && o.pay_max !== o.pay_min) return `${k(o.pay_min)}–${k(o.pay_max)}${per}`;
   if (o.pay_min || o.pay_max) return `${k((o.pay_min || o.pay_max) as number)}${per}`;
   return o.pay_note || "";
