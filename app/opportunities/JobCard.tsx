@@ -29,8 +29,10 @@ export const cardPay = (j: Pick<JobRow, "pay_min" | "pay_max" | "pay_per" | "pay
 export const shortLocation = (loc: string | null): string => {
   const s = (loc || "").trim();
   if (!s) return "";
-  const us = /\b(u\.?s\.?a?|united states|us-based)\b/i.test(s);
-  if (/remote/i.test(s)) return us ? "Remote (US)" : s.length <= 22 ? s : "Remote";
+  const us = /\b(u\.?s\.?a?|united states|us-based|usa only)\b/i.test(s);
+  if (/anywhere|worldwide|global/i.test(s)) return "Global · Remote";
+  if (/remote/i.test(s)) return us ? "US · Remote" : s.length <= 22 ? s : "Remote";
+  if (/^(us|usa|united states)$/i.test(s)) return "US · Remote";
   if (s.length <= 24) return s.replace(/\bUnited States\b/i, "US");
   const first = s.split(/[,;(–-]| or /)[0].trim();
   const state = s.match(/,\s*([A-Z]{2})\b/)?.[1];
@@ -40,7 +42,7 @@ export const shortLocation = (loc: string | null): string => {
 export const placeTags = (j: Pick<JobRow, "location" | "remote">): string[] => {
   const loc = shortLocation(j.location);
   const r = j.remote && j.remote !== "unknown" ? REMOTE_LABEL[j.remote] : "";
-  return [loc, r && !loc.toLowerCase().includes(r.toLowerCase().replace("on-site", "site")) ? r : ""].filter(Boolean);
+  return [loc, r && !loc.toLowerCase().includes(r.toLowerCase().replace("on-site", "site")) && !(r === "Remote" && /remote/i.test(loc)) ? r : ""].filter(Boolean);
 };
 export const whereLabel = (j: Pick<JobRow, "location" | "remote">) => placeTags(j).join(" · ");
 export const timeLabel = (j: Pick<JobRow, "hours_per_week" | "start_text" | "length_text" | "work_type">) => {
