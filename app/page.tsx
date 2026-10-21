@@ -19,10 +19,11 @@ const LEDE = "text-[clamp(15px,2vw,18px)] leading-[1.55]";
 const BTN = "inline-block px-5 py-[10px] text-[13.5px] sm:px-6 sm:py-[13px] sm:text-[15px] rounded-full font-semibold text-center border-[1.5px] border-transparent transition-colors";
 
 const FOR = [
-  { h: "I\u2019m a founder or entrepreneur.", body: "Build your professional presence and manage your businesses and brands, each with its own Marquee." },
-  { h: "I\u2019m a fractional leader, consultant, or freelancer.", body: "Showcase your work, services, rates, and availability so clients can hire or book you directly." },
+  { h: "I\u2019m a founder or entrepreneur.", body: "Bring your businesses, brands, links, services, and products together, each with its own Marquee." },
+  { h: "I\u2019m a fractional leader or consultant.", body: "Showcase your work, services, rates, and availability so clients can hire or book you directly." },
   { h: "I\u2019m building my professional brand.", body: "Bring your experience, expertise, content, newsletter, podcast, affiliate links, and products together." },
   { h: "I\u2019m a coach, advisor, or expert.", body: "Offer sessions, advisory services, workshops, and programs with direct bookings and payments." },
+  { h: "I\u2019m exploring my next career move.", body: "Get discovered for new opportunities, from full-time roles to fractional, advisory, and project work." },
 ];
 
 const QUOTES: [string, string][] = [
@@ -107,11 +108,11 @@ export default function HomePage() {
         <div className={WRAP}>
           <h2 className={`${H2} max-w-[900px]`}>Who it&apos;s for.</h2>
           <p className={`${LEDE} mt-4 max-w-[720px]`}>For professionals who want to bring together all the ways they work, offer services, and monetize their expertise.</p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-[14px] mt-8">
             {FOR.map((f) => (
-              <div key={f.h} className="bg-[#EDE7FF] rounded-[12px] p-[clamp(20px,2vw,28px)] min-h-[210px] flex flex-col justify-between">
-                <div className="font-lora font-normal leading-[1.12] text-[clamp(22px,1.8vw,26px)]">{f.h}</div>
-                <div className="text-[14px] leading-[1.55] mt-5 text-ink/85">{f.body}</div>
+              <div key={f.h} className="bg-[#EDE7FF] rounded-[12px] p-[22px_20px] flex flex-col">
+                <div className="font-lora font-normal leading-[1.15] text-[21px]">{f.h}</div>
+                <div className="text-[13.5px] leading-[1.55] mt-3 text-ink/85">{f.body}</div>
               </div>
             ))}
           </div>
@@ -249,11 +250,11 @@ const BLOCKS = [
 function Showcase() {
   return (
     <div className="grid md:grid-cols-2 gap-4 mt-10">
-      {BLOCKS.map((b, i) => (
-        <div key={b.word} className="bg-beige border border-beigeLine rounded-[14px] px-[clamp(22px,3vw,40px)] py-[clamp(24px,2.6vw,34px)] min-h-[250px] flex flex-col justify-between">
-          <div className="font-lora leading-[1] tracking-[-0.02em] text-[clamp(34px,3.6vw,52px)] text-ink">{b.word}.</div>
-          <div className="mt-6">
-            <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred mb-2">{i + 1} &middot; {b.h}</div>
+      {BLOCKS.map((b) => (
+        <div key={b.word} className="bg-beige border border-beigeLine rounded-[14px] px-[clamp(22px,3vw,40px)] py-[clamp(24px,2.6vw,34px)] flex flex-col">
+          <div className="font-lora leading-[1.05] tracking-[-0.01em] text-[clamp(26px,2.4vw,34px)] text-ink">{b.word}.</div>
+          <div className="mt-4">
+            <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred mb-2">{b.h}</div>
             <p className="text-[15px] leading-[1.6] text-ink/85 max-w-[56ch]">{b.body}</p>
             {b.soon && <span className="inline-block mt-4 text-[10px] font-bold tracking-[0.14em] uppercase bg-[#C7B5FF] text-ink rounded-full px-[9px] py-[4px]">Discovery coming soon</span>}
           </div>
