@@ -83,9 +83,9 @@ export default function OpportunitiesBoard() {
           <div className="grid md:grid-cols-[1fr_auto] gap-6 items-end">
             <div>
               <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.18em] uppercase text-dred"><span className="inline-flex w-[26px] h-[26px] rounded-full bg-dred text-white items-center justify-center font-lora text-[15px] leading-none" aria-hidden>$</span>Opportunities</div>
-              <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,5vw,50px)] mt-2">Work worth doing. Every way you work.</h1>
+              <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,5vw,50px)] mt-2">Find your next opportunity. However you work.</h1>
             </div>
-            <p className="text-[14.5px] leading-[1.5] text-ink/75 md:max-w-[300px] md:text-right">Full-time, fractional, advisory and project roles from companies that want to see the full you.</p>
+            <p className="text-[14.5px] leading-[1.5] text-ink/75 md:max-w-[300px] md:text-right">Explore curated full-time, fractional, consulting, project, and advisory opportunities from companies looking for experienced professionals.</p>
           </div>
           <div className="mt-7 bg-white rounded-[14px] border border-hair p-[6px] grid md:grid-cols-[1.4fr_1fr_auto] gap-[6px]">
             <input value={q} onChange={(e) => { setQ(e.target.value); setShown(20); }} placeholder="Role, company or skill" className="px-5 py-[13px] text-[15px] rounded-[10px] focus:outline-none focus:bg-beige" />
