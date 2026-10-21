@@ -6,7 +6,7 @@ import BrandShell from "@/components/BrandShell";
 import { createServerSupabase } from "@/lib/supabase";
 import { currentUserId } from "@/lib/booking-server";
 import { TYPE_LABEL, FUNCTION_LABEL, SENIORITY_LABEL, type Opportunity } from "@/lib/opportunities";
-import { initials, whereLabel, titleCase, cardPay } from "../JobCard";
+import { initials, whereLabel, titleCase, cardPay } from "@/lib/opportunities-display";
 import JobActions from "./JobActions";
 
 export const dynamic = "force-dynamic";
