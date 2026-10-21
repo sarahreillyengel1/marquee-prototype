@@ -226,7 +226,7 @@ function Preview({ d }: { d: Draft }) {
         <div className="font-semibold text-[16px] mt-3">{d.title || "Role title"}</div>
         <div className="text-[13px] text-ink/65">{d.company || "Company"}{d.location ? ` · ${d.location}` : ""}{d.remote !== "unknown" ? ` · ${REMOTE_LABEL[d.remote]}` : ""}</div>
         <div className="mt-3 flex flex-wrap gap-2"><span className="text-[11.5px] font-semibold bg-[#EDE7FF] rounded-full px-[9px] py-[3px]">{TYPE_LABEL[d.work_type]}</span>{d.require_marquee === "yes" && <span className="text-[11.5px] font-semibold bg-dred text-white rounded-full px-[9px] py-[3px]">Marquee required</span>}</div>
-        {pay && <div className="font-lora text-[22px] text-dred mt-3">{pay}</div>}
+        {pay && <div className="font-semibold text-[20px] text-dred tabular-nums mt-3">{pay}</div>}
         <div className="text-[12.5px] text-ink/65 mt-1">{[d.hours_per_week ? `${d.hours_per_week} hrs a week` : "", d.length_text].filter(Boolean).join(" · ")}</div>
         <div className="mt-4 inline-block text-[11px] font-bold tracking-[0.08em] uppercase bg-red text-white rounded-full px-4 py-[9px]">Apply on company site</div>
       </div>

@@ -188,7 +188,7 @@ export default function OpportunitiesAdmin() {
                 <div className="font-semibold text-[16px] mt-3">{d.title || "Job title"}</div>
                 <div className="text-[13px] text-[#6E6A62]">{d.company || "Company"}{d.location ? ` · ${d.location}` : ""}{d.remote && d.remote !== "unknown" ? ` · ${REMOTE_LABEL[d.remote]}` : ""}</div>
                 <div className="mt-3"><span className="text-[11.5px] font-semibold bg-[#EDE7FF] rounded-full px-[9px] py-[3px]">{TYPE_LABEL[d.work_type || "full-time"]}</span></div>
-                {payLabel({ pay_min: d.pay_min ?? null, pay_max: d.pay_max ?? null, pay_per: d.pay_per || null, pay_note: d.pay_note || null }) && <div className="font-lora text-[22px] text-[#670821] mt-3">{payLabel({ pay_min: d.pay_min ?? null, pay_max: d.pay_max ?? null, pay_per: d.pay_per || null, pay_note: d.pay_note || null })}</div>}
+                {payLabel({ pay_min: d.pay_min ?? null, pay_max: d.pay_max ?? null, pay_per: d.pay_per || null, pay_note: d.pay_note || null }) && <div className="font-semibold text-[20px] text-[#670821] tabular-nums mt-3">{payLabel({ pay_min: d.pay_min ?? null, pay_max: d.pay_max ?? null, pay_per: d.pay_per || null, pay_note: d.pay_note || null })}</div>}
                 <div className="text-[12.5px] text-[#6E6A62] mt-1">{[d.hours_per_week ? `${d.hours_per_week} hrs a week` : "", d.length_text].filter(Boolean).join(" · ")}</div>
                 <div className="mt-4 inline-block text-[11px] font-bold tracking-[0.08em] uppercase bg-[#F8563A] text-white rounded-full px-4 py-[9px]">Apply on company site</div>
               </div>

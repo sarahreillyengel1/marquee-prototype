@@ -77,7 +77,7 @@ export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boole
       </div>
       <div className="col-start-2 sm:col-start-3 sm:text-right">
         <div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">Pay</div>
-        {pay ? <div className="font-lora text-[22px] leading-none text-dred whitespace-nowrap overflow-hidden text-ellipsis mt-[4px]" title={pay}>{pay}</div> : <div className="text-[14px] font-semibold text-ink leading-none mt-[6px]">Not listed</div>}
+        {pay ? <div className="font-semibold text-[20px] leading-none text-dred tabular-nums whitespace-nowrap overflow-hidden text-ellipsis mt-[4px]" title={pay}>{pay}</div> : <div className="text-[14px] font-semibold text-ink leading-none mt-[6px]">Not listed</div>}
       </div>
       <div style={{ gridColumn: "2 / -1" }} className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-hair pt-3">
         {facts.map(([k, v]) => <div key={k} className="min-w-0"><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink">{k}</div><div className="text-[14px] font-semibold text-ink mt-[3px] whitespace-nowrap overflow-hidden text-ellipsis" title={v}>{v}</div></div>)}
