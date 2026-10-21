@@ -21,6 +21,7 @@ export default function BrandShell({
         <div className="max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)] py-[14px] flex items-center justify-between gap-4">
           <Link href="/" className="text-[16.5px] font-medium tracking-[0.26em]">MARQUEE</Link>
           <div className="flex gap-3 sm:gap-5 items-center">
+            <Link href="/opportunities" className="inline-flex items-center gap-2 px-3 sm:px-4 py-[8px] rounded-full bg-blue border-[1.5px] border-ink text-ink text-[11.5px] sm:text-[12px] font-bold tracking-[0.1em] uppercase whitespace-nowrap hover:bg-ink hover:text-white transition-colors"><span aria-hidden>💰</span><span className="sm:hidden">Opportunities</span><span className="hidden sm:inline">Explore opportunities</span></Link>
             <Link href="/spotlight" className="px-4 sm:px-5 py-[9px] rounded-full border border-ink text-[13.5px] font-semibold whitespace-nowrap hover:bg-ink hover:text-white transition-colors"><span className="sm:hidden">Spotlight</span><span className="hidden sm:inline">Read Spotlight</span></Link>
             <Link href="/login" className="hidden sm:inline text-[13.5px] font-semibold whitespace-nowrap hover:text-dred transition-colors">Sign in</Link>
             <Link href="/join" className="px-4 sm:px-5 py-[10px] rounded-full bg-red text-white text-[13.5px] font-semibold hover:bg-dred transition-colors whitespace-nowrap"><span className="sm:hidden">Sign up</span><span className="hidden sm:inline">Sign Up Now</span></Link>
@@ -51,6 +52,7 @@ export default function BrandShell({
               { label: "Features", href: "/#inside" },
               { label: "How it works", href: "/#how" },
               { label: "Pricing", href: "/pricing" },
+              { label: "Opportunities", href: "/opportunities" },
               { label: "Career Blueprint", href: "/blueprint" },
             ]} />
             <FooterCol title="Company" links={[

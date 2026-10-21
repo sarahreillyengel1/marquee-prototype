@@ -32,6 +32,7 @@ export default function Join() {
       if (code) { setRef(code); localStorage.setItem("mq_ref", code); }
       const p = (q.get("promo") || q.get("code") || localStorage.getItem("mq_promo") || "").trim().toUpperCase().slice(0, 60);
       if (p) { setPromo(p); setPlan("founding_monthly"); localStorage.setItem("mq_promo", p); }
+      const src = (q.get("src") || "").trim().slice(0, 80); if (src) localStorage.setItem("mq_src", src);
       if (q.get("request") === "1") setView("request");
     } catch { /* storage blocked */ }
   }, []);
@@ -67,7 +68,7 @@ export default function Join() {
     try {
       // the affiliate who sent them, if any: Affonso stores it in a cookie when they land through an affiliate link
       const affonso = (document.cookie.match(/(?:^|; )affonso_referral=([^;]*)/) || [])[1] || "";
-      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref, promo, affonso: decodeURIComponent(affonso) }) });
+      const r = await fetch("/api/membership/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, ref, promo, affonso: decodeURIComponent(affonso), src: (() => { try { return localStorage.getItem("mq_src") || ""; } catch { return ""; } })() }) });
       const j = await r.json();
       if (j.url) {
         // the code was checked again on the server; if it no longer works, say so instead of charging full price
