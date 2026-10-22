@@ -164,7 +164,7 @@ const BLANK = {
   look: "classic", previous: [] as string[], photoPos: { x: 50, y: 25 }, photoZoom: 1, ennWing: "",
 };
 
-const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Student"];
+const TYPES = ["Professional", "Executive", "Entrepreneur", "Creative", "Coach", "Creator", "Educator", "Investor", "Student"];
 const WORK_LOC = ["Remote", "Hybrid", "In-Person"];
 const PROJECT_TYPES = ["Product Launch", "Campaign", "Fundraising", "Acquisition", "Redesign", "Product Development"];
 const MBTI = ["INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP", "I don't know"];
