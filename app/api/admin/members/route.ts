@@ -54,6 +54,20 @@ export async function GET() {
   };
   const byUser = new Map((profiles || []).map((p) => [p.user_id, p]));
   const codeBy = new Map((codes || []).filter((c) => c.redeemed_by).map((c) => [c.redeemed_by, c.code]));
+  // what Stripe knows: the promotion code typed at checkout (MARQUEE-BETA, MARQUEE-MEGAN…), and whether the first month is free
+  const { data: metas } = await db.from("profiles_meta").select("id,stripe_customer_id").not("stripe_customer_id", "is", null);
+  const stripeBy = new Map<string, { code: string; trialEnd: string | null; status: string }>();
+  if (stripeReady() && metas?.length) {
+    await Promise.all(metas.map(async (m) => {
+      try {
+        const subs = await stripe().subscriptions.list({ customer: m.stripe_customer_id as string, status: "all", limit: 1, expand: ["data.discounts.promotion_code"] });
+        const sub = subs.data[0]; if (!sub) return;
+        const d = ((sub as unknown as { discounts?: unknown[] }).discounts?.[0] ?? (sub as unknown as { discount?: unknown }).discount) as { promotion_code?: { code?: string } | string | null; coupon?: { name?: string } } | null | undefined;
+        const code = (d && typeof d === "object" && typeof d.promotion_code === "object" && d.promotion_code?.code) || (d && typeof d === "object" && d.coupon?.name) || "";
+        stripeBy.set(m.id, { code, trialEnd: sub.trial_end && sub.trial_end * 1000 > Date.now() ? new Date(sub.trial_end * 1000).toISOString() : null, status: sub.status });
+      } catch { /* no subscription */ }
+    }));
+  }
   const members = (users?.users || []).map((u) => {
     const m = (u.app_metadata || {}) as { plan?: string; founding_member?: boolean; subscription_status?: string; verified?: boolean; reviewed_at?: string; removed_at?: string; needs_password?: boolean; referral_reward_at?: string; referral_reward_credited?: boolean };
     const meta = (u.user_metadata || {}) as { full_name?: string };
@@ -65,7 +79,7 @@ export async function GET() {
       activeDays: daysBy.get(u.id)?.size || 0, lastActive: lastBy.get(u.id) || u.last_sign_in_at || "", builderVisits: builderBy.get(u.id) || 0, isAdmin: ADMINS.includes((u.email || "").toLowerCase()),
       name: meta.full_name || "", email: u.email || "", joined: u.created_at, lastSeen: u.last_sign_in_at || "",
       plan: m.plan || (codeBy.get(u.id) ? "invite code" : ""), status: m.subscription_status || "", founding: !!m.founding_member, verified: !!m.verified,
-      code: codeBy.get(u.id) || "", username: p?.username || "", publishedAt: p?.published_at || "",
+      code: codeBy.get(u.id) || stripeBy.get(u.id)?.code || "", freeUntil: stripeBy.get(u.id)?.trialEnd || "", username: p?.username || "", publishedAt: p?.published_at || "",
     };
   }).sort((a, b) => b.joined.localeCompare(a.joined));
   const wl = waitlist || [];

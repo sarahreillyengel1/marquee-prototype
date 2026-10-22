@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Member = { id: string; reviewedAt: string; removedAt: string; needsPassword?: boolean; referrals: number; referralsVerified: number; referralsInvited: number; rewardAt: string; rewardCredited: boolean; draftAt: string; progress: number; filled: string[]; payoutReady: boolean; meetingLink: boolean; activeDays: number; lastActive: string; builderVisits: number; isAdmin: boolean; name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; username: string; publishedAt: string };
+type Member = { id: string; reviewedAt: string; removedAt: string; needsPassword?: boolean; referrals: number; referralsVerified: number; referralsInvited: number; rewardAt: string; rewardCredited: boolean; draftAt: string; progress: number; filled: string[]; payoutReady: boolean; meetingLink: boolean; activeDays: number; lastActive: string; builderVisits: number; isAdmin: boolean; name: string; email: string; joined: string; lastSeen: string; plan: string; status: string; founding: boolean; verified: boolean; code: string; freeUntil?: string; username: string; publishedAt: string };
 type Wait = { email: string; first_name?: string | null; last_name?: string | null; status?: string | null; notes?: string | null; linkedin_url?: string | null; created_at: string };
 type Count = { name: string; count: number };
 type Span = { views: number; visitors: number };
@@ -91,7 +91,7 @@ export default function Admin() {
               <tr key={m.email}>
                 <td className={td}><span className="font-semibold">{m.name || "—"}</span>{m.verified && <span className="ml-2 text-[10.5px] font-semibold uppercase tracking-[0.08em] bg-[#670821] text-white px-[6px] py-[2px]">Verified</span>}</td>
                 <td className={td}><a href={`mailto:${m.email}`} className="hover:underline">{m.email}</a></td>
-                <td className={td}>{PLAN[m.plan] || m.plan || "—"}{m.code && <span className="text-[#6E6A62]"> · {m.code}</span>}</td>
+                <td className={td}>{PLAN[m.plan] || m.plan || "—"}{m.code && <span className="text-[#6E6A62]"> · {m.code}</span>}{m.freeUntil && <span className="text-[#6E6A62]"> · free until {new Date(m.freeUntil).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}</td>
                 <td className={td}>{m.status ? <span className={`text-[12px] font-semibold px-[8px] py-[3px] ${m.status === "active" ? "bg-[#EDE7FF] text-[#670821]" : "bg-[#F4F2EF] text-[#3a352f]"}`}>{m.status}</span> : "—"}{m.needsPassword && <div className="text-[11.5px] text-[#6E6A62] mt-1 whitespace-nowrap">Paid · no password yet</div>}</td>
                 <td className={td}>{day(m.joined)}</td>
                 <td className={td}>{m.username ? <a href={`/${m.username}`} target="_blank" rel="noopener" className="text-[#670821] font-semibold hover:underline">/{m.username} ↗</a> : <span className="text-[#9C968C]">Not published</span>}</td>
