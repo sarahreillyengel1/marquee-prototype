@@ -14,7 +14,7 @@ import { parseMinutes, parsePriceCents } from "./booking";
 export interface BuilderSnapshot {
   types: string[]; name: string; headline: string; bio: string; photoUrl?: string; city: string; loc: string;
   openNow: boolean; dob: string;
-  socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string };
+  socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string; spotify?: string; apple?: string };
   focus: string;
   entries: { kind: "role" | "project"; logo?: string; industries?: string[]; stage?: string; ptype?: string; primary: string; secondary: string; dates: string; desc: string; result: string; featured: boolean }[];
   arch: string[]; mbti: string; enn: string; ennWing?: string; disc: string;
@@ -83,7 +83,8 @@ const absUrl = (u?: string): string | undefined => { const v = (u || "").trim();
 export function builderToProfile(s: BuilderSnapshot, username: string): Profile {
   const socials: Social[] = ([
     ["linkedin", s.socials?.linkedin], ["instagram", s.socials?.instagram], ["x", s.socials?.x],
-    ["tiktok", s.socials?.tiktok], ["website", s.socials?.website],
+    ["tiktok", s.socials?.tiktok], ["youtube", s.socials?.youtube], ["substack", s.socials?.substack],
+    ["spotify", s.socials?.spotify], ["apple", s.socials?.apple], ["website", s.socials?.website],
   ] as const)
     .filter(([, url]) => url && url.trim())
     .map(([kind, url]) => ({ kind, url: absUrl(url as string) as string, visible: true }));

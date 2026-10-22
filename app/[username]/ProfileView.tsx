@@ -86,6 +86,10 @@ const P: Record<string, string> = {
   pin: '<path d="M12 21s-7-5.4-7-11a7 7 0 0 1 14 0c0 5.6-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   "chevron-right": '<path d="M9 6l6 6-6 6"/>',
   globe2: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/>',
+  youtube: '<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/>',
+  substack: '<path d="M4 5h16M4 9h16M4 13h16v6l-8-3.5L4 19z"/>',
+  spotify: '<circle cx="12" cy="12" r="9"/><path d="M7.5 10.2c3.2-.9 6.3-.6 9 .9M8.2 13c2.6-.7 5-.4 7.2.8M8.9 15.6c2-.5 3.8-.3 5.4.6"/>',
+  apple: '<circle cx="12" cy="11" r="2.6"/><path d="M8.8 15.5a4.8 4.8 0 1 1 6.4 0M6.6 18.2a8 8 0 1 1 10.8 0M10.6 21h2.8l.5-4.3h-3.8z"/>',
 };
 
 export function Icon({ name, className = "ic", fill = false, style }: { name: string; className?: string; fill?: boolean; style?: CSSProperties }) {
@@ -96,7 +100,7 @@ export function Icon({ name, className = "ic", fill = false, style }: { name: st
 }
 
 export const socialIcon: Record<string, string> = {
-  linkedin: "linkedin", instagram: "instagram", x: "xlogo", tiktok: "tiktok", website: "globe2",
+  linkedin: "linkedin", instagram: "instagram", x: "xlogo", tiktok: "tiktok", youtube: "youtube", substack: "substack", spotify: "spotify", apple: "apple", website: "globe2",
 };
 
 /* ─────────────── local store (replaces marquee-app/src/store.tsx) ─────────────── */

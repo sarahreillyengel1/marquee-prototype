@@ -43,7 +43,7 @@ export interface OpenToItem {
 }
 
 export interface Social {
-  kind: 'linkedin' | 'instagram' | 'x' | 'tiktok' | 'website'
+  kind: 'linkedin' | 'instagram' | 'x' | 'tiktok' | 'youtube' | 'substack' | 'spotify' | 'apple' | 'website'
   url: string
   visible: boolean
 }

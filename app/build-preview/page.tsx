@@ -142,7 +142,7 @@ const BLANK_OFFERS: Offer[] = [
 ];
 const BLANK = {
   types: [] as string[], name: "", headline: "", bio: "", photoUrl: "", city: "", loc: "Remote", openNow: true, dob: "",
-  socials: { website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "" },
+  socials: { website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "", spotify: "", apple: "" },
   focus: "", entries: [] as Entry[], arch: [] as string[], mbti: "", enn: "", disc: "",
   ledTeam: false, yearsLed: "", largestTeam: "", orgs: "", philosophy: "",
   ftEnabled: false, ftRoles: "", offers: BLANK_OFFERS,
@@ -214,7 +214,7 @@ export default function BuildPreview() {
   const [loc, setLoc] = useState("Remote");
   const [openNow, setOpenNow] = useState(true);
   const [dob, setDob] = useState("");
-  const [socials, setSocials] = useState({ website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "" });
+  const [socials, setSocials] = useState({ website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "", spotify: "", apple: "" });
   const toggleType = (t: string) => setTypes((c) => (c.includes(t) ? c.filter((x) => x !== t) : c.length < 3 ? [...c, t] : c));
 
   // Experience
@@ -852,7 +852,7 @@ export default function BuildPreview() {
                 <p className="text-[12px] text-[#7d7a74] mt-[6px]">Brands you have worked at or with. Shown at the bottom of your header, in this order.</p>
               </div>
               <div className="mt-6 max-w-[600px]">
-                <label className="font-sans text-[13px] font-semibold block mb-1">Look</label>
+                <label className="font-sans text-[13px] font-semibold block mb-1">Design</label>
                 <p className="text-[12px] text-[#7d7a74] mb-[10px]">The colours of your profile. Layout and type are the same in all four.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
                   {LOOKS.map((l) => (
@@ -876,6 +876,8 @@ export default function BuildPreview() {
                 <SocialField label="TikTok" v={socials.tiktok} on={(x) => setSocials((s) => ({ ...s, tiktok: x }))} ph="tiktok.com/@you" />
                 <SocialField label="YouTube" v={socials.youtube} on={(x) => setSocials((s) => ({ ...s, youtube: x }))} ph="youtube.com/@you" />
                 <SocialField label="Substack" v={socials.substack} on={(x) => setSocials((s) => ({ ...s, substack: x }))} ph="you.substack.com" />
+                <SocialField label="Spotify" v={socials.spotify || ""} on={(x) => setSocials((s) => ({ ...s, spotify: x }))} ph="open.spotify.com/show/…" />
+                <SocialField label="Apple Podcasts" v={socials.apple || ""} on={(x) => setSocials((s) => ({ ...s, apple: x }))} ph="podcasts.apple.com/…" />
               </div></div>
               <div className="mt-6 max-w-[280px]"><label className="font-sans text-[13px] font-semibold block mb-2">Date of birth <span className="font-normal text-[#7d7a74]">· private, never shown</span></label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full font-inter text-[14px] py-[10px] px-[13px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /></div>
             </>
