@@ -3,7 +3,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { currentUserId } from "@/lib/booking-server";
 
 // Public. GET /api/opportunities -> every published job, featured first then newest, plus the viewer's saved ids.
-// POST { id, save: true|false } (signed in) -> save or unsave.
+// POST { id, save: true|false } (signed in) -> save or unsave. POST { id, applied: true } -> they pressed Apply.
 export const dynamic = "force-dynamic";
 const PUBLIC_COLS = "id,slug,title,company,company_url,company_blurb,work_type,function,seniority,location,remote,pay_min,pay_max,pay_per,pay_note,hours_per_week,start_text,length_text,skills,source,featured,published_at,last_checked_at,deadline,require_marquee";
 
@@ -20,10 +20,13 @@ export async function GET() {
 export async function POST(req: Request) {
   const me = await currentUserId();
   if (!me) return NextResponse.json({ error: "Sign in to save opportunities." }, { status: 401 });
-  const { id, save } = await req.json().catch(() => ({})) as { id?: number; save?: boolean };
+  const { id, save, applied } = await req.json().catch(() => ({})) as { id?: number; save?: boolean; applied?: boolean };
   if (!id) return NextResponse.json({ error: "Which one?" }, { status: 400 });
   const db = createServerSupabase();
-  if (save) await db.from("saved_opportunities").upsert({ user_id: me, opportunity_id: id });
+  if (applied) { // they pressed Apply: keep the row and stamp it (the column may not exist yet; then just keep it saved)
+    const { error } = await db.from("saved_opportunities").upsert({ user_id: me, opportunity_id: id, applied_at: new Date().toISOString() });
+    if (error) await db.from("saved_opportunities").upsert({ user_id: me, opportunity_id: id });
+  } else if (save) await db.from("saved_opportunities").upsert({ user_id: me, opportunity_id: id });
   else await db.from("saved_opportunities").delete().eq("user_id", me).eq("opportunity_id", id);
   return NextResponse.json({ ok: true });
 }

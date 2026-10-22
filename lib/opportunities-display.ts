@@ -3,7 +3,7 @@
 import { REMOTE_LABEL, payLabel } from "@/lib/opportunities";
 type Row = { location: string | null; remote: string | null; hours_per_week: number | null; start_text: string | null; length_text: string | null; work_type: string; pay_min: number | null; pay_max: number | null; pay_per: string | null; pay_note: string | null };
 
-export const initials = (company: string) => company.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
+export const initials = (company: string) => company.replace(/[^A-Za-z0-9\s]/g, " ").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
 const SMALL = new Set(["and", "or", "of", "the", "for", "to", "in", "on", "with", "a", "an"]);
 /** "direct-response creative strategy" -> "Direct-Response Creative Strategy". Words already in caps (DTC, SaaS) stay. */
 export const titleCase = (s: string) => s.trim().split(/\s+/).map((w, i) => (w === w.toUpperCase() || /[A-Z]/.test(w.slice(1)) ? w : (i > 0 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.split("-").map((p) => (p ? p[0].toUpperCase() + p.slice(1) : p)).join("-")))).join(" ");

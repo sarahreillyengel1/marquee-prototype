@@ -20,7 +20,7 @@ export default function JobActions({ id, slug, title, company, applyUrl, saved: 
   };
   return (
     <div className="flex flex-col items-start md:items-end gap-3">
-      <a href={applyUrl} target="_blank" rel="noopener" className="inline-block text-[12.5px] font-bold tracking-[0.08em] uppercase bg-red text-white rounded-full px-6 py-[13px] hover:bg-dred transition-colors">Apply on company site</a>
+      <a href={applyUrl} target="_blank" rel="noopener" onClick={() => { if (signedIn) fetch("/api/opportunities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, applied: true }), keepalive: true }).catch(() => null); }} className="inline-block text-[12.5px] font-bold tracking-[0.08em] uppercase bg-red text-white rounded-full px-6 py-[13px] hover:bg-dred transition-colors">Apply on company site</a>
       {requireMarquee && <div className="text-[12.5px] text-ink/70 md:text-right max-w-[260px]">Have your Marquee link ready. This company asks for it when you apply.</div>}
       <div className="flex items-center gap-4 text-[13.5px] font-semibold">
         <button type="button" onClick={save} className="flex items-center gap-[6px] hover:text-dred"><svg width="14" height="14" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><path d="M6 3h12v18l-6-4-6 4z" /></svg>{saved ? "Saved" : "Save"}</button>
