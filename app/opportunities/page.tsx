@@ -10,16 +10,32 @@ import { WORK_TYPES, TYPE_LABEL, FUNCTIONS, FUNCTION_LABEL, SENIORITY, SENIORITY
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
 const PLACES: [string, string][] = [["remote", "Remote"], ["hybrid", "Hybrid"], ["onsite", "On-site"]];
 const top = (j: JobRow) => j.pay_max || j.pay_min || 0;
-const PAY: [string, string, (j: JobRow) => boolean][] = [
-  ["h100", "$100+ an hour", (j) => j.pay_per === "hour" && top(j) >= 100],
-  ["h150", "$150+ an hour", (j) => j.pay_per === "hour" && top(j) >= 150],
-  ["h200", "$200+ an hour", (j) => j.pay_per === "hour" && top(j) >= 200],
-  ["m5", "$5K+ a month", (j) => j.pay_per === "month" && top(j) >= 5000],
-  ["m10", "$10K+ a month", (j) => j.pay_per === "month" && top(j) >= 10000],
-  ["y100", "$100K+ a year", (j) => j.pay_per === "year" && top(j) >= 100000],
-  ["y150", "$150K+ a year", (j) => j.pay_per === "year" && top(j) >= 150000],
-  ["y200", "$200K+ a year", (j) => j.pay_per === "year" && top(j) >= 200000],
+const between = (per: string, lo: number, hi: number) => (j: JobRow) => j.pay_per === per && top(j) >= lo && top(j) < hi;
+const PAY_YEAR: [string, string, (j: JobRow) => boolean][] = [
+  ["y0", "Under $100K", between("year", 1, 100000)],
+  ["y100", "$100K – $150K", between("year", 100000, 150000)],
+  ["y150", "$150K – $200K", between("year", 150000, 200000)],
+  ["y200", "$200K – $300K", between("year", 200000, 300000)],
+  ["y300", "$300K and up", between("year", 300000, 1e12)],
 ];
+const PAY_MONTH: [string, string, (j: JobRow) => boolean][] = [
+  ["m0", "Under $5K", between("month", 1, 5000)],
+  ["m5", "$5K – $10K", between("month", 5000, 10000)],
+  ["m10", "$10K – $20K", between("month", 10000, 20000)],
+  ["m20", "$20K and up", between("month", 20000, 1e12)],
+];
+const PAY_HOUR: [string, string, (j: JobRow) => boolean][] = [
+  ["h0", "Under $75", between("hour", 1, 75)],
+  ["h75", "$75 – $100", between("hour", 75, 100)],
+  ["h100", "$100 – $150", between("hour", 100, 150)],
+  ["h150", "$150 – $250", between("hour", 150, 250)],
+  ["h250", "$250 and up", between("hour", 250, 1e12)],
+];
+const PAY_OTHER: [string, string, (j: JobRow) => boolean][] = [
+  ["project", "Project fee", (j) => j.pay_per === "project" && top(j) > 0],
+  ["none", "Pay not listed", (j) => !top(j)],
+];
+const PAY = [...PAY_YEAR, ...PAY_MONTH, ...PAY_HOUR, ...PAY_OTHER];
 const HOURS: [string, string, (j: JobRow) => boolean][] = [
   ["u10", "Under 10 a week", (j) => !!j.hours_per_week && j.hours_per_week < 10],
   ["10-20", "10–20 a week", (j) => !!j.hours_per_week && j.hours_per_week >= 10 && j.hours_per_week <= 20],
@@ -91,23 +107,27 @@ export default function OpportunitiesBoard() {
 
   const summary = [types.size ? [...types].map((t) => TYPE_LABEL[t]).join(", ") : "", places.size ? [...places].map((p) => PLACES.find(([k]) => k === p)?.[1]).join(", ") : "", pay.size ? [...pay].map((p) => PAY.find(([k]) => k === p)?.[1]).join(", ") : ""].filter(Boolean).join(" · ");
   const chip = (on: boolean) => `px-[14px] py-[8px] rounded-full text-[13.5px] font-semibold border transition-colors ${on ? "bg-ink text-white border-ink" : "bg-white border-hair hover:border-ink"}`;
-  const Side = ({ title, items, set, setter, skip }: { title: string; items: [string, string, (j: JobRow) => boolean][]; set: Set<string>; setter: (s: Set<string>) => void; skip: string }) => (
+  const Side = ({ title, items, set, setter, skip }: { title: string; items: [string, string, (j: JobRow) => boolean][]; set: Set<string>; setter: (s: Set<string>) => void; skip: string }) => {
+    const visible = items.filter(([, , f]) => !rows.length || set.size || rows.some(f));
+    if (!visible.length) return null;
+    return (
     <div className="mb-6">
       <div className="text-[11px] font-bold tracking-[0.14em] uppercase mb-2">{title}</div>
-      {items.filter(([, , f]) => !rows.length || set.size || rows.some(f)).map(([k, label, f]) => (
+      {visible.map(([k, label, f]) => (
         <label key={k} className="flex items-center gap-[10px] py-[5px] text-[14px] cursor-pointer">
           <input type="checkbox" checked={set.has(k)} onChange={() => toggle(set, setter, k)} className="accent-[#7C1226]" /><span className="flex-1">{label}</span><span className="text-[12px] text-ink/50 tabular-nums">{count(skip, f)}</span>
         </label>
       ))}
     </div>
-  );
+    );
+  };
 
   return (
     <BrandShell source="opportunities">
       <section className="bg-blue">
         <div className={`${WRAP} py-[clamp(36px,5vw,64px)]`}>
           <div className="max-w-[820px]">
-            <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.18em] uppercase text-dred"><span className="inline-flex w-[26px] h-[26px] rounded-full bg-dred text-white items-center justify-center font-lora text-[15px] leading-none" aria-hidden>$</span>Opportunities</div>
+            <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.18em] uppercase text-dred"><span aria-hidden className="text-[18px] leading-none">💰</span>Opportunities</div>
             <h1 className="font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,5vw,50px)] mt-2">Find your next opportunity.</h1>
             <p className="text-[clamp(15px,1.8vw,17px)] leading-[1.55] text-ink mt-4">Explore curated full-time, fractional, consulting, project, and advisory opportunities from companies looking for experienced professionals.</p>
             <Link href="/opportunities/post" className="lg:hidden inline-block mt-3 text-[12.5px] font-semibold underline underline-offset-2 hover:text-dred">Hiring? Post an opportunity</Link>
@@ -134,7 +154,10 @@ export default function OpportunitiesBoard() {
               <Link href="/opportunities/post" className="block w-full text-center whitespace-nowrap mt-4 text-[11.5px] font-bold tracking-[0.06em] uppercase bg-white text-dred rounded-full px-3 py-[10px] hover:bg-beige transition-colors">Post an opportunity</Link>
             </div>
             <Side title="Location" items={LOCS} set={locs} setter={setLocs} skip="locs" />
-            <Side title="Pay" items={PAY} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · a year" items={PAY_YEAR} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · a month" items={PAY_MONTH} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · an hour" items={PAY_HOUR} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · other" items={PAY_OTHER} set={pay} setter={setPay} skip="pay" />
             <Side title="Hours" items={HOURS} set={hours} setter={setHours} skip="hours" />
             <Side title="Seniority" items={SENIORITY.filter((s) => s !== "other").map((s) => [s, SENIORITY_LABEL[s], (j: JobRow) => j.seniority === s] as [string, string, (j: JobRow) => boolean])} set={sen} setter={setSen} skip="sen" />
             <Side title="Function" items={FUNCTIONS.filter((f) => f !== "other").map((f) => [f, FUNCTION_LABEL[f], (j: JobRow) => j.function === f] as [string, string, (j: JobRow) => boolean])} set={fns} setter={setFns} skip="fns" />
