@@ -141,95 +141,6 @@ const sarah: Profile = {
   sections: { impact: false, superpowers: false, media: true, education: true, activeProjects: false, portfolio: false },
 }
 
-// ── Creator / Coach — Michaela. Podcast + 1:1s + retreats. Media-led, no work history. ──
-const michaela: Profile = {
-  name: 'Michaela Reilly',
-  headline: 'Psychedelic Facilitator · Educator · Advocate · Podcast Host',
-  location: 'Boston, MA',
-  available: true,
-  availableLabel: 'Booking sessions & retreats',
-  verified: true,
-  photoUrl: '/images/michaela.jpg', // Michaela's real photo (cropped, border removed)
-  tagline: 'Discover true freedom.',
-  focusLabel: '', // her line is a motto, not a "Currently" statement
-  look: 'warm',
-  ownMediaColors: true, // her tiles were coloured by hand
-  foundingMember: true, // granted by Sarah, 2026-09-29
-  slug: 'michaelareilly',
-  tags: ['Internal Family Systems', 'Psychedelic Integration', 'Art Therapy', 'Somatics', 'Non Duality', 'Retreats', 'Podcast Host', 'Speaker'],
-  types: { primary: 'creator', secondary: 'coach' },
-  enabledSections: ['media', 'testimonials', 'education'],
-  actions: [
-    { type: 'Contact', label: 'Get in touch', destination: 'contact' },
-    { type: 'Listen', label: 'The Psychedelic Mom', destination: 'https://www.thepsychedelicmom.com/podcast' },
-    { type: 'Attend', label: 'Join a retreat', destination: 'https://www.thepsychedelicmom.com/waitlist' },
-    { type: 'Explore', label: 'Services', destination: 'https://www.thepsychedelicmom.com/services' },
-  ],
-  bioShort:
-    'My own deep journey led me through psychedelics, non-dual pointings, and eventually into supporting others in returning to their true, unconditioned nature.',
-  bioLong: [
-    'I work with individuals, groups, and organizations as a psychedelic facilitator, retreat leader, speaker, and advocate. I hold space for both psychedelic retreats and creative art retreats, using a blend of ceremonial work, parts work, somatic inquiry, non-dual pointings, and art as a path to awakening.',
-    'I\'m also the host of the Psychedelic Mom Podcast, where I explore the journey of deconditioning and discovering uncaused peace.',
-  ],
-  bookedFor: ['Integration sessions', 'Retreats', 'Speaking', 'Consulting'],
-  highlights: [
-    '100+ episodes · The Psychedelic Mom, ranked top 3% globally',
-    'Invited to the Mystic Summit at Necker Island — one of 20 psychedelic leaders',
-    'Founder, Psychedelic Integration Community of Boston · Creator of The Luminous Path Method',
-  ],
-  rating: { stars: 5, count: 100, label: 'Top 3% podcast globally' },
-  testimonial: {
-    quote: 'Through my work facilitating healing with ancient medicines, I have witnessed what was once thought to be unbeatable begin to transform—in Google executives seeking clarity, peace negotiators carrying the weight of conflict, Buddhist monks deepening their practice, and communities left behind. I believe we are in a global mental health crisis that collaboration, personalized support, and earth medicines can heal.',
-    who: 'Michaela Reilly',
-  },
-  socials: [
-    { kind: 'instagram', url: 'https://www.instagram.com/thepsychedelicmom', visible: true },
-    { kind: 'website', url: 'https://www.thepsychedelicmom.com', visible: true },
-  ],
-  openTo: [
-    { key: 'advisory', label: 'Integration Sessions', note: '1:1 · virtual', visible: true },
-    { key: 'project', label: 'Retreats', note: 'Small groups · seasonal', visible: true },
-    { key: 'speaking', label: 'Speaking', note: 'Talks & workshops', visible: true },
-  ],
-  // Request-only for this profile — no rates shown, no booking (flow: message).
-  engagements: [
-    { key: 'advisory', icon: 'compass', title: 'Integration Sessions', price: 'Request', rateDisplay: 'contact', visible: true, flow: 'message', blurb: 'A grounded 1:1 to integrate your experience into daily life.' },
-    { key: 'project', icon: 'file', title: 'Retreats', price: 'Request', rateDisplay: 'contact', visible: true, flow: 'message', blurb: 'Small-group seasonal retreats — ceremony, breathwork, and rest.' },
-    { key: 'speaking', icon: 'play-circle', title: 'Speaking', price: 'Request', rateDisplay: 'contact', visible: true, flow: 'message', blurb: 'Talks and workshops on motherhood, medicine, and integration.' },
-  ],
-  singlePage: true,
-  beta: true,
-  inquiryEmail: 'michaelacarlin@thepsychedelicmom.com',
-  stats: [],
-  activeProjects: [],
-  roles: [],
-  impact: [],
-  leadership: [],
-  leadershipBelief: '',
-  values: [],
-  superpowers: [],
-  skills: [],
-  media: [
-    { id: 's1', type: 'Podcast', title: 'The Psychedelic Mom — latest episodes', bg: '#CBD8C0', image: '/images/mich-media1.jpg', darkText: true, play: true, url: 'https://www.thepsychedelicmom.com/podcast', source: 'Listen' },
-    { id: 's2', type: 'Podcast', title: 'A Traditional Mom Tries Non-Traditional Therapies', bg: '#C9DDF7', image: '/images/mich-media2.jpg', darkText: true, play: true, url: 'https://podcasts.apple.com/us/podcast/a-traditional-mom-tries-non-traditional-therapies/id1565522799?i=1000638222404', source: 'Apple Podcasts' },
-    { id: 's3', type: 'Speaking', title: 'On family awakening & healing — The Revelation Project', bg: '#F0D3BE', image: '/images/mich-media3.jpg', darkText: true, play: true, url: 'https://revelationproject.fireside.fm/175', source: 'Listen' },
-    { id: 's4', type: 'Video', title: 'YouTube — talks, practices & teachings', bg: '#B9CBB2', darkText: true, url: 'https://www.youtube.com/channel/UCOi4nhUhdZRyAN60V-Gh_OA', source: 'Watch on YouTube' },
-    { id: 's5', type: 'Podcast', title: 'Psychedelics: All We’ve Uncovered & Where We’re Headed', bg: '#D9E3EC', darkText: true, play: true, url: 'https://www.thepsychedelicmom.com/podcast/episode119', source: 'Episode 119' },
-  ],
-  portfolio: [],
-  education: [
-    { id: 'c1', short: 'PF', title: 'Psychedelic Facilitation', sub: 'Synthesis Institute' },
-    { id: 'c2', short: 'MP', title: 'Medicine Painting Facilitator', sub: 'Shiloh Sophia' },
-    { id: 'c3', short: 'IS', title: 'Psychedelic Integration Specialist', sub: 'Being True to You' },
-    { id: 'c4', short: 'SD', title: 'Certificate in Spiritual Direction', sub: 'Still Harbor' },
-    { id: 'c5', short: 'RK', title: 'Reiki Practitioner', sub: '' },
-    { id: 'c6', short: 'BW', title: 'Breathwork Facilitator', sub: '' },
-    { id: 'c7', short: 'TM', title: 'Transcendental Meditation Teacher', sub: '' },
-    { id: 'me4', short: 'BA', title: 'Boston College', sub: 'BA, Communications' },
-  ],
-  sections: { impact: false, superpowers: false, media: true, education: true, activeProjects: false, portfolio: false },
-}
-
 // ── SAMPLE — Maren Voss. An invented person: no real individual, company or publication.
 //    Built to show a full profile: media, press, case studies, a shop, booking and offers.
 //    `sample: true` puts a "Sample profile" banner on the page so nobody takes it for real. ──
@@ -385,6 +296,6 @@ const maren: Profile = {
 // NOTE: the `sarah` fixture is intentionally NOT registered — marquee.bio/sarah must never
 // serve a stock-photo stand-in for the real Sarah (her live profile is /sarahreillyengel).
 export const DEMO_PROFILES: Record<string, Profile> = {
-  morgan, michaela, michaelareilly: michaela,
+  morgan,
   marenvoss: maren, sample: maren,
 }
