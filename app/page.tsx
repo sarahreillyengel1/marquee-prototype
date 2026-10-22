@@ -189,7 +189,7 @@ export default function HomePage() {
         <div className={`${WRAP} text-center`}>
           <h2 className={H2}>Claim your Marquee.</h2>
           <div className={`${SCRIPT} mt-5`}>marquee.bio/yourname</div>
-          <div className="mt-8"><Link href="/join" className={`${BTN} bg-red text-white hover:bg-white hover:text-dred`}>Sign Up Now</Link></div>
+          <div className="mt-8"><Link href="/join" className={`${BTN} bg-red text-white hover:bg-white hover:text-dred`}>Sign up</Link></div>
         </div>
       </section>
 
