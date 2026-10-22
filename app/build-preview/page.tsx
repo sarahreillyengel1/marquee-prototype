@@ -619,6 +619,9 @@ export default function BuildPreview() {
   const publish = async () => {
     const u = pubUsername.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!u) { setPubResult({ ok: false, msg: "Choose a username." }); return; }
+    // a page needs a person on it before it goes public
+    if (!name.trim()) { setPubResult({ ok: false, msg: "Add your name in About You before you publish." }); return; }
+    if (!headline.trim() && !bio.trim()) { setPubResult({ ok: false, msg: "Add a headline or a short bio in About You before you publish." }); return; }
     if (["terms", "privacy", "about", "join", "login", "signup", "admin", "api", "dashboard", "stats", "booking", "blueprint", "spotlight", "community", "community-feedback", "analytics", "jobs", "opportunities", "pricing", "business", "settings"].includes(u)) { setPubResult({ ok: false, msg: "That username is reserved — try another." }); return; }
     setPublishing(true); setPubResult(null);
     try {
