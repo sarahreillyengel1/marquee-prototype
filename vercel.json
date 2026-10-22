@@ -25,5 +25,11 @@
       "destination": "https://marquee.bio/:path*",
       "permanent": true
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "beta-merge": false,
+      "main": false
+    }
+  }
 }
