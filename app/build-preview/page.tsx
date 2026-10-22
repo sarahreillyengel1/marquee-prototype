@@ -655,7 +655,7 @@ export default function BuildPreview() {
               return (
                 <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
                   <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
-                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Imported</span> : null}</span>
+                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s === "Resume" ? "Import" : s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Resume, LinkedIn or website</span> : null}</span>
                 </div>
               );
             })}
