@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     if (!/^https?:\/\//i.test(apply_url)) return NextResponse.json({ error: "Add the link where people apply, starting with https://." }, { status: 400 });
     const row = {
       title, company, apply_url,
-      company_url: orNull(str(r.company_url, 300)), company_blurb: orNull(str(r.company_blurb, 160)),
+      company_url: orNull(str(r.company_url, 300)), company_blurb: orNull(str(r.company_blurb, 240)),
       work_type: pick(WORK_TYPES, r.work_type, "full-time"), function: pick(FUNCTIONS, r.function, null), seniority: pick(SENIORITY, r.seniority, null),
       location: orNull(str(r.location, 120)), remote: pick(REMOTE, r.remote, "unknown"),
       pay_min: num(r.pay_min), pay_max: num(r.pay_max), pay_per: pick(PAY_PER, r.pay_per, null), pay_note: orNull(str(r.pay_note, 120)),

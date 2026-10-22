@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* ── HERO (white) ── */}
       <section className={`${SECTION} pt-[clamp(48px,6vw,86px)]`}>
-        <div className={`${WRAP} grid md:grid-cols-[1.1fr_.9fr] gap-[clamp(30px,5vw,72px)] items-center`}>
+        <div className={`${WRAP} grid lg:grid-cols-[.8fr_1.2fr] gap-[clamp(30px,4vw,56px)] items-center`}>
           <div>
             <h1 className={H1}>One place for every way you work and earn.</h1>
             <p className="text-[clamp(17px,2.2vw,22px)] font-semibold leading-[1.4] mt-[18px] max-w-[600px]">Your professional profile, link-in-bio, and storefront.</p>
@@ -95,10 +95,10 @@ export default function HomePage() {
               <span className="text-[16px]"><b>marquee.bio/</b><span className="text-ink/50">yourname</span></span>
             </div>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden lg:block lg:-mr-[clamp(0px,4vw,60px)]">
             <HeroVisual />
           </div>
-          <div className="md:hidden mt-4">
+          <div className="lg:hidden mt-4">
             <HeroVisualMobile />
           </div>
         </div>
@@ -398,18 +398,19 @@ const HERO_ACTIONS: [string, string][] = [
 ];
 function HeroVisual() {
   const [t, setT] = useState(0);
-  useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3200); return () => clearInterval(id); }, []);
+  useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3600); return () => clearInterval(id); }, []);
   const n = HERO_ACTIONS.length;
-  const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 1) % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 3) % n], HERO_ACTIONS[(t + 4) % n]];
-  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[10px] shadow-[0_14px_34px_rgba(17,17,17,0.12)] px-4 py-[10px] text-[12px] leading-[1.35] hv-card";
-  const tag = "block text-[10px] font-bold tracking-[0.12em] uppercase text-dred mb-[2px]";
-  const pos = ["left-[0%] top-[0%]", "left-[-2%] top-[40%]", "right-[-2%] top-[17%]", "left-[2%] bottom-[0%]", "right-[-3%] top-[60%]"];
+  const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 4) % n]];
+  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[14px] shadow-[0_18px_44px_rgba(17,17,17,0.15)] px-6 py-[15px] text-[15.5px] leading-[1.35] hv-card";
+  const tag = "block text-[11.5px] font-bold tracking-[0.12em] uppercase text-dred mb-[4px]";
+  // three cards around the edges: top left over the browser bar, right above the phone, bottom left over the link bar. Never over the profile itself.
+  const pos = ["left-[3%] top-[0%]", "right-[0%] top-[14%]", "left-[0%] bottom-[4%]"];
   return (
-    <div className="relative w-full max-w-[760px] mx-auto aspect-[760/660] hero-visual">
-      <div className="absolute left-0 top-[64px] w-[84%] rounded-[10px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+    <div className="relative w-full max-w-[980px] mx-auto aspect-[980/720] hero-visual">
+      <div className="absolute left-0 top-[48px] w-[84%] rounded-[12px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
-      <div className="absolute right-0 bottom-[24px] w-[28%] aspect-[9/17.4] rounded-[28px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+      <div className="absolute right-[2%] bottom-0 w-[27%] aspect-[9/17.4] rounded-[30px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
         <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
       </div>
       {slots.map(([k, v], i) => (

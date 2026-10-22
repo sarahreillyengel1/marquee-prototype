@@ -78,6 +78,8 @@ export default function OpportunitiesBoard() {
   };
   const LOCS = useMemo(() => locationItems(rows), [rows]);
   const list = useMemo(() => rows.filter((j) => passes(j)), [rows, q, place, types, places, pay, hours, sen, fns, locs]); // eslint-disable-line react-hooks/exhaustive-deps
+  const featured = useMemo(() => list.filter((j) => j.featured), [list]);
+  const rest = useMemo(() => list.filter((j) => !j.featured), [list]);
   const count = (skip: string, test: (j: JobRow) => boolean) => rows.filter((j) => passes(j, skip) && test(j)).length;
 
   const save = async (id: number, next: boolean) => {
@@ -147,14 +149,53 @@ export default function OpportunitiesBoard() {
             {note && <div className="text-[13px] text-dred mb-3">{note}</div>}
             {!loaded && <div className="text-[14px] text-ink/60">Loading…</div>}
             {loaded && list.length === 0 && <div className="bg-white border border-hair rounded-[14px] p-8 text-[15px] text-ink/70">{rows.length ? "Nothing matches those filters yet." : "The first opportunities are on their way."}</div>}
+            {featured.length > 0 && (
+              <section className="mb-6">
+                <div className="flex items-center gap-3 mb-3"><span className="text-[11px] font-bold tracking-[0.16em] uppercase bg-dred text-white rounded-full px-[10px] py-[4px]">Featured</span><span className="text-[13.5px] text-ink">Roles the Marquee team is highlighting this week.</span></div>
+                <div className="grid gap-3 p-3 rounded-[18px] bg-[#EDE7FF]">{featured.map((j) => <JobCard key={j.id} j={j} saved={saved.has(j.id)} onSave={save} />)}</div>
+              </section>
+            )}
             <div className="grid gap-3">
-              {list.slice(0, shown).map((j) => <JobCard key={j.id} j={j} saved={saved.has(j.id)} onSave={save} />)}
+              {rest.slice(0, shown).map((j, i) => (
+                <div key={j.id} className="contents">
+                  <JobCard j={j} saved={saved.has(j.id)} onSave={save} />
+                  {i === 2 && !signedIn && <PromoCard />}
+                </div>
+              ))}
             </div>
-            {list.length > shown && <div className="text-center mt-6"><button type="button" onClick={() => setShown(shown + 20)} className="text-[12.5px] font-bold tracking-[0.08em] uppercase border border-ink rounded-full px-5 py-[10px] hover:bg-ink hover:text-white transition-colors">Load more</button></div>}
-            {!signedIn && loaded && rows.length > 0 && <p className="text-[13.5px] text-ink/60 mt-8">Save opportunities and get found for the next one: <Link href="/join?src=opportunities" className="underline underline-offset-2 text-ink hover:text-dred">claim your Marquee</Link>.</p>}
+            {rest.length > shown && <div className="text-center mt-6"><button type="button" onClick={() => setShown(shown + 20)} className="text-[12.5px] font-bold tracking-[0.08em] uppercase border border-ink rounded-full px-5 py-[10px] hover:bg-ink hover:text-white transition-colors">Load more</button></div>}
+            {!signedIn && loaded && rows.length > 0 && <PromoBand />}
           </div>
         </div>
       </section>
     </BrandShell>
+  );
+}
+
+/* Marquee for professionals, on the board. One the size of a listing, one band under the list. */
+function PromoCard() {
+  return (
+    <aside className="bg-[#EDE7FF] rounded-[14px] p-5 sm:p-6 grid sm:grid-cols-[1fr_auto] gap-4 items-center">
+      <div>
+        <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-dred">Marquee for professionals</div>
+        <h3 className="font-lora text-[24px] leading-[1.12] mt-2">Get found for roles like these.</h3>
+        <p className="text-[14.5px] leading-[1.55] text-ink mt-2 max-w-[560px]">One link with your experience, skills, rates and availability. Companies on Marquee can ask for it when you apply. Founding Member pricing during the beta.</p>
+      </div>
+      <Link href="/join?src=opportunities" className="inline-block text-[12.5px] font-bold tracking-[0.08em] uppercase bg-dred text-white rounded-full px-6 py-[13px] hover:bg-red transition-colors whitespace-nowrap">Claim your Marquee</Link>
+    </aside>
+  );
+}
+function PromoBand() {
+  return (
+    <aside className="mt-8 bg-dred text-white rounded-[14px] p-6 sm:p-8 grid md:grid-cols-[1fr_auto] gap-5 items-center">
+      <div>
+        <h3 className="font-lora text-[clamp(24px,3vw,32px)] leading-[1.1]">Get hired. Get booked. Sell your products. Get paid.</h3>
+        <p className="text-[15px] leading-[1.55] text-white/90 mt-2 max-w-[600px]">Build your Marquee once: profile, services, booking and store in one link. Save roles here, apply with your Marquee, and get discovered by the companies posting them.</p>
+      </div>
+      <div className="flex flex-col items-start md:items-end gap-2">
+        <Link href="/join?src=opportunities" className="inline-block text-[12.5px] font-bold tracking-[0.08em] uppercase bg-white text-dred rounded-full px-6 py-[13px] hover:bg-beige transition-colors whitespace-nowrap">Claim your Marquee</Link>
+        <span className="text-[13px] text-white/80">Founding Members: $20 a month or $200 a year.</span>
+      </div>
+    </aside>
   );
 }

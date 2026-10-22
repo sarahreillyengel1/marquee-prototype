@@ -41,7 +41,7 @@ export const slugify = (s: string) => s.toLowerCase().normalize("NFKD").replace(
 
 /** "$8K–$10K / mo", "$210K–$240K", "$150 / hr", "$30K project", or the note when there are no numbers. */
 export function payLabel(o: { pay_min: number | null; pay_max: number | null; pay_per: string | null; pay_note: string | null }): string {
-  const k = (n: number) => (n >= 10000 && n % 1000 === 0 ? `$${Math.round(n / 1000)}K` : n >= 10000 ? `$${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : `$${n.toLocaleString()}`);
+  const k = (n: number) => (n >= 100000 || (n >= 10000 && n % 1000 === 0) ? `$${Math.round(n / 1000)}K` : n >= 10000 ? `$${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : `$${n.toLocaleString()}`);
   const per = o.pay_per === "hour" ? " / hr" : o.pay_per === "month" ? " / mo" : o.pay_per === "year" ? " / yr" : o.pay_per === "project" ? " project" : "";
   if (o.pay_min && o.pay_max && o.pay_max !== o.pay_min) return `${k(o.pay_min)}–${k(o.pay_max)}${per}`;
   if (o.pay_min || o.pay_max) return `${k((o.pay_min || o.pay_max) as number)}${per}`;
@@ -109,7 +109,7 @@ ${text}`;
   const arr = (v: unknown, max: number, len: number) => (Array.isArray(v) ? v.map((x) => s(x, len)).filter(Boolean).slice(0, max) : []);
   const pick = <T extends readonly string[]>(list: T, v: unknown, dflt: string) => (list.includes(s(v, 20) as never) ? s(v, 20) : dflt);
   const out: Extracted = {
-    title: s(j.title, 140), company: s(j.company, 120), company_url: s(j.company_url, 300), company_blurb: s(j.company_blurb, 160),
+    title: s(j.title, 140), company: s(j.company, 120), company_url: s(j.company_url, 300), company_blurb: s(j.company_blurb, 240),
     work_type: pick(WORK_TYPES, j.work_type, "full-time"), function: pick(FUNCTIONS, j.function, "other"), seniority: pick(SENIORITY, j.seniority, "other"),
     location: s(j.location, 120), remote: pick(REMOTE, j.remote, "unknown"),
     pay_min: n(j.pay_min), pay_max: n(j.pay_max), pay_per: pick(PAY_PER, j.pay_per, ""), pay_note: s(j.pay_note, 120),
