@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* ── HERO (white) ── */}
       <section className={`${SECTION} pt-[clamp(48px,6vw,86px)]`}>
-        <div className={`${WRAP} grid lg:grid-cols-[.8fr_1.2fr] gap-[clamp(30px,4vw,56px)] items-center`}>
+        <div className={`${WRAP} grid lg:grid-cols-[.95fr_1.05fr] gap-[clamp(30px,4vw,56px)] items-center`}>
           <div>
             <h1 className={H1}>One place for every way you work and earn.</h1>
             <p className="text-[clamp(17px,2.2vw,22px)] font-semibold leading-[1.4] mt-[18px] max-w-[600px]">Your professional profile, link-in-bio, and storefront.</p>
@@ -95,7 +95,7 @@ export default function HomePage() {
               <span className="text-[16px]"><b>marquee.bio/</b><span className="text-ink/50">yourname</span></span>
             </div>
           </div>
-          <div className="hidden lg:block lg:-mr-[clamp(0px,4vw,60px)]">
+          <div className="hidden lg:block lg:-mr-[clamp(0px,3vw,40px)]">
             <HeroVisual />
           </div>
           <div className="lg:hidden mt-4">
@@ -402,7 +402,7 @@ function HeroVisual() {
   // three cards around the edges: top left over the browser bar, right above the phone, bottom left over the link bar. Never over the profile itself.
   const pos = ["left-[3%] top-[0%]", "right-[0%] top-[14%]", "left-[0%] bottom-[4%]"];
   return (
-    <div className="relative w-full max-w-[980px] mx-auto aspect-[980/720] hero-visual">
+    <div className="relative w-full max-w-[900px] mx-auto aspect-[900/660] hero-visual">
       <div className="absolute left-0 top-[48px] w-[84%] rounded-[12px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
