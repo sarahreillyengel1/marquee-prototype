@@ -435,8 +435,15 @@
 .mq-root .toast{ position:fixed; bottom:76px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 20px; border-radius:999px; font-size:13px; z-index:260; opacity:0; transition:.3s; pointer-events:none; }
 .mq-root .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 
+.mq-root .hamb-lbl{ display:none; }
+.mq-root .side-wrap{ display:contents; }
 @media (max-width:1080px){
   .mq-root .shell{ grid-template-columns:1fr; } .mq-root .side{ display:none; }
+  /* the Menu button in the top bar opens the owner menu over the page */
+  .mq-root .hamb{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+  .mq-root .hamb-lbl{ display:inline; }
+  .mq-root .shell.drawer .side{ display:block; position:fixed; top:60px; left:0; bottom:0; width:280px; background:#FBFAFD; z-index:70; box-shadow:0 20px 50px rgba(17,17,17,.18); border-right:1px solid var(--line); }
+  .mq-root .drawer-bg{ position:fixed; inset:60px 0 0 0; background:rgba(17,17,17,.28); z-index:65; }
   .mq-root .ewrap{ grid-template-columns:1fr; }
   .mq-root .edu-grid{ grid-template-columns:repeat(3,1fr); }
   /* phones and tablets: the page menu drops to its own row and scrolls sideways */

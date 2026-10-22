@@ -271,7 +271,7 @@ function OwnerTopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   return (
     <header className="topbar owner-only">
       <div className="topbar-in">
-        <div className="hamb" style={{ cursor: "pointer" }} onClick={onToggleSidebar} title="Collapse menu"><Icon name="panel-left" /></div>
+        <div className="hamb" style={{ cursor: "pointer" }} onClick={onToggleSidebar} title="Show or hide the menu"><Icon name="panel-left" /><span className="hamb-lbl">Menu</span></div>
         <div className="brand">MARQUEE</div>
         <div className="search" style={{ cursor: "pointer" }} onClick={() => toast("Search is coming soon")}><Icon name="search" style={{ width: 15, height: 15 }} /> Search people, companies, skills… <span className="kbd">⌘K</span></div>
         <div className="top-r">
@@ -1303,6 +1303,7 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
   const [editing, setEditing] = useState(false);
   const [modal, setModal] = useState<ModalContent>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [drawer, setDrawer] = useState(false); // narrow screens: the menu slides over the page instead of sitting beside it
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -1383,10 +1384,11 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
                   <button className={view === "public" ? "on" : ""} onClick={() => setView("public")}><Icon name="globe" /> Public</button>
                 </div>
               )}
-              <OwnerTopBar onToggleSidebar={() => setCollapsed((c) => !c)} />
+              <OwnerTopBar onToggleSidebar={() => { if (typeof window !== "undefined" && window.matchMedia("(max-width:1080px)").matches) setDrawer((d) => !d); else setCollapsed((c) => !c); }} />
               <PublicBar />
-              <div className={"shell" + (collapsed ? " collapsed" : "")}>
-                <Sidebar />
+              <div className={"shell" + (collapsed ? " collapsed" : "") + (drawer ? " drawer" : "")}>
+                {drawer && <div className="drawer-bg owner-only" onClick={() => setDrawer(false)} />}
+                <div className="side-wrap" onClick={() => { if (drawer) setDrawer(false); }}><Sidebar /></div>
                 <main className="main">{pages[page]}</main>
               </div>
               <PublicFooter />
