@@ -28,7 +28,7 @@ const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impac
 const HIDEABLE: Record<string, string> = { Experience: "experience", Leadership: "leadership", Impact: "impact", Skills: "skills", Superpowers: "superpowers", Values: "values", Testimonials: "testimonials", Education: "education", "Work With Me": "workwith", Media: "media", Reach: "reach", Shop: "store", CTA: "actions" };
 const LOOKS = [
   { key: "classic", name: "Classic", note: "Black, white, beige", sw: ["#FFFFFF", "#111111", "#E9E6DF", "#670821"] },
-  { key: "warm", name: "Warm", note: "Paper, sage, sky", sw: ["#F7F6F2", "#670821", "#A8CFFF", "#EED0BF"] },
+  { key: "warm", name: "Warm", note: "Paper, peach, sage, sky", sw: ["#F7F6F2", "#EED0BF", "#CBD8C0", "#C0DDFB"] },
   { key: "mono", name: "Mono", note: "Stone, light to dark", sw: ["#F7F6F2", "#E2DED5", "#CFC9BE", "#2E2C28"] },
   { key: "bold", name: "Bold", note: "Black, lavender, wine", sw: ["#FFFFFF", "#111111", "#C7B5FF", "#670821"] },
 ];
