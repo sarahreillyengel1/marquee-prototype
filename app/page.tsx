@@ -10,7 +10,7 @@ import { IconInstagram } from "@/components/icons";
 // ── shared class tokens (v7) ──
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
 const SECTION = "py-[clamp(32px,6vw,104px)]";
-const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,6.6vw,74px)]";
+const H1 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(30px,5.6vw,68px)]";
 const H2 = "font-lora font-normal tracking-[-0.01em] leading-[1.06] text-[clamp(23px,4vw,42px)]";
 const H3 = "font-lora font-normal leading-[1.15] text-[clamp(18px,3vw,27px)]";
 const EYEBROW = "text-[12px] font-bold tracking-[0.18em] uppercase text-dred";
@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* ── HERO (white) ── */}
       <section className={`${SECTION} pt-[clamp(48px,6vw,86px)]`}>
-        <div className={`${WRAP} grid lg:grid-cols-[.95fr_1.05fr] gap-[clamp(30px,4vw,56px)] items-center`}>
+        <div className={`${WRAP} grid lg:grid-cols-[.9fr_1.1fr] gap-[clamp(30px,4vw,56px)] items-center`}>
           <div>
             <h1 className={H1}>One place for every way you work and earn.</h1>
             <p className="text-[clamp(17px,2.2vw,22px)] font-semibold leading-[1.4] mt-[18px] max-w-[600px]">Your professional profile, link-in-bio, and storefront.</p>
@@ -397,16 +397,16 @@ function HeroVisual() {
   useEffect(() => { const id = setInterval(() => setT((x) => x + 1), 3600); return () => clearInterval(id); }, []);
   const n = HERO_ACTIONS.length;
   const slots = [HERO_ACTIONS[t % n], HERO_ACTIONS[(t + 2) % n], HERO_ACTIONS[(t + 4) % n]];
-  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[14px] shadow-[0_18px_44px_rgba(17,17,17,0.15)] px-6 py-[15px] text-[15.5px] leading-[1.35] hv-card";
-  const tag = "block text-[11.5px] font-bold tracking-[0.12em] uppercase text-dred mb-[4px]";
-  // three cards around the edges: top left over the browser bar, right above the phone, bottom left over the link bar. Never over the profile itself.
-  const pos = ["left-[3%] top-[0%]", "right-[0%] top-[14%]", "left-[0%] bottom-[4%]"];
+  const card = "absolute whitespace-nowrap bg-white border border-beigeLine rounded-[12px] shadow-[0_16px_40px_rgba(17,17,17,0.15)] px-5 py-[12px] text-[14px] leading-[1.35] hv-card";
+  const tag = "block text-[11px] font-bold tracking-[0.12em] uppercase text-dred mb-[3px]";
+  // three cards on the edges of the picture: hanging off the top left, the top right above the phone, and the bottom left. The profile itself stays clear.
+  const pos = ["left-[-4%] top-[2%]", "right-[-2%] top-[10%]", "left-[6%] bottom-[-3%]"];
   return (
-    <div className="relative w-full max-w-[900px] mx-auto aspect-[900/660] hero-visual">
-      <div className="absolute left-0 top-[48px] w-[84%] rounded-[12px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
+    <div className="relative w-full max-w-[900px] mx-auto aspect-[900/640] hero-visual">
+      <div className="absolute left-0 top-[40px] w-[84%] rounded-[12px] border border-beigeLine shadow-[0_26px_60px_rgba(17,17,17,0.14)] overflow-hidden bg-white hv-desk">
         <Image src="/images/home/profile.jpg" alt="A Marquee profile on a computer" width={1400} height={1029} className="w-full h-auto block" priority />
       </div>
-      <div className="absolute right-[2%] bottom-0 w-[27%] aspect-[9/17.4] rounded-[30px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
+      <div className="absolute right-[2%] bottom-0 w-[26%] aspect-[9/17.4] rounded-[30px] border-[6px] border-ink bg-white overflow-hidden shadow-[0_26px_60px_rgba(17,17,17,0.18)] hv-phone">
         <Image src="/images/home/links.jpg" alt="The same Marquee as a link in bio on a phone" width={600} height={1170} className="absolute inset-0 w-full h-full object-cover object-top" priority />
       </div>
       {slots.map(([k, v], i) => (
