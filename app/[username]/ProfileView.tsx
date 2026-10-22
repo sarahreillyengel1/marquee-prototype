@@ -278,7 +278,7 @@ function OwnerTopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           <button className="btn pur" style={{ padding: "9px 16px", fontSize: 13 }} onClick={() => { window.location.href = "/build-preview"; }}>Edit profile</button>
           <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("You’re all caught up — no new notifications")}><Icon name="bell" /><span className="bdg" /></span>
           <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("No new messages")}><Icon name="message" /></span>
-          <div className="tava" style={{ cursor: "pointer" }} onClick={() => toast("Account settings coming soon")}><div className="a">{initials}</div><Icon name="chevron-down" style={{ width: 15, height: 15, color: "var(--gray)" }} /></div>
+          <div className="tava" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/settings"; }}><div className="a">{initials}</div><Icon name="chevron-down" style={{ width: 15, height: 15, color: "var(--gray)" }} /></div>
         </div>
       </div>
     </header>
@@ -324,7 +324,7 @@ function Sidebar() {
         <div key={label} className="nav-item" style={{ cursor: "pointer" }} onClick={() => p && goto(p)}><Icon name={ic} />{label}</div>
       ))}
       <div className="nav-lbl">Settings</div>
-      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/build-preview"; }}><Icon name="settings" />Profile settings</div>
+      <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/settings"; }}><Icon name="settings" />Settings</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => toast("Privacy controls coming soon")}><Icon name="lock" />Privacy</div>
       <div className="nav-item" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/analytics"; }}><Icon name="chart" />Analytics</div>
       <div className="strength">

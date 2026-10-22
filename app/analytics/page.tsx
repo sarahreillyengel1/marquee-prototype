@@ -53,6 +53,7 @@ export default function Analytics() {
         <span className="font-sans text-[13px] font-medium tracking-[0.26em]">MARQUEE</span>
         <div className="flex items-center gap-4 text-[13px]">
           {d?.username && <Link href={`/${d.username}`} className="text-[#7d7a74] hover:text-brand-ink">View profile</Link>}
+          <Link href="/settings" className="text-[#7d7a74] hover:text-brand-ink">Settings</Link>
           <Link href="/build-preview" className="font-sans font-semibold bg-brand-ink text-white py-[8px] px-[14px] hover:bg-[#670821]">Edit profile</Link>
         </div>
       </div>

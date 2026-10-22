@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - send unauthenticated users to LOGIN (existing users),
   // preserving where they were headed so login can return them there.
-  const protectedPaths = ["/onboard", "/dashboard", "/build-preview", "/analytics", "/business/opportunities"];
+  const protectedPaths = ["/onboard", "/dashboard", "/build-preview", "/analytics", "/business/opportunities", "/settings"];
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
@@ -69,5 +69,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/onboard/:path*", "/dashboard/:path*", "/build-preview/:path*", "/analytics/:path*", "/business/opportunities/:path*", "/signup"],
+  matcher: ["/onboard/:path*", "/dashboard/:path*", "/build-preview/:path*", "/analytics/:path*", "/business/opportunities/:path*", "/settings/:path*", "/signup"],
 };
