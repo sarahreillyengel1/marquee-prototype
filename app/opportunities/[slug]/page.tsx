@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const j = await load(params.slug);
   if (!j) return { title: "Job not found · Marquee" };
   const pay = cardPay(j);
-  return { title: `${j.title} at ${j.company} · Marquee Opportunities`, description: `${TYPE_LABEL[j.work_type] || j.work_type}${whereLabel(j) ? ` · ${whereLabel(j)}` : ""}${pay ? ` · ${pay}` : ""}. ${(j.description || "").slice(0, 150)}` };
+  return { alternates: { canonical: `https://marquee.bio/opportunities/${j.slug}` }, title: `${j.title} at ${j.company} · Marquee Opportunities`, description: `${TYPE_LABEL[j.work_type] || j.work_type}${whereLabel(j) ? ` · ${whereLabel(j)}` : ""}${pay ? ` · ${pay}` : ""}. ${(j.description || "").slice(0, 150)}` };
 }
 
 export default async function JobPage({ params }: { params: { slug: string } }) {
@@ -35,9 +35,27 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
   const pay = cardPay(j) || "Rate not listed";
   const facts: [string, string][] = [["Pay", pay], ["Hours", j.hours_per_week ? `${j.hours_per_week} a week` : ""], ["Start", j.start_text || ""], ["Length", j.length_text || ""]].filter(([, v]) => v) as [string, string][];
   const Label = ({ children }: { children: React.ReactNode }) => <div className="text-[11px] font-bold tracking-[0.14em] uppercase mb-3">{children}</div>;
+  // JobPosting structured data, as Google asks for it on the job page itself (not the board).
+  const posted = j.published_at || j.created_at;
+  const validThrough = j.deadline ? `${j.deadline}T23:59:59Z` : new Date(new Date(posted).getTime() + 60 * 86400000).toISOString();
+  const employmentType = j.work_type === "full-time" ? ["FULL_TIME"] : j.work_type === "fractional" ? ["PART_TIME", "CONTRACTOR"] : ["contract", "project", "interim"].includes(j.work_type) ? ["CONTRACTOR"] : ["OTHER"];
+  const remote = j.remote === "remote" || /remote|anywhere/i.test(j.location || "");
+  const unit = j.pay_per === "hour" ? "HOUR" : j.pay_per === "month" ? "MONTH" : j.pay_per === "year" ? "YEAR" : "";
+  const ld: Record<string, unknown> = {
+    "@context": "https://schema.org", "@type": "JobPosting",
+    title: j.title, description: [j.description, j.responsibilities.length ? "What you'll do: " + j.responsibilities.join("; ") : "", j.requirements.length ? "What they're looking for: " + j.requirements.join("; ") : ""].filter(Boolean).join("\n\n") || j.title,
+    datePosted: posted, validThrough, employmentType,
+    hiringOrganization: { "@type": "Organization", name: j.company, ...(j.company_url ? { sameAs: j.company_url } : {}) },
+    identifier: { "@type": "PropertyValue", name: "Marquee", value: j.slug },
+    url: `https://marquee.bio/opportunities/${j.slug}`, directApply: false,
+    ...(remote ? { jobLocationType: "TELECOMMUTE", applicantLocationRequirements: { "@type": "Country", name: "USA" } } : {}),
+    ...(j.location && !remote ? { jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: j.location, addressCountry: "US" } } } : {}),
+    ...(unit && (j.pay_min || j.pay_max) ? { baseSalary: { "@type": "MonetaryAmount", currency: "USD", value: { "@type": "QuantitativeValue", ...(j.pay_min ? { minValue: j.pay_min } : {}), ...(j.pay_max ? { maxValue: j.pay_max } : {}), unitText: unit } } } : {}),
+  };
 
   return (
     <BrandShell source="job">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <section className="bg-blue">
         <div className={`${WRAP} py-[clamp(28px,4vw,44px)]`}>
           <Link href="/opportunities" className="text-[13.5px] font-semibold hover:text-dred">&larr; Back to opportunities</Link>
