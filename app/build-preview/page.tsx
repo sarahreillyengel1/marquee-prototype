@@ -49,7 +49,7 @@ const TOUR_HINTS: Record<string, string> = {
   "Values": "What you won’t compromise on.",
   "Testimonials": "Words from people you’ve worked with.",
   "Education": "Schools, degrees, and certifications.",
-  "Mobile Links": "The short page for your social bio.",
+  "Mobile Links": "The short page for your social bio: your links, your businesses, your socials.",
   "Work With Me": "How people can hire, book, or work with you.",
   "Media": "Press, talks, writing, and portfolio.",
   "Shop": "Productize your expertise — templates, guides, courses.",
@@ -215,7 +215,7 @@ export default function BuildPreview() {
   const [openNow, setOpenNow] = useState(true);
   const [dob, setDob] = useState("");
   const [socials, setSocials] = useState({ website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "", spotify: "", apple: "" });
-  const toggleType = (t: string) => setTypes((c) => (c.includes(t) ? c.filter((x) => x !== t) : c.length < 3 ? [...c, t] : c));
+  const toggleType = (t: string) => setTypes((c) => (c.includes(t) ? c.filter((x) => x !== t) : c.length < 5 ? [...c, t] : c));
 
   // Experience
   const [focus, setFocus] = useState("Building Marquee, a personal brand platform for how people work today.");
@@ -658,7 +658,7 @@ export default function BuildPreview() {
               return (
                 <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
                   <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
-                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s === "Resume" ? "Import" : s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Resume, LinkedIn or website</span> : null}</span>
+                  <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s === "Resume" ? "Import" : s === "Mobile Links" ? "Social Links" : s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Resume, LinkedIn or website</span> : null}</span>
                 </div>
               );
             })}
@@ -824,7 +824,7 @@ export default function BuildPreview() {
               <p className="text-[15px] text-[#3a352f] max-w-[54ch] leading-[1.5] mb-7">The basics that anchor your profile. You can change any of this later.</p>
               <div className="mb-7">
                 <label className="font-sans text-[13px] font-semibold block mb-1">What kind of professional are you?</label>
-                <p className="text-[13px] text-[#7d7a74] mb-3">Pick up to 3. This shapes how your profile is laid out.</p>
+                <p className="text-[13px] text-[#7d7a74] mb-3">Pick up to 5. This shapes how your profile is laid out.</p>
                 <div className="flex flex-wrap gap-[10px]">
                   {TYPES.map((t) => { const on = types.includes(t); return <button key={t} onClick={() => toggleType(t)} className={`font-sans text-[14px] font-medium py-[11px] px-[18px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#3a352f] hover:border-[#3a352f]"}`}>{t}</button>; })}
                 </div>
@@ -1049,12 +1049,12 @@ export default function BuildPreview() {
             const tick = "flex items-center gap-2 font-sans text-[13px] cursor-pointer";
             return (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your Mobile Links.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your Social Links.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-6">The short version of your profile, made for phones. It&apos;s the link for your Instagram, TikTok or LinkedIn bio: your photo, a few buttons you choose, and a way into the full profile. You decide what shows and in what order.</p>
               <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-10 items-start">
                 <div>
                   <div className="border border-[#E1DED7] bg-white p-[16px] mb-5">
-                    <div className="font-sans text-[12px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-1">Your Mobile Links page</div>
+                    <div className="font-sans text-[12px] font-semibold uppercase tracking-[0.1em] text-[#7d7a74] mb-1">Your Social Links page</div>
                     <div className="font-sans text-[15px] font-semibold break-all">{addr}</div>
                     <label className={`${tick} mt-3`}><input type="checkbox" checked={spot.phoneFirst} onChange={(e) => setSpot((c) => ({ ...c, phoneFirst: e.target.checked }))} /> Also show this first when someone opens my main link on a phone</label>
                     <p className="text-[12px] text-[#7d7a74] mt-1">Your full profile is always one tap away, and always shows on a computer.</p>

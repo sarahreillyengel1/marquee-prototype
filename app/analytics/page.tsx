@@ -62,8 +62,6 @@ export default function Analytics() {
         <h1 className="font-lora text-[36px] leading-[1.05] mb-2">Your numbers.</h1>
         <p className="text-[14.5px] text-[#7d7a74] mb-8">Visits, bookings, sales, customers, and the opportunities you are following. Only you can see this.</p>
 
-        <MyOpportunities />
-
         {err && <div className={card}>{err}</div>}
         {!d && !err && <div className="text-[14px] text-[#7d7a74]">Loading…</div>}
         {d && !d.published && <div className={card}><p className="text-[15px]">Publish your profile first, then your numbers show up here.</p><Link href="/build-preview" className="inline-block mt-3 font-sans text-[13px] font-semibold underline">Open the builder</Link></div>}
@@ -87,6 +85,7 @@ export default function Analytics() {
             <SalesPanel />
           </>
         )}
+        <div className="mt-8"><MyOpportunities /></div>
       </div>
     </div>
   );

@@ -84,6 +84,7 @@ export default function Admin() {
           <p className="text-[12.5px] text-[#6E6A62] mb-3">Paste the &ldquo;Build your Marquee&rdquo; link from their welcome email (find it in Resend) and their account is created. They set a password from that same link.</p>
           <div className="flex gap-2 flex-wrap"><input value={payLink} onChange={(e) => setPayLink(e.target.value)} placeholder="https://marquee.bio/join/welcome?session_id=cs_live_…" className="flex-1 min-w-[260px] font-inter text-[13px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink" /><button disabled={!!busy || !payLink.trim()} onClick={fromPayment} className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[9px] px-4 hover:bg-[#4E0619] disabled:opacity-50">{busy === "pay" ? "Creating…" : "Create their account"}</button></div>
         </div>
+        <CodeRequests />
         <div className="flex items-baseline justify-between mb-2"><h2 className="font-lora text-[22px]">Members</h2><button onClick={() => copy(d.members.map((m) => m.email))} className="text-[12.5px] text-[#670821] font-semibold hover:underline">Copy all emails</button></div>
         <div className="bg-white border border-[#E1DED7] px-5 mb-9 overflow-x-auto">
           <table className="w-full border-collapse min-w-[1080px]"><thead><tr><th className={th}>Name</th><th className={th}>Email</th><th className={th}>Plan</th><th className={th}>Status</th><th className={th}>Joined</th><th className={th}>Profile</th><th className={th}>Review</th></tr></thead>
@@ -197,5 +198,23 @@ export default function Admin() {
         <p className="text-[12.5px] text-[#6E6A62]">Unused invite codes: {d.codesLeft.length ? d.codesLeft.join(" · ") : "none"}</p>
       </div>
     </main>
+  );
+}
+
+/* Who has asked for an invite code and is waiting on Sarah. Approve on /admin/requests. */
+type Req = { id: number; created_at: string; name: string; email: string; linkedin: string; status: string };
+function CodeRequests() {
+  const [rows, setRows] = useState<Req[] | null>(null);
+  useEffect(() => { fetch("/api/admin/requests").then(async (r) => (r.ok ? ((await r.json()).rows || []) : [])).then(setRows).catch(() => setRows([])); }, []);
+  const waiting = (rows || []).filter((r) => r.status === "pending");
+  return (
+    <>
+      <div className="flex items-baseline justify-between mb-2"><h2 className="font-lora text-[22px]">Code requests</h2><Link href="/admin/requests" className="text-[12.5px] underline underline-offset-2">All requests &rarr;</Link></div>
+      <div className="bg-white border border-[#E1DED7] px-5 py-4 mb-9 text-[13.5px]">
+        {rows === null ? "Loading…" : waiting.length === 0 ? <span className="text-[#6E6A62]">Nobody is waiting for a code. Requests from the join page show here the moment they come in.</span> : (
+          <div className="divide-y divide-[#F1EEE8]">{waiting.map((r) => <div key={r.id} className="py-2 flex flex-wrap gap-x-4 gap-y-1 items-center"><b>{r.name}</b><span>{r.email}</span>{r.linkedin && <a href={r.linkedin} target="_blank" rel="noopener" className="underline underline-offset-2 text-[#670821]">LinkedIn</a>}<span className="text-[#6E6A62]">{new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span><Link href="/admin/requests" className="ml-auto font-sans text-[12.5px] font-semibold text-white bg-[#670821] py-[6px] px-[12px]">Review</Link></div>)}</div>
+        )}
+      </div>
+    </>
   );
 }
