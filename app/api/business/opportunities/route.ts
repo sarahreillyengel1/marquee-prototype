@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       location: orNull(str(r.location, 120)), remote: pick(REMOTE, r.remote, "unknown"),
       pay_min: num(r.pay_min), pay_max: num(r.pay_max), pay_per: pick(PAY_PER, r.pay_per, null), pay_note: orNull(str(r.pay_note, 120)),
       hours_per_week: num(r.hours_per_week), start_text: orNull(str(r.start_text, 80)), length_text: orNull(str(r.length_text, 80)),
-      description: orNull(str(r.description, 4000)), responsibilities: list(r.responsibilities, 8, 240), requirements: list(r.requirements, 8, 240), skills: list(r.skills, 12, 40),
+      description: orNull(str(r.description, 12000)), responsibilities: list(r.responsibilities, 8, 240), requirements: list(r.requirements, 8, 240), skills: list(r.skills, 12, 40),
       deadline: /^\d{4}-\d{2}-\d{2}$/.test(str(r.deadline, 10)) ? str(r.deadline, 10) : null,
       require_marquee: pick(REQUIRE, r.require_marquee, "optional"),
       updated_at: new Date().toISOString(),
