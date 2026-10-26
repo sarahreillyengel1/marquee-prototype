@@ -124,6 +124,7 @@ ${text}`;
 
 /** Does the posting still exist? A network blip is "error", not "gone". */
 export async function checkPosting(url: string): Promise<"ok" | "gone" | "error"> {
+  if (url.startsWith("apply:")) return "ok"; // applications come to Marquee, nothing to check
   try {
     const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36" }, redirect: "follow", signal: AbortSignal.timeout(12000) });
     if (r.status === 404 || r.status === 410) return "gone";

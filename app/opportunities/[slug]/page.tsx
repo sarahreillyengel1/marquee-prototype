@@ -29,6 +29,8 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
   const j = await load(params.slug);
   if (!j) notFound();
   const me = await currentUserId();
+  let myMarquee = "";
+  if (me) { const { data: mine } = await createServerSupabase().from("published_profiles").select("username").eq("user_id", me).maybeSingle(); myMarquee = mine?.username || ""; }
   let saved = false;
   if (me) { const { data } = await createServerSupabase().from("saved_opportunities").select("opportunity_id").eq("user_id", me).eq("opportunity_id", j.id).maybeSingle(); saved = !!data; }
   const { data: others } = await createServerSupabase().from("opportunities").select("id,slug,title").eq("status", "published").eq("company", j.company).neq("id", j.id).limit(5);
@@ -67,7 +69,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
               <div className="text-[15px] text-ink/75 mt-2">{j.company}{whereLabel(j) ? ` · ${whereLabel(j)}` : ""}</div>
               {facts.length > 0 && <div className="flex flex-wrap gap-x-8 gap-y-3 mt-5">{facts.map(([k, v]) => <div key={k}><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink/60">{k}</div><div className="text-[15px] font-semibold mt-[2px]">{v}</div></div>)}</div>}
             </div>
-            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} />
+            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} myMarquee={myMarquee} />
           </div>
         </div>
       </section>

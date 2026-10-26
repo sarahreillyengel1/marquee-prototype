@@ -423,3 +423,16 @@ export async function sendOpportunityLive(to: string, name: string, title: strin
     p("You can edit or close it any time from your opportunities page.") +
     `<p style="font-size:16px;line-height:1.5;margin:22px 0 0;">Sarah</p>`, memberFoot), "sarah@marquee.bio");
 }
+
+/** An application sent through Marquee, to whoever posted the role. Reply goes to the applicant. The applicant gets a copy. */
+export async function sendApplication(m: { to: string; title: string; company: string; name: string; email: string; marquee: string; note: string; slug: string }) {
+  const link = `https://marquee.bio/opportunities/${m.slug}`;
+  await sendEmail(m.to, `Application · ${m.title} · ${m.name}`, shell(
+    p(`<strong>${esc(m.name)}</strong> applied for <strong>${esc(m.title)}</strong> at ${esc(m.company)} through Marquee.`) +
+    card(row("Email", esc(m.email)) + (m.marquee ? row("Marquee", `<a href="${esc(m.marquee)}" style="color:#670821;">${esc(m.marquee.replace("https://", ""))}</a>`) : "") + (m.note ? row("Note", esc(m.note).replace(/\n/g, "<br />")) : "")) +
+    p(`Reply to this email to answer them. <a href="${esc(link)}" style="color:#670821;">The listing</a>.`), "Sent from Apply on marquee.bio"), m.email);
+  return sendEmail(m.email, `Your application: ${m.title}`, shell(
+    p(`Hi ${esc(first(m.name) || "there")},`) +
+    p(`We sent your application for <strong>${esc(m.title)}</strong> at ${esc(m.company)}. They have your email${m.marquee ? " and your Marquee" : ""}, and they reply to you directly.`) +
+    `<div style="margin:22px 0 24px;">${wineButton(link, "See the listing")}</div>`, memberFoot));
+}
