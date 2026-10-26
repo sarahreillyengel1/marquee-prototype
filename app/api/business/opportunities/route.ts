@@ -60,7 +60,8 @@ export async function POST(req: Request) {
 
   if (b.action === "save") {
     const r = (b.row || {}) as Record<string, unknown>;
-    const title = str(r.title, 140), company = str(r.company, 120), apply_url = str(r.apply_url, 500);
+    const rawLink = str(r.apply_url, 500);
+    const title = str(r.title, 140), company = str(r.company, 120), apply_url = /^https?:\/\/(www\.)?marquee\.bio\/opportunities/i.test(rawLink) ? "apply:marquee" : rawLink;
     if (!title || !company) return NextResponse.json({ error: "Add the role title and your company." }, { status: 400 });
     if (!/^https?:\/\//i.test(apply_url)) return NextResponse.json({ error: "Add the link where people apply, starting with https://." }, { status: 400 });
     const row = {
