@@ -49,7 +49,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
     datePosted: posted, validThrough, employmentType,
     hiringOrganization: { "@type": "Organization", name: j.company, ...(j.company_url ? { sameAs: j.company_url } : {}) },
     identifier: { "@type": "PropertyValue", name: "Marquee", value: j.slug },
-    url: `https://marquee.bio/opportunities/${j.slug}`, directApply: false,
+    url: `https://marquee.bio/opportunities/${j.slug}`, directApply: j.apply_url.startsWith("apply:"),
     ...(remote ? { jobLocationType: "TELECOMMUTE", applicantLocationRequirements: { "@type": "Country", name: "USA" } } : {}),
     ...(j.location && !remote ? { jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: j.location, addressCountry: "US" } } } : {}),
     ...(unit && (j.pay_min || j.pay_max) ? { baseSalary: { "@type": "MonetaryAmount", currency: "USD", value: { "@type": "QuantitativeValue", ...(j.pay_min ? { minValue: j.pay_min } : {}), ...(j.pay_max ? { maxValue: j.pay_max } : {}), unitText: unit } } } : {}),

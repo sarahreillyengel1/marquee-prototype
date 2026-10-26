@@ -59,8 +59,9 @@ export async function POST(req: Request) {
 
   if (b.action === "save") {
     const r = (b.row || {}) as Record<string, unknown>;
-    const title = str(r.title, 140), company = str(r.company, 120), apply_url = str(r.apply_url, 500);
-    if (!title || !company || !(/^https?:\/\//i.test(apply_url) || apply_url === "apply:marquee")) return NextResponse.json({ error: "A title, a company and the application link are needed (or apply:marquee to take applications here)." }, { status: 400 });
+    const title = str(r.title, 140), company = str(r.company, 120), apply_url = str(r.apply_url, 500) || "apply:marquee"; // no link: applications come through Marquee
+    if (!title || !company) return NextResponse.json({ error: "A title and a company are needed." }, { status: 400 });
+    if (!(/^https?:\/\//i.test(apply_url) || apply_url === "apply:marquee")) return NextResponse.json({ error: "The application link must start with https://, or be left empty to take applications on Marquee." }, { status: 400 });
     const row = {
       title, company, apply_url,
       company_url: orNull(str(r.company_url, 300)), company_blurb: orNull(str(r.company_blurb, 240)),

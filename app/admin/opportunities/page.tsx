@@ -167,7 +167,7 @@ export default function OpportunitiesAdmin() {
               </div>
               <div><label className={lab}>Skills, comma separated</label><input value={d.skills.join(", ")} onChange={(e) => set({ skills: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} className={inp} /></div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><label className={lab}>Application link (Apply on company site)</label><input value={d.apply_url || ""} onChange={(e) => set({ apply_url: e.target.value })} placeholder="https://… or apply:marquee to take applications here" className={inp} /></div>
+                <div><label className={lab}>Application link</label><input value={d.apply_url === "apply:marquee" ? "" : d.apply_url || ""} onChange={(e) => set({ apply_url: e.target.value })} placeholder="Leave empty to take applications on Marquee, or https://…" className={inp} /></div>
                 <div><label className={lab}>Found on</label><input value={d.source || ""} onChange={(e) => set({ source: e.target.value })} placeholder="fractionaljobs.io" className={inp} /></div>
               </div>
               <div><label className={lab}>Qualifying questions, one per line, up to 3 (asked on Apply with Marquee)</label><textarea value={(d.questions || []).join("\n")} onChange={(e) => set({ questions: e.target.value.split("\n").slice(0, 3) })} rows={3} placeholder="Have you shipped a product from zero to launch?" className={inp} /></div>
@@ -177,6 +177,7 @@ export default function OpportunitiesAdmin() {
               </div>
               {d.posted_by && <div className="bg-[#EDE7FF] p-4 text-[13.5px]">Posted by <b>{d.poster_name || "a business"}</b> · {d.poster_email}. Publishing emails them that it is live.</div>}
               <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[#F1EEE8]">
+                {note && <div className="w-full text-[13.5px] text-[#AB0000]">{note}</div>}
                 <button type="button" onClick={() => save("published")} disabled={busy} className={dark}>{busy ? "Saving…" : "Publish"}</button>
                 <button type="button" onClick={() => save(d.status === "published" ? "published" : "draft")} disabled={busy} className={btn}>{d.status === "published" ? "Save changes" : "Save draft"}</button>
                 {d.source_url && <a href={d.source_url} target="_blank" rel="noopener" className="text-[13px] underline underline-offset-2 ml-auto">Open the original</a>}
