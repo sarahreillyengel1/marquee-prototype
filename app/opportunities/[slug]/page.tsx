@@ -69,7 +69,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
               <div className="text-[15px] text-ink/75 mt-2">{j.company}{whereLabel(j) ? ` · ${whereLabel(j)}` : ""}</div>
               {facts.length > 0 && <div className="flex flex-wrap gap-x-8 gap-y-3 mt-5">{facts.map(([k, v]) => <div key={k}><div className="text-[10.5px] font-bold tracking-[0.14em] uppercase text-ink/60">{k}</div><div className="text-[15px] font-semibold mt-[2px]">{v}</div></div>)}</div>}
             </div>
-            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} myMarquee={myMarquee} />
+            <JobActions id={j.id} slug={j.slug} title={j.title} company={j.company} applyUrl={j.apply_url} saved={saved} signedIn={!!me} requireMarquee={j.require_marquee === "yes"} myMarquee={myMarquee} questions={j.questions || []} />
           </div>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
             {j.responsibilities.length > 0 && <div className="mt-8"><Label>What you&apos;ll do</Label><ul className="space-y-2">{j.responsibilities.map((r) => <li key={r} className="flex gap-3 text-[15px] leading-[1.55]"><span className="text-dred mt-[2px]">&bull;</span>{r}</li>)}</ul></div>}
             {j.requirements.length > 0 && <div className="mt-8"><Label>What they&apos;re looking for</Label><ul className="space-y-2">{j.requirements.map((r) => <li key={r} className="flex gap-3 text-[15px] leading-[1.55]"><span className="text-dred mt-[2px]">&bull;</span>{r}</li>)}</ul></div>}
             {j.skills.length > 0 && <div className="mt-8"><Label>Skills</Label><div className="flex flex-wrap gap-2">{j.skills.map((s) => <span key={s} className="text-[13px] font-medium bg-beige rounded-full px-[12px] py-[5px]">{titleCase(s)}</span>)}</div></div>}
-            <p className="text-[12.5px] text-ink/50 mt-10">{j.source ? `Found on ${j.source}. ` : ""}{j.last_checked_at ? `Link checked ${new Date(j.last_checked_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}. ` : ""}Marquee links to the company&apos;s own application. We are not the employer.</p>
+            <p className="text-[12.5px] text-ink/50 mt-10">{j.apply_url.startsWith("apply:") ? "Applications come through Marquee and go straight to the company." : `${j.source ? `Found on ${j.source}. ` : ""}${j.last_checked_at ? `Link checked ${new Date(j.last_checked_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}. ` : ""}Marquee links to the company's own application. We are not the employer.`}</p>
           </div>
           <aside className="space-y-4">
             <div className="bg-[#EDE7FF] rounded-[14px] p-6">

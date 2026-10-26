@@ -73,6 +73,7 @@ export async function POST(req: Request) {
       deadline: /^\d{4}-\d{2}-\d{2}$/.test(str(r.deadline, 10)) ? str(r.deadline, 10) : null,
       featured: !!r.featured,
       require_marquee: pick(REQUIRE, r.require_marquee, "optional"),
+      questions: list(r.questions, 3, 200),
       status: ["draft", "published", "paused", "closed"].includes(str(r.status, 12)) ? str(r.status, 12) : "draft",
       updated_at: new Date().toISOString(),
     };

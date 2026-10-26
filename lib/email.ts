@@ -425,11 +425,11 @@ export async function sendOpportunityLive(to: string, name: string, title: strin
 }
 
 /** An application sent through Marquee, to whoever posted the role. Reply goes to the applicant. The applicant gets a copy. */
-export async function sendApplication(m: { to: string; title: string; company: string; name: string; email: string; marquee: string; note: string; slug: string }) {
+export async function sendApplication(m: { to: string; title: string; company: string; name: string; email: string; marquee: string; note: string; slug: string; answers?: { q: string; a: string }[] }) {
   const link = `https://marquee.bio/opportunities/${m.slug}`;
   await sendEmail(m.to, `Application · ${m.title} · ${m.name}`, shell(
     p(`<strong>${esc(m.name)}</strong> applied for <strong>${esc(m.title)}</strong> at ${esc(m.company)} through Marquee.`) +
-    card(row("Email", esc(m.email)) + (m.marquee ? row("Marquee", `<a href="${esc(m.marquee)}" style="color:#670821;">${esc(m.marquee.replace("https://", ""))}</a>`) : "") + (m.note ? row("Note", esc(m.note).replace(/\n/g, "<br />")) : "")) +
+    card(row("Email", esc(m.email)) + (m.marquee ? row("Marquee", `<a href="${esc(m.marquee)}" style="color:#670821;">${esc(m.marquee.replace("https://", ""))}</a>`) : "") + (m.answers || []).map((x) => row(x.q, esc(x.a).replace(/\n/g, "<br />"))).join("") + (m.note ? row("Note", esc(m.note).replace(/\n/g, "<br />")) : "")) +
     p(`Reply to this email to answer them. <a href="${esc(link)}" style="color:#670821;">The listing</a>.`), "Sent from Apply on marquee.bio"), m.email);
   return sendEmail(m.email, `Your application: ${m.title}`, shell(
     p(`Hi ${esc(first(m.name) || "there")},`) +

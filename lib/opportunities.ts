@@ -22,7 +22,7 @@ export interface Opportunity {
   description: string | null; responsibilities: string[]; requirements: string[]; skills: string[];
   apply_url: string; source: string | null; source_url: string | null; deadline: string | null;
   last_checked_at: string | null; check_status: string | null; published_at: string | null; closed_at: string | null;
-  posted_by?: string | null; poster_email?: string | null; poster_name?: string | null; require_marquee?: string | null;
+  posted_by?: string | null; poster_email?: string | null; poster_name?: string | null; require_marquee?: string | null; questions?: string[] | null;
 }
 export const REQUIRE = ["yes", "optional"] as const;
 export const REQUIRE_LABEL: Record<string, string> = { yes: "Marquee required to apply", optional: "Marquee optional" };

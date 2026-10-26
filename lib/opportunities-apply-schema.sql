@@ -10,3 +10,7 @@ create table if not exists public.applications (
   created_at timestamptz not null default now()
 );
 alter table public.applications enable row level security; -- no policies: only the server reads and writes
+
+-- qualifying questions on a role (up to 3), answered on Apply with Marquee
+alter table public.opportunities add column if not exists questions text[] not null default '{}';
+alter table public.applications add column if not exists answers jsonb;

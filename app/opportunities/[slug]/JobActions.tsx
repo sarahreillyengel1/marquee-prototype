@@ -3,18 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 
-export default function JobActions({ id, slug, title, company, applyUrl, saved: saved0, signedIn, requireMarquee, myMarquee }: { id: number; slug: string; title: string; company: string; applyUrl: string; saved: boolean; signedIn: boolean; requireMarquee?: boolean; myMarquee?: string }) {
+export default function JobActions({ id, slug, title, company, applyUrl, saved: saved0, signedIn, requireMarquee, myMarquee, questions = [] }: { id: number; slug: string; title: string; company: string; applyUrl: string; saved: boolean; signedIn: boolean; requireMarquee?: boolean; myMarquee?: string; questions?: string[] }) {
   const [saved, setSaved] = useState(saved0);
   const [note, setNote] = useState("");
   const here = applyUrl.startsWith("apply:"); // the role takes applications on Marquee
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ note: "" });
+  const [answers, setAnswers] = useState<string[]>(questions.map(() => ""));
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
   const apply = async () => {
+    if (questions.some((_, i) => !(answers[i] || "").trim())) { setErr("Please answer each question."); return; }
     setErr(""); setSending(true);
-    const r = await fetch("/api/opportunities/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, ...f }) });
+    const r = await fetch("/api/opportunities/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, ...f, answers }) });
     const j = await r.json().catch(() => ({}));
     setSending(false);
     if (!r.ok) { setErr(j.error || "Couldn't send. Try again."); return; }
@@ -50,7 +52,8 @@ export default function JobActions({ id, slug, title, company, applyUrl, saved: 
             <div className="space-y-3">
               <div className="font-semibold text-[15px]">Apply for {title}</div>
               <div className="text-[13px] text-ink/70">Applying as <b className="text-ink">marquee.bio/{myMarquee}</b></div>
-              <textarea value={f.note} onChange={(e) => setF({ note: e.target.value })} placeholder="A few lines on why you" rows={4} className={inp} />
+              {questions.map((q, i) => <div key={i}><div className="text-[13px] font-semibold mb-1">{q}</div><textarea value={answers[i] || ""} onChange={(e) => setAnswers((a) => a.map((x, k) => (k === i ? e.target.value : x)))} rows={2} className={inp} /></div>)}
+              <textarea value={f.note} onChange={(e) => setF({ note: e.target.value })} placeholder="Anything else" rows={3} className={inp} />
               {err && <div className="text-[13px] text-dred">{err}</div>}
               <div className="flex items-center gap-3"><button type="button" onClick={apply} disabled={sending} className="text-[12.5px] font-bold tracking-[0.08em] uppercase bg-dred text-white rounded-full px-5 py-[11px] disabled:opacity-50">{sending ? "Sending…" : "Send my Marquee"}</button><button type="button" onClick={() => setOpen(false)} className="text-[13px] underline underline-offset-2">Cancel</button></div>
             </div>
