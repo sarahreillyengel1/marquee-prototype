@@ -4,6 +4,7 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { stripe, stripeReady } from "@/lib/stripe";
 import { ensureMemberAccount, paidSession } from "@/lib/membership-server";
 import { grantReferralRewardIfDue } from "@/lib/referrals";
+import { removeProfile } from "@/lib/search/writer";
 
 // GET /api/admin/members -> everyone who has signed up, for the Marquee team only.
 // Members (accounts, plan, profile), the waitlist, and December 1 reminders.
@@ -204,7 +205,7 @@ export async function POST(req: Request) {
       }
     }
     const { data: gone } = await db.from("published_profiles").delete().eq("user_id", id).select("username");
-    if (gone?.length) notes.push(`profile /${gone[0].username} taken down`);
+    if (gone?.length) { notes.push(`profile /${gone[0].username} taken down`); removeProfile(db, gone[0].username).catch(() => null); }
     const { error } = await db.auth.admin.updateUserById(id, { ban_duration: "876000h", app_metadata: { ...app, founding_member: false, subscription_status: "removed", removed_at: now, removed_by: myEmail } });
     if (error) return NextResponse.json({ error: "The profile is down but the account couldn't be blocked. Please try again." }, { status: 500 });
     notes.push("account blocked");

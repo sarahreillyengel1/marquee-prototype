@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { sendOpportunityLive } from "@/lib/email";
+import { indexOpportunity, removeOpportunity } from "@/lib/search/writer";
 import { WORK_TYPES, FUNCTIONS, SENIORITY, REMOTE, PAY_PER, REQUIRE, slugify, fetchPostingText, extractOpportunity, checkPosting } from "@/lib/opportunities";
 
 // Marquee team only. Opportunities:
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
       if (error) return NextResponse.json({ error: "Couldn't save." }, { status: 500 });
       // a business posted it and Sarah just made it live: tell them
       if (row.status === "published" && cur?.status !== "published" && cur?.poster_email) sendOpportunityLive(cur.poster_email, cur.poster_name || "", row.title, cur.slug).catch(() => null);
+      indexOpportunity(db, data).catch((e) => console.error("search index opportunity:", e));
       return NextResponse.json({ row: data });
     }
     const base = slugify(`${company} ${title}`) || `job-${Date.now()}`;
@@ -99,6 +101,7 @@ export async function POST(req: Request) {
     }
     const { data, error } = await db.from("opportunities").insert({ ...row, slug, published_at: row.status === "published" ? new Date().toISOString() : null }).select("*").single();
     if (error) return NextResponse.json({ error: error.message.includes("opportunities") ? "The opportunities table doesn't exist yet. Run lib/opportunities-schema.sql in Supabase." : "Couldn't save." }, { status: 500 });
+    indexOpportunity(db, data).catch((e) => console.error("search index opportunity:", e));
     return NextResponse.json({ row: data });
   }
 
@@ -118,7 +121,9 @@ export async function DELETE(req: Request) {
   if (!(await allowed())) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { id } = await req.json().catch(() => ({})) as { id?: number };
   if (!id) return NextResponse.json({ error: "Which one?" }, { status: 400 });
-  const { error } = await createServerSupabase().from("opportunities").delete().eq("id", id);
+  const db = createServerSupabase();
+  const { error } = await db.from("opportunities").delete().eq("id", id);
   if (error) return NextResponse.json({ error: "Couldn't remove it." }, { status: 500 });
+  removeOpportunity(db, id).catch(() => null);
   return NextResponse.json({ ok: true });
 }

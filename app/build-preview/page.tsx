@@ -634,7 +634,11 @@ export default function BuildPreview() {
       const profile = { ...builderToProfile(snapshot(), u), verified, inquiryEmail: user.email || undefined };
       const { error } = await supabase.from("published_profiles").upsert({ username: u, user_id: user.id, profile, published_at: new Date().toISOString() });
       if (error) setPubResult({ ok: false, msg: "That username may be taken — try another." });
-      else { setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); setPublishedAt(new Date().toISOString()); }
+      else {
+        setPubResult({ ok: true, msg: u }); setClaimed(true); setPubUsername(u); setPublishedAt(new Date().toISOString());
+        // Find an Expert reads the storefront from the search index. The snapshot carries the Hide set, so hidden sections can match without showing.
+        fetch("/api/search/index", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: u, snapshot: snapshot() }) }).catch(() => null);
+      }
     } catch { setPubResult({ ok: false, msg: "Couldn't publish — try again." }); }
     setPublishing(false);
   };

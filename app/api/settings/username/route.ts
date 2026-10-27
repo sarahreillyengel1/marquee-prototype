@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { indexProfile, removeProfile } from "@/lib/search/writer";
+import type { Profile } from "@/lib/profile-types";
 
 // POST /api/settings/username { username } -> renames the member's page: marquee.bio/<username>
 export const dynamic = "force-dynamic";
@@ -24,6 +26,8 @@ export async function POST(req: Request) {
     const profile = { ...(mine.profile as Record<string, unknown>), slug: u };
     const { error } = await db.from("published_profiles").update({ username: u, profile }).eq("user_id", user.id);
     if (error) return NextResponse.json({ error: "Couldn't rename the page. Try again." }, { status: 500 });
+    // the search index is keyed by username: move the row. Topics are reused; hidden sections return at the next Publish.
+    removeProfile(db, mine.username).then(() => indexProfile(db, { username: u, userId: user.id, profile: profile as unknown as Profile, hidden: [], extras: {} })).catch((e) => console.error("search index rename:", e));
   }
   await db.from("profiles_meta").upsert({ id: user.id, username: u }).then(() => null, () => null);
   return NextResponse.json({ ok: true, username: u, published: !!mine });
