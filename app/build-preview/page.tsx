@@ -11,6 +11,7 @@ import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "
 import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES, ROLE_TYPES, ENTRY_KINDS } from "@/lib/company-tags";
 import type { WorkHistoryItem } from "@/types";
 import { Logo } from "@/components/Logo";
+import { NotificationsBell, CheckIn } from "@/components/TeamNotices";
 import { createBrowserSupabase } from "@/lib/supabase";
 import type { ResumeParseResult } from "@/types";
 import { builderToProfile } from "@/lib/builder-to-profile";
@@ -443,6 +444,8 @@ export default function BuildPreview() {
   const [photoSmall, setPhotoSmall] = useState(false);
   // Beta contact form: a question, a bug or a feature request, straight to the Marquee team
   const [fb, setFb] = useState<{ open: boolean; kind: string; message: string; state: "" | "sending" | "sent"; err: string }>({ open: false, kind: "Question", message: "", state: "", err: "" });
+  // "Share feedback" from the check-in pop-up lands here with ?feedback=1 and opens the form
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("feedback") === "1") { setFb((f) => ({ ...f, open: true })); window.history.replaceState(null, "", window.location.pathname); } }, []);
   const sendFb = async () => {
     if (fb.message.trim().length < 3) { setFb((f) => ({ ...f, err: "Write a few words first." })); return; }
     setFb((f) => ({ ...f, state: "sending", err: "" }));
@@ -682,6 +685,7 @@ export default function BuildPreview() {
         )}
       </aside>
 
+      <CheckIn />
       {inviteOpen && refInfo && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setInviteOpen(false)}>
           <div className="bg-white w-full max-w-[520px] p-7 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -718,6 +722,7 @@ export default function BuildPreview() {
       {/* ── MAIN ── */}
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-end items-center gap-4 py-5 px-10 border-b border-[#ECEAE4]">
+          <NotificationsBell />
           <button onClick={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await supabase.from("builder_drafts").upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() }); window.location.href = claimed && pubUsername ? `/${pubUsername}` : "/analytics"; }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Save and exit</button>
           {refInfo && <button onClick={() => { setInviteOpen(true); setInvNote(""); }} className="font-sans text-[13px] font-semibold text-white bg-[#670821] py-[7px] px-[12px] hover:bg-[#4E0619]">Invite friends{refInfo.verified ? ` · ${refInfo.verified} of ${refInfo.goal}` : ""}</button>}
           <button onClick={() => setFb((f) => ({ ...f, open: true, state: "", err: "" }))} className="font-sans text-[13px] font-semibold text-[#670821] bg-[#EDE7FF] py-[7px] px-[12px] hover:bg-[#E0D6FF]">Beta feedback</button>

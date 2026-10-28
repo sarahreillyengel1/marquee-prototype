@@ -28,6 +28,7 @@ import "./profile-design.css";
 import { ARCHETYPE_DESC } from "@/lib/archetypes";
 import { DEMO_PROFILES } from "@/lib/demo-profiles";
 import { BookingPicker, RequestForm, useSlots } from "./Booking";
+import { NotificationsBell, CheckIn } from "@/components/TeamNotices";
 import { BuyButton } from "./BuyButton";
 import type { Profile, ProfileLook, Engagement, MediaItem, ProjectCase, Role, StoreItem } from "@/lib/profile-types";
 
@@ -276,7 +277,7 @@ function OwnerTopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <div className="search" style={{ cursor: "pointer" }} onClick={() => toast("Search is coming soon")}><Icon name="search" style={{ width: 15, height: 15 }} /> Search people, companies, skills… <span className="kbd">⌘K</span></div>
         <div className="top-r">
           <button className="btn pur" style={{ padding: "9px 16px", fontSize: 13 }} onClick={() => { window.location.href = "/build-preview"; }}>Edit profile</button>
-          <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("You’re all caught up — no new notifications")}><Icon name="bell" /><span className="bdg" /></span>
+          <NotificationsBell tone="profile" />
           <span className="ibtn" style={{ cursor: "pointer" }} onClick={() => toast("No new messages")}><Icon name="message" /></span>
           <div className="tava" style={{ cursor: "pointer" }} onClick={() => { window.location.href = "/settings"; }}><div className="a">{initials}</div><Icon name="chevron-down" style={{ width: 15, height: 15, color: "var(--gray)" }} /></div>
         </div>
@@ -1393,6 +1394,7 @@ export function ProfileView({ profile, view: initialView }: { profile: Profile; 
               </div>
               <PublicFooter />
               <Modal content={modal} onClose={() => setModal(null)} />
+              {initialView === "owner" && !profile.sample && <CheckIn />}
               <div className={"toast" + (toast ? " on" : "")}>{toast}</div>
             </div>
           </ToastCtx.Provider>
