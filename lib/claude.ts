@@ -12,8 +12,8 @@ function getClient() {
 type ClaudeModel = "sonnet" | "haiku" | "reader";
 
 const MODEL_IDS: Record<ClaudeModel, string> = {
-  // Sonnet — for the high-quality creative work (profile generation)
-  sonnet: "claude-sonnet-4-20250514",
+  // Sonnet — for the high-quality creative work (profile generation). Sonnet 4 was retired Oct 2026.
+  sonnet: "claude-sonnet-5-5",
   // Haiku — ~3× faster, cheaper. Good enough for structured extraction (resume parse).
   haiku: "claude-haiku-4-5-20251001",
   // Reader — judgement over long lists of links (site scan).
@@ -27,12 +27,13 @@ export async function callClaude(
   const anthropic = getClient();
   const message = await anthropic.messages.create({
     model: MODEL_IDS[model],
-    max_tokens: 4096,
+    max_tokens: 16000,
     messages: [{ role: "user", content: prompt }],
   });
 
-  const block = message.content[0];
-  if (block.type === "text") {
+  // newer models can put a non-text block first; the answer is the first text block
+  const block = message.content.find((b) => b.type === "text");
+  if (block && block.type === "text") {
     return block.text;
   }
   throw new Error("Unexpected response type from Claude");
