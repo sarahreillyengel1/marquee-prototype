@@ -9,6 +9,7 @@
 create table if not exists public.notices (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
+  tag text not null default '',      -- Feature | Community | News | Update (see lib/team.ts NOTICE_TAGS)
   title text not null,
   body text not null default '',
   link_url text not null default '',
@@ -23,9 +24,15 @@ create table if not exists public.notice_reads (
   notice_id bigint not null references public.notices(id) on delete cascade,
   user_id uuid not null,
   read_at timestamptz not null default now(),
+  liked_at timestamptz,              -- set when the member gives the notice a thumbs up
+  dismissed_at timestamptz,          -- set when the member dismisses it; it leaves their list
   primary key (notice_id, user_id)
 );
 alter table public.notice_reads enable row level security;
+-- added 28 Oct 2026, for tables made before that day
+alter table public.notice_reads add column if not exists liked_at timestamptz;
+alter table public.notice_reads add column if not exists dismissed_at timestamptz;
+alter table public.notices add column if not exists tag text not null default '';
 
 create table if not exists public.checkins (
   id bigint generated always as identity primary key,

@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TEAM_CALL_URL, FEEDBACK_URL } from "@/lib/team";
 
-type Notice = { id: number; created_at: string; title: string; body: string; link_url: string; link_label: string; read: boolean };
+type Notice = { id: number; created_at: string; tag: string; title: string; body: string; link_url: string; link_label: string; read: boolean; liked: boolean };
 type Data = { notices: Notice[]; unread: number; checkin: 0 | 2 | 5 };
 const EMPTY: Data = { notices: [], unread: 0, checkin: 0 };
 
@@ -14,50 +14,88 @@ function load(): Promise<Data> {
   if (!pending) pending = fetch("/api/notices").then((r) => (r.ok ? r.json() : EMPTY)).catch(() => EMPTY);
   return pending;
 }
+const post = (body: Record<string, unknown>) => fetch("/api/notices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
 const when = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+// the newest notice this browser has been told about, so the callout under the bell shows once per notice
+const SEEN_KEY = "mq-notice-seen";
+const seenUpTo = () => { try { return Number(localStorage.getItem(SEEN_KEY) || 0); } catch { return 0; } };
+const markSeen = (id: number) => { try { localStorage.setItem(SEEN_KEY, String(id)); } catch { /* private window */ } };
 
 const BELL = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>;
+const CHECK = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}><circle cx="12" cy="12" r="9" /><path d="M8.5 12.2l2.3 2.3 4.7-4.8" /></svg>;
+const CLOSE = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" style={{ width: 16, height: 16 }}><path d="M6 6l12 12M18 6L6 18" /></svg>;
+const THUMB = (filled: boolean) => <svg viewBox="0 0 24 24" fill={filled ? "#670821" : "none"} stroke={filled ? "#670821" : "currentColor"} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" /><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" /></svg>;
 
 /** The bell. `tone` picks the colors: the profile's own bar is light; the builder bar is Tailwind. */
 export function NotificationsBell({ tone = "builder" }: { tone?: "profile" | "builder" }) {
   const [d, setD] = useState<Data>(EMPTY);
   const [open, setOpen] = useState(false);
+  const [nudge, setNudge] = useState<Notice | null>(null);
   const box = useRef<HTMLDivElement>(null);
-  useEffect(() => { load().then(setD); }, []);
   useEffect(() => {
-    if (!open) return;
-    const away = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    load().then((x) => {
+      setD(x);
+      // a notice this browser has not been told about yet: say so under the bell, once
+      const newest = x.notices.find((n) => !n.read);
+      if (newest && newest.id > seenUpTo()) { setNudge(newest); markSeen(newest.id); }
+    });
+  }, []);
+  useEffect(() => {
+    if (!open && !nudge) return;
+    const away = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) { setOpen(false); setNudge(null); } };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); setNudge(null); } };
     document.addEventListener("mousedown", away); document.addEventListener("keydown", esc);
     return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
-  }, [open]);
-  const toggle = () => {
-    const next = !open; setOpen(next);
-    if (next && d.unread > 0) {
-      fetch("/api/notices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ readAll: true }) }).catch(() => null);
-      setD((x) => ({ ...x, unread: 0, notices: x.notices.map((n) => ({ ...n, read: true })) }));
-    }
-  };
+  }, [open, nudge]);
+  // opening the list does not mark anything read: a notice is read when the member says so, follows its link, or dismisses it
+  const toggle = () => { setOpen(!open); setNudge(null); };
+  const update = (f: (n: Notice) => Notice | null) => setD((x) => { const notices = x.notices.map(f).filter((n): n is Notice => !!n); return { ...x, notices, unread: notices.filter((n) => !n.read).length }; });
+  const markRead = (id: number) => { post({ read: id }); update((n) => (n.id === id ? { ...n, read: true } : n)); };
+  const markAll = () => { post({ readAll: true }); update((n) => ({ ...n, read: true })); };
+  const dismiss = (id: number) => { post({ dismiss: id }); update((n) => (n.id === id ? null : n)); };
+  const like = (n: Notice) => { post(n.liked ? { unlike: n.id } : { like: n.id }); update((m) => (m.id === n.id ? { ...m, liked: !m.liked, read: true } : m)); };
   const color = tone === "profile" ? "var(--gray, #7d7a74)" : "#7d7a74";
+  const panel: React.CSSProperties = { position: "absolute", top: "calc(100% + 12px)", right: -8, background: "#fff", border: "1px solid #E1DED7", boxShadow: "0 12px 32px rgba(20,17,14,.12)", zIndex: 300, textAlign: "left" };
+  const iconBtn: React.CSSProperties = { display: "flex", alignItems: "center", gap: 5, background: "none", border: 0, padding: 4, cursor: "pointer", color: "#9C968C", fontFamily: "inherit", fontSize: 12, fontWeight: 600 };
+  const textBtn: React.CSSProperties = { fontFamily: "inherit", fontSize: 12, fontWeight: 600, color: "#670821", background: "none", border: 0, padding: 0, cursor: "pointer" };
   return (
     <div ref={box} style={{ position: "relative", display: "flex" }}>
-      <button type="button" onClick={toggle} aria-label={d.unread ? `${d.unread} new notifications` : "Notifications"} aria-expanded={open} style={{ position: "relative", display: "flex", background: "none", border: 0, padding: 0, cursor: "pointer", color: open ? "#1A1A1A" : color }}>
+      <button type="button" onClick={toggle} aria-label={d.unread ? `${d.unread} unread notifications` : "Notifications"} aria-expanded={open} style={{ position: "relative", display: "flex", background: "none", border: 0, padding: 0, cursor: "pointer", color: open ? "#1A1A1A" : d.unread ? "#670821" : color }}>
         {BELL}
-        {d.unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, width: 8, height: 8, background: "#670821", borderRadius: "50%", border: "2px solid #fff" }} />}
+        {d.unread > 0 && <span aria-hidden style={{ position: "absolute", top: -9, right: -10, minWidth: 18, height: 18, padding: "0 5px", boxSizing: "border-box", background: "#670821", color: "#fff", fontSize: 11, fontWeight: 700, lineHeight: "18px", textAlign: "center", fontFamily: "Inter, system-ui, sans-serif", outline: "2px solid #fff" }}>{d.unread}</span>}
       </button>
+      {nudge && !open && (
+        <div role="status" className="font-inter" style={{ ...panel, width: 300, maxWidth: "calc(100vw - 32px)", padding: "14px 16px", cursor: "pointer" }} onClick={toggle}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "#670821", marginBottom: 6 }}>New from Team Marquee{nudge.tag ? ` · ${nudge.tag}` : ""}</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.3 }}>{nudge.title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10 }}>
+            <button type="button" onClick={toggle} style={{ fontFamily: "inherit", fontSize: 13, fontWeight: 600, color: "#670821", background: "none", border: 0, padding: 0, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>Open</button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); setNudge(null); }} style={{ fontFamily: "inherit", fontSize: 13, color: "#7d7a74", background: "none", border: 0, padding: 0, cursor: "pointer" }}>Later</button>
+          </div>
+        </div>
+      )}
       {open && (
-        <div role="dialog" aria-label="Notifications" className="font-inter" style={{ position: "absolute", top: "calc(100% + 12px)", right: -8, width: 340, maxWidth: "calc(100vw - 32px)", background: "#fff", border: "1px solid #E1DED7", boxShadow: "0 12px 32px rgba(20,17,14,.12)", zIndex: 300, textAlign: "left" }}>
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #F1EEE8", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "#6E6A62" }}>From Team Marquee</div>
+        <div role="dialog" aria-label="Notifications" className="font-inter" style={{ ...panel, width: 360, maxWidth: "calc(100vw - 32px)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid #F1EEE8" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "#6E6A62", flex: 1 }}>From Team Marquee</div>
+            {d.unread > 0 && <button type="button" onClick={markAll} style={textBtn}>Mark all as read</button>}
+          </div>
           <div style={{ maxHeight: 420, overflowY: "auto" }}>
             {d.notices.length === 0 && <div style={{ padding: "22px 16px", fontSize: 13.5, color: "#7d7a74" }}>Nothing new yet.</div>}
             {d.notices.map((n) => (
-              <div key={n.id} style={{ padding: "14px 16px", borderBottom: "1px solid #F1EEE8" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.3 }}>{n.title}</div>
+              <div key={n.id} style={{ padding: "14px 12px 12px 16px", borderBottom: "1px solid #F1EEE8", borderLeft: n.read ? "3px solid transparent" : "3px solid #670821", background: n.read ? "#fff" : "#FBF9F5" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline", marginBottom: 3 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: n.tag ? "#670821" : "#9C968C" }}>{n.tag || "Team Marquee"}</div>
                   <div style={{ fontSize: 11.5, color: "#9C968C", whiteSpace: "nowrap" }}>{when(n.created_at)}</div>
                 </div>
+                <div style={{ fontSize: 14, fontWeight: n.read ? 500 : 700, color: "#1A1A1A", lineHeight: 1.3 }}>{n.title}</div>
                 {n.body && <div style={{ fontSize: 13, color: "#3a352f", lineHeight: 1.5, marginTop: 4, whiteSpace: "pre-line" }}>{n.body}</div>}
-                {n.link_url && <a href={n.link_url} target={n.link_url.startsWith("/") ? undefined : "_blank"} rel="noopener" style={{ display: "inline-block", marginTop: 8, fontSize: 13, fontWeight: 600, color: "#670821", textDecoration: "underline", textUnderlineOffset: 3 }}>{n.link_label || "Read more"}</a>}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+                  {n.link_url ? <a href={n.link_url} onClick={() => markRead(n.id)} target={n.link_url.startsWith("/") ? undefined : "_blank"} rel="noopener" style={{ fontSize: 13, fontWeight: 600, color: "#670821", textDecoration: "underline", textUnderlineOffset: 3, marginRight: "auto" }}>{n.link_label || "Read more"}</a> : <span style={{ marginRight: "auto" }} />}
+                  <button type="button" onClick={() => like(n)} aria-pressed={n.liked} aria-label={n.liked ? "You liked this" : "Like"} title={n.liked ? "Liked" : "Like"} style={{ ...iconBtn, color: n.liked ? "#670821" : "#9C968C" }}>{THUMB(n.liked)}{n.liked && <span>Liked</span>}</button>
+                  {!n.read && <button type="button" onClick={() => markRead(n.id)} aria-label="Mark as read" title="Mark as read" style={iconBtn}>{CHECK}</button>}
+                  <button type="button" onClick={() => dismiss(n.id)} aria-label="Dismiss" title="Dismiss" style={iconBtn}>{CLOSE}</button>
+                </div>
               </div>
             ))}
           </div>
