@@ -377,6 +377,17 @@ export async function sendBetaRequestNotice(m: { name: string; email: string; li
     `<div style="margin:22px 0 24px;">${wineButton("https://marquee.bio/admin/requests", "Open requests")}</div>`, "Sent from the request form on marquee.bio/join"), m.email);
 }
 
+/** To Sarah: someone applied to Future Worth Club. The application waits in club_applications (lib/club-schema.sql). */
+export async function sendClubApplicationNotice(m: { name: string; email: string; link: string; instagram: string | null; why: string | null }) {
+  const to = process.env.BETA_INBOX || "sarah@marquee.bio";
+  return sendEmail(to, `Future Worth Club application · ${m.name}`, shell(
+    p(`<strong>${esc(m.name)}</strong> applied to join Future Worth Club.`) +
+    card(row("Email", esc(m.email)) + row("LinkedIn / Marquee", `<a href="${esc(m.link)}" style="color:#670821;">${esc(m.link)}</a>`) +
+      (m.instagram ? row("Instagram", `<a href="https://instagram.com/${esc(m.instagram)}" style="color:#670821;">@${esc(m.instagram)}</a>`) : "") +
+      (m.why ? row("About them", esc(m.why).replace(/\n/g, "<br />")) : "")) +
+    p("Reply to this email to answer them directly."), "Sent from the apply form on marquee.bio/future-worth-club"), m.email);
+}
+
 /** To the person: Sarah approved the request. Her words. The button carries the code so it is applied on arrival. */
 export async function sendInviteCode(to: string, name: string, code: string) {
   const n = first(name || "");
@@ -435,4 +446,13 @@ export async function sendApplication(m: { to: string; title: string; company: s
     p(`Hi ${esc(first(m.name) || "there")},`) +
     p(`We sent your application for <strong>${esc(m.title)}</strong> at ${esc(m.company)}. They have your email${m.marquee ? " and your Marquee" : ""}, and they reply to you directly.`) +
     `<div style="margin:22px 0 24px;">${wineButton(link, "See the listing")}</div>`, memberFoot));
+}
+
+/** To Sarah: someone asked for a report PDF (marquee.bio/expertise-worth). The lead is on the waitlist table, source "report-…". */
+export async function sendReportLeadNotice(m: { first_name: string; email: string; report: string; ready: boolean }) {
+  const to = process.env.BETA_INBOX || "sarah@marquee.bio";
+  return sendEmail(to, `Report download · ${m.first_name} · ${m.report}`, shell(
+    p(`<strong>${esc(m.first_name)}</strong> ${m.ready ? "downloaded" : "asked for"} <em>${esc(m.report)}</em>${m.ready ? "" : " (the PDF is not out yet, so they are on the list for it)"}.`) +
+    card(row("Email", esc(m.email))) +
+    p("Reply to this email to write to them directly."), "Sent from the report page on marquee.bio/expertise-worth"), m.email);
 }
