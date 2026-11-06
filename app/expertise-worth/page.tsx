@@ -28,7 +28,7 @@ export default function ExpertiseWorthPage() {
         <section className="bg-[#C0DDFB] py-[clamp(44px,6vw,88px)] overflow-hidden">
           <div className={`${WRAP} grid md:grid-cols-[1.1fr_1fr] gap-[clamp(32px,5vw,72px)] items-start`}>
             <div className="relative">
-              <div className="inline-flex items-center gap-2 px-4 py-[8px] rounded-full bg-[#F7F6F2] border-[1.5px] border-[#111111] text-[12px] font-bold tracking-[0.1em] uppercase"><span aria-hidden>💰</span>Free report</div>
+              <div className="inline-flex items-center gap-2 px-4 py-[8px] rounded-full bg-[#F7F6F2] border-[1.5px] border-[#111111] text-[12px] font-bold tracking-[0.1em] uppercase">Free report</div>
               <div className="font-script text-[clamp(30px,4vw,48px)] leading-[1.05] mt-6 text-[#670821]">The Future Worth Report 2026</div>
               <div className="text-[12px] font-bold tracking-[0.22em] uppercase text-[#111111]/60 mt-2">Powered by Marquee</div>
               <h1 className="font-lora font-normal leading-[1.02] tracking-[-0.01em] text-[clamp(44px,7vw,92px)] mt-6">What is your expertise worth?</h1>
