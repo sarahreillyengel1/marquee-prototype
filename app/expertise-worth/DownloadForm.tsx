@@ -40,7 +40,7 @@ export default function DownloadForm({ ready, pdf }: { ready: boolean; pdf: stri
 
   if (state === "done") {
     return (
-      <div className="bg-beige rounded-[10px] p-[clamp(24px,4vw,40px)]">
+      <div className="relative bg-white border-[1.5px] border-ink rounded-[12px] p-[clamp(24px,4vw,40px)]">
         {ready ? (
           <>
             <p className="font-lora text-[clamp(24px,2.8vw,32px)] leading-[1.2]">Your report is ready.</p>
@@ -58,8 +58,8 @@ export default function DownloadForm({ ready, pdf }: { ready: boolean; pdf: stri
   }
 
   return (
-    <form onSubmit={submit} className="bg-beige rounded-[10px] p-[clamp(24px,4vw,40px)]" noValidate>
-      <p className="font-lora text-[clamp(22px,2.4vw,28px)] leading-[1.2]">Get the report</p>
+    <form onSubmit={submit} className="relative bg-white border-[1.5px] border-ink rounded-[12px] p-[clamp(24px,4vw,40px)]" noValidate>
+      <p className="font-lora text-[clamp(24px,2.6vw,30px)] leading-[1.2]">Get the report</p>
       <p className="mt-2 text-[14.5px] text-ink/70 leading-[1.5]">Free. Sent to your inbox. No account needed.</p>
       <div className="grid gap-4 mt-6">
         <div><label htmlFor="ew-first" className={LABEL}>First name</label><input id="ew-first" className={INPUT} value={f.first_name} onChange={set("first_name")} autoComplete="given-name" required /></div>
