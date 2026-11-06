@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 // `website_url` is a hidden trap field: real people never see it, bots fill it in, and the server drops those.
 // Form copy approved by Sarah word for word, 6 Nov 2026. The two thank-you states are still my wording (she has not rewritten them yet).
 
-const LABEL = "block text-[11px] font-bold tracking-[0.2em] uppercase text-ink/65 mb-[7px]";
-const INPUT = "w-full text-[15px] py-[12px] px-[14px] border border-hair bg-white text-ink placeholder:text-ink/35 focus:outline-none focus:border-ink";
-const BTN = "inline-block w-full sm:w-auto px-7 py-[14px] rounded-full bg-red text-white text-[14px] font-semibold text-center hover:bg-dred transition-colors disabled:opacity-50";
+const LABEL = "block text-[11px] font-bold tracking-[0.2em] uppercase text-[#111111]/65 mb-[7px]";
+const INPUT = "w-full text-[15px] py-[12px] px-[14px] border border-[#E9E6DF] bg-white text-[#111111] placeholder:text-[#111111]/35 focus:outline-none focus:border-[#111111]";
+const BTN = "inline-block w-full sm:w-auto px-7 py-[14px] rounded-full bg-[#FF5A36] text-white text-[14px] font-semibold text-center hover:bg-[#670821] transition-colors disabled:opacity-50";
 
 export default function DownloadForm({ ready, pdf }: { ready: boolean; pdf: string }) {
   const [f, setF] = useState({ first_name: "", email: "" });
@@ -40,12 +40,12 @@ export default function DownloadForm({ ready, pdf }: { ready: boolean; pdf: stri
 
   if (state === "done") {
     return (
-      <div className="relative bg-white border-[1.5px] border-ink rounded-[12px] p-[clamp(24px,4vw,40px)]">
+      <div className="relative bg-white border-[1.5px] border-[#111111] rounded-[12px] p-[clamp(24px,4vw,40px)]">
         {ready ? (
           <>
             <p className="font-lora text-[clamp(24px,2.8vw,32px)] leading-[1.2]">Your report is ready.</p>
             <a href={pdf} download className={`${BTN} mt-6`}>Download the PDF</a>
-            <p className="mt-5 text-[14px] text-ink/65 leading-[1.5]">Keep this page open while it downloads.</p>
+            <p className="mt-5 text-[14px] text-[#111111]/65 leading-[1.5]">Keep this page open while it downloads.</p>
           </>
         ) : (
           <>
@@ -58,19 +58,18 @@ export default function DownloadForm({ ready, pdf }: { ready: boolean; pdf: stri
   }
 
   return (
-    <form onSubmit={submit} className="relative bg-white border-[1.5px] border-ink rounded-[12px] p-[clamp(24px,4vw,40px)]" noValidate>
+    <form onSubmit={submit} className="relative bg-white border-[1.5px] border-[#111111] rounded-[12px] p-[clamp(24px,4vw,40px)]" noValidate>
       <p className="font-lora text-[clamp(24px,2.6vw,30px)] leading-[1.2]">Get the report</p>
-      <p className="mt-2 text-[14.5px] text-ink/70 leading-[1.5]">Free. Sent to your inbox. No account needed.</p>
+      <p className="mt-2 text-[14.5px] text-[#111111]/70 leading-[1.5]">Free. Sent to your inbox. No account needed.</p>
       <div className="grid gap-4 mt-6">
         <div><label htmlFor="ew-first" className={LABEL}>First name</label><input id="ew-first" className={INPUT} value={f.first_name} onChange={set("first_name")} autoComplete="given-name" required /></div>
         <div><label htmlFor="ew-email" className={LABEL}>Email</label><input id="ew-email" type="email" className={INPUT} value={f.email} onChange={set("email")} autoComplete="email" inputMode="email" required /></div>
       </div>
       <input type="text" name="website_url" value={trap} onChange={(e) => setTrap(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
-      {err && <p className="mt-4 text-[14px] text-dred">{err}</p>}
+      {err && <p className="mt-4 text-[14px] text-[#670821]">{err}</p>}
       <div className="mt-6">
         <button type="submit" disabled={state === "sending"} className={BTN}>{state === "sending" ? "One moment…" : "Send me the report"}</button>
       </div>
-      <a href="#inside" className="inline-block mt-5 text-[14px] font-semibold hover:text-dred transition-colors">Learn more about the report &rarr;</a>
     </form>
   );
 }

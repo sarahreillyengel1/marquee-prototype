@@ -2,7 +2,7 @@ import BrandShell from "@/components/BrandShell";
 import Link from "next/link";
 import DownloadForm from "./DownloadForm";
 import { REPORTS, NEWSLETTER_URL } from "@/lib/reports";
-import { CoinStack, Coin, Banknote, Chart } from "./Money";
+import { CoinStack, Coin } from "./Money";
 
 // marquee.bio/expertise-worth: the landing page for The Future Worth Report 2026, "What is your expertise worth?" (PDF).
 // Visitors leave a first name and email, the lead is saved (waitlist table, source "report-expertise-worth"),
@@ -12,33 +12,28 @@ const R = REPORTS["expertise-worth"];
 
 export const metadata = {
   title: "The Future Worth Report 2026 · What is your expertise worth? · Marquee",
-  description: "What experienced professionals charge for advisory, fractional and project work, and how to price your own. Free report, powered by Marquee.",
+  description: "What experienced professionals charge for advisory, fractional and project work. Free report, powered by Marquee.",
 };
 
-// Copy approved by Sarah word for word, 6 Nov 2026.
-const INSIDE = [
-  { t: "What people charge, by type of work", Icon: Banknote, bg: "bg-[#EDE7FF]" },
-  { t: "How to set your own rate", Icon: Coin, bg: "bg-blue" },
-  { t: "Where the demand is, and how to be found for it on Marquee", Icon: Chart, bg: "bg-beige" },
-];
+// Copy approved by Sarah word for word, 6 Nov 2026. Colors are the confirmed brand palette in BRAND.md, not the home page tokens.
 
 const WRAP = "max-w-[1240px] mx-auto px-[clamp(20px,5vw,80px)]";
 
 export default function ExpertiseWorthPage() {
   return (
     <BrandShell source="expertise-worth">
-      <div className="font-inter text-ink bg-paper">
+      <div className="font-inter text-[#111111] bg-[#F7F6F2]">
 
         {/* Hero (blue): words left, coins + form right */}
-        <section className="bg-blue py-[clamp(44px,6vw,88px)] overflow-hidden">
+        <section className="bg-[#C0DDFB] py-[clamp(44px,6vw,88px)] overflow-hidden">
           <div className={`${WRAP} grid md:grid-cols-[1.1fr_1fr] gap-[clamp(32px,5vw,72px)] items-start`}>
             <div className="relative">
-              <div className="inline-flex items-center gap-2 px-4 py-[8px] rounded-full bg-white border-[1.5px] border-ink text-[12px] font-bold tracking-[0.1em] uppercase"><span aria-hidden>💰</span>Free report</div>
-              <div className="font-script text-[clamp(30px,4vw,48px)] leading-[1.05] mt-6 text-dred">The Future Worth Report 2026</div>
-              <div className="text-[12px] font-bold tracking-[0.22em] uppercase text-ink/60 mt-2">Powered by Marquee</div>
+              <div className="inline-flex items-center gap-2 px-4 py-[8px] rounded-full bg-[#F7F6F2] border-[1.5px] border-[#111111] text-[12px] font-bold tracking-[0.1em] uppercase"><span aria-hidden>💰</span>Free report</div>
+              <div className="font-script text-[clamp(30px,4vw,48px)] leading-[1.05] mt-6 text-[#670821]">The Future Worth Report 2026</div>
+              <div className="text-[12px] font-bold tracking-[0.22em] uppercase text-[#111111]/60 mt-2">Powered by Marquee</div>
               <h1 className="font-lora font-normal leading-[1.02] tracking-[-0.01em] text-[clamp(44px,7vw,92px)] mt-6">What is your expertise worth?</h1>
               <p className="text-[clamp(17px,2vw,21px)] leading-[1.5] mt-6 max-w-[560px] font-medium">
-                What experienced professionals charge for advisory, fractional and project work, and how to price your own.
+                What experienced professionals charge for advisory, fractional and project work.
               </p>
               <CoinStack className="md:hidden w-[160px] h-[160px] mt-8" />
             </div>
@@ -49,35 +44,17 @@ export default function ExpertiseWorthPage() {
           </div>
         </section>
 
-        {/* Inside the report (white): three tiles */}
-        <section id="inside" className="py-[clamp(44px,6vw,88px)] scroll-mt-16">
-          <div className={WRAP}>
-            <h2 className="font-lora font-normal leading-[1.1] text-[clamp(30px,4vw,48px)]">Inside the report</h2>
-            <div className="grid sm:grid-cols-3 gap-[14px] mt-8">
-              {INSIDE.map(({ t, Icon, bg }, i) => (
-                <div key={t} className={`${bg} rounded-[12px] p-[clamp(22px,2.6vw,32px)] flex flex-col min-h-[220px]`}>
-                  <div className="flex items-start justify-between">
-                    <Icon className="w-[64px] h-[64px]" />
-                    <span className="font-script text-[28px] leading-none text-dred">0{i + 1}</span>
-                  </div>
-                  <div className="font-lora text-[clamp(20px,1.8vw,24px)] leading-[1.2] mt-auto pt-8">{t}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Future Worth (wine) */}
-        <section className="bg-dred text-white py-[clamp(44px,6vw,88px)]">
+        <section className="bg-[#670821] text-white py-[clamp(44px,6vw,88px)]">
           <div className={`${WRAP} md:grid md:grid-cols-[auto_1fr] gap-[clamp(28px,4vw,56px)] items-center`}>
             <Coin className="w-[120px] h-[120px] md:w-[160px] md:h-[160px] -rotate-[10deg]" />
             <div className="mt-6 md:mt-0">
               <div className="font-script text-[clamp(28px,3.4vw,40px)] leading-none">Future Worth</div>
               <p className="font-lora font-normal leading-[1.2] text-[clamp(22px,3vw,36px)] mt-4 max-w-[760px]">Future Worth is a newsletter, podcast and club about careers, money and what expertise is worth.</p>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mt-7">
-                <a href={NEWSLETTER_URL} target="_blank" rel="noopener" className="inline-block px-6 py-[13px] rounded-full bg-red text-white text-[14px] font-semibold whitespace-nowrap hover:bg-white hover:text-dred transition-colors">Subscribe to Future Worth</a>
+                <a href={NEWSLETTER_URL} target="_blank" rel="noopener" className="inline-block px-6 py-[13px] rounded-full bg-[#FF5A36] text-white text-[14px] font-semibold whitespace-nowrap hover:bg-white hover:text-[#670821] transition-colors">Subscribe to Future Worth</a>
                 <span className="text-white/40 hidden sm:inline">&middot;</span>
-                <Link href="/future-worth-club" className="text-[15px] font-semibold underline underline-offset-4 decoration-1 hover:text-red transition-colors">Apply to the Future Worth Club</Link>
+                <Link href="/future-worth-club" className="text-[15px] font-semibold underline underline-offset-4 decoration-1 hover:text-[#FF5A36] transition-colors">Apply to the Future Worth Club</Link>
               </div>
             </div>
           </div>
