@@ -9,5 +9,5 @@ export const REPORTS = {
   },
 } as const;
 
-// "Subscribe to Future Worth" on the report page. Today the only newsletter sign-up is Be Known Weekly (same link as /spotlight).
-export const NEWSLETTER_URL = "https://beknownweekly.substack.com/";
+// "Subscribe to Future Worth" on the report page: the Future Worth Substack (Sarah, 6 Nov 2026).
+export const NEWSLETTER_URL = "https://futureworth.substack.com/";
