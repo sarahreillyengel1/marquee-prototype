@@ -12,7 +12,7 @@ const R = REPORTS["expertise-worth"];
 
 export const metadata = {
   title: "The Future Worth Report 2026 · What is your expertise worth? · Marquee",
-  description: "What experienced professionals charge for advisory, fractional and project work. Free report, powered by Marquee.",
+  description: "The changing economics of work are redefining what our expertise is worth. The Future Worth Report 2026, free, powered by Marquee.",
 };
 
 // Copy approved by Sarah word for word, 6 Nov 2026. Colors are the confirmed brand palette in BRAND.md, not the home page tokens.
@@ -32,8 +32,8 @@ export default function ExpertiseWorthPage() {
               <div className="font-script text-[clamp(30px,4vw,48px)] leading-[1.05] mt-6 text-[#670821]">The Future Worth Report 2026</div>
               <div className="text-[12px] font-bold tracking-[0.22em] uppercase text-[#111111]/60 mt-2">Powered by Marquee</div>
               <h1 className="font-lora font-normal leading-[1.02] tracking-[-0.01em] text-[clamp(44px,7vw,92px)] mt-6">What is your expertise worth?</h1>
-              <p className="text-[clamp(17px,2vw,21px)] leading-[1.5] mt-6 max-w-[560px] font-medium">
-                What experienced professionals charge for advisory, fractional and project work.
+              <p className="text-[clamp(16px,1.7vw,18.5px)] leading-[1.55] mt-6 max-w-[580px]">
+                The changing economics of work are redefining what our expertise is worth. More professionals are building non-linear careers, creating income streams beyond a single employer, and starting businesses. The Future Worth report brings together research and data on the changing value of experience, the impact of AI on employment, the rise of independent work and entrepreneurship, and the expanding ways we work and earn.
               </p>
               <CoinStack className="md:hidden w-[160px] h-[160px] mt-8" />
             </div>

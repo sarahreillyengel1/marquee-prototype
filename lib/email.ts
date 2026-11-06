@@ -461,7 +461,8 @@ export async function sendReportLeadNotice(m: { first_name: string; email: strin
 export async function sendReportToReader(to: string, firstName: string, report: string, pdfUrl: string) {
   return sendEmail(to, report, shell(
     p(`Hi ${esc(first(firstName))},`) +
-    p(`Here is <strong>${esc(report)}</strong>: what experienced professionals charge for advisory, fractional and project work.`) +
+    p(`Here is <strong>${esc(report)}</strong>.`) +
+    p("The changing economics of work are redefining what our expertise is worth. More professionals are building non-linear careers, creating income streams beyond a single employer, and starting businesses. The Future Worth report brings together research and data on the changing value of experience, the impact of AI on employment, the rise of independent work and entrepreneurship, and the expanding ways we work and earn.") +
     p(button(pdfUrl, "Download the report")) +
     p("Reply to this email if you have a question about it."), "Sent because you asked for the report on marquee.bio/expertise-worth"));
 }
