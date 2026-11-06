@@ -456,3 +456,12 @@ export async function sendReportLeadNotice(m: { first_name: string; email: strin
     card(row("Email", esc(m.email))) +
     p("Reply to this email to write to them directly."), "Sent from the report page on marquee.bio/expertise-worth"), m.email);
 }
+
+/** To the reader: the report they asked for on marquee.bio/expertise-worth. Only sent once the PDF is out. */
+export async function sendReportToReader(to: string, firstName: string, report: string, pdfUrl: string) {
+  return sendEmail(to, report, shell(
+    p(`Hi ${esc(first(firstName))},`) +
+    p(`Here is <strong>${esc(report)}</strong>: what experienced professionals charge for advisory, fractional and project work, and how to price your own.`) +
+    p(button(pdfUrl, "Download the report")) +
+    p("Reply to this email if you have a question about it."), "Sent because you asked for the report on marquee.bio/expertise-worth"));
+}

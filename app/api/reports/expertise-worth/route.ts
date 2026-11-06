@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { looksLikeSpam } from "@/lib/spam";
-import { sendReportLeadNotice } from "@/lib/email";
+import { sendReportLeadNotice, sendReportToReader } from "@/lib/email";
 import { REPORTS } from "@/lib/reports";
 
 // POST /api/reports/expertise-worth { first_name, email, utm_* } -> { ok, ready, url? }
@@ -35,6 +35,10 @@ export async function POST(req: Request) {
     console.error("Report lead insert error:", error);
     return NextResponse.json({ error: "Couldn't save. Please try again." }, { status: 500 });
   }
-  if (!error) await sendReportLeadNotice({ first_name, email, report: REPORT, ready: READY }).catch(() => null);
+  const site = process.env.NEXT_PUBLIC_APP_URL || "https://marquee.bio";
+  await Promise.allSettled([
+    error ? Promise.resolve() : sendReportLeadNotice({ first_name, email, report: REPORT, ready: READY }),
+    READY ? sendReportToReader(email, first_name, REPORT, `${site}${PDF}`) : Promise.resolve(), // the PDF by email too, every time they ask
+  ]);
   return NextResponse.json({ ok: true, ready: READY, url: READY ? PDF : undefined });
 }
