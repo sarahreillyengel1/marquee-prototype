@@ -35,7 +35,7 @@ export default async function JobPage({ params }: { params: { slug: string } }) 
   if (me) { const { data } = await createServerSupabase().from("saved_opportunities").select("opportunity_id").eq("user_id", me).eq("opportunity_id", j.id).maybeSingle(); saved = !!data; }
   const { data: others } = await createServerSupabase().from("opportunities").select("id,slug,title").eq("status", "published").eq("company", j.company).neq("id", j.id).limit(5);
   const pay = cardPay(j) || "Rate not listed";
-  const facts: [string, string][] = [["Pay", pay], ["Hours", j.hours_per_week ? `${j.hours_per_week} a week` : ""], ["Start", j.start_text || ""], ["Length", j.length_text || ""]].filter(([, v]) => v) as [string, string][];
+  const facts: [string, string][] = [["Pay", pay], ["Hours", j.hours_per_week ? `${j.hours_per_week} hrs/week` : ""], ["Start", j.start_text || ""], ["Length", j.length_text || ""]].filter(([, v]) => v) as [string, string][];
   const Label = ({ children }: { children: React.ReactNode }) => <div className="text-[11px] font-bold tracking-[0.14em] uppercase mb-3">{children}</div>;
   // JobPosting structured data, as Google asks for it on the job page itself (not the board).
   const posted = j.published_at || j.created_at;

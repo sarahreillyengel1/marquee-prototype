@@ -1,5 +1,5 @@
 // Cheap checks that stop the common junk: scripts posting straight at our forms from somewhere else.
-const BOT = /bot|crawl|spider|slurp|curl|wget|python|scrapy|httpclient|headless|phantom|axios|node-fetch|go-http|java\/|libwww|facebookexternalhit|preview/i;
+const BOT = /bot|crawl|spider|slurp|curl|wget|python|scrapy|httpclient|headless|phantom|axios|node-fetch|go-http|java\/|libwww|facebookexternalhit|preview|lighthouse|inspectiontool|puppeteer|playwright|selenium|prerender|rendertron|bytespider|semrush|ahrefs|dataforseo|screaming|anthropic|openai|perplexity|cohere|meta-external|yandex|baidu/i;
 
 export const isBotAgent = (req: Request) => { const ua = req.headers.get("user-agent") || ""; return !ua || BOT.test(ua); };
 

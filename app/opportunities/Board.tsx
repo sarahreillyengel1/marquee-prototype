@@ -37,9 +37,9 @@ const PAY_OTHER: [string, string, (j: JobRow) => boolean][] = [
 ];
 const PAY = [...PAY_YEAR, ...PAY_MONTH, ...PAY_HOUR, ...PAY_OTHER];
 const HOURS: [string, string, (j: JobRow) => boolean][] = [
-  ["u10", "Under 10 a week", (j) => !!j.hours_per_week && j.hours_per_week < 10],
-  ["10-20", "10–20 a week", (j) => !!j.hours_per_week && j.hours_per_week >= 10 && j.hours_per_week <= 20],
-  ["20-40", "20–40 a week", (j) => !!j.hours_per_week && j.hours_per_week > 20 && j.hours_per_week <= 40],
+  ["u10", "Under 10 hrs/week", (j) => !!j.hours_per_week && j.hours_per_week < 10],
+  ["10-20", "10–20 hrs/week", (j) => !!j.hours_per_week && j.hours_per_week >= 10 && j.hours_per_week <= 20],
+  ["20-40", "20–40 hrs/week", (j) => !!j.hours_per_week && j.hours_per_week > 20 && j.hours_per_week <= 40],
   ["ft", "Full-time", (j) => j.work_type === "full-time"],
 ];
 /** Location options come from the roles on the board: the remote kinds first, then the cities that appear. */
@@ -158,9 +158,9 @@ export default function Board({ initialRows, initialSaved = [], initialSignedIn 
               <Link href="/opportunities/post" className="block w-full text-center whitespace-nowrap mt-4 text-[11.5px] font-bold tracking-[0.06em] uppercase bg-white text-dred rounded-full px-3 py-[10px] hover:bg-beige transition-colors">Post an opportunity</Link>
             </div>
             <Side title="Location" items={LOCS} set={locs} setter={setLocs} skip="locs" />
-            <Side title="Pay · a year" items={PAY_YEAR} set={pay} setter={setPay} skip="pay" />
-            <Side title="Pay · a month" items={PAY_MONTH} set={pay} setter={setPay} skip="pay" />
-            <Side title="Pay · an hour" items={PAY_HOUR} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · per year" items={PAY_YEAR} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · per month" items={PAY_MONTH} set={pay} setter={setPay} skip="pay" />
+            <Side title="Pay · per hour" items={PAY_HOUR} set={pay} setter={setPay} skip="pay" />
             <Side title="Pay · other" items={PAY_OTHER} set={pay} setter={setPay} skip="pay" />
             <Side title="Hours" items={HOURS} set={hours} setter={setHours} skip="hours" />
             <Side title="Seniority" items={SENIORITY.filter((s) => s !== "other").map((s) => [s, SENIORITY_LABEL[s], (j: JobRow) => j.seniority === s] as [string, string, (j: JobRow) => boolean])} set={sen} setter={setSen} skip="sen" />

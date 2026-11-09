@@ -45,7 +45,7 @@ export const placeTags = (j: Pick<Row, "location" | "remote">): string[] => {
 };
 export const whereLabel = (j: Pick<Row, "location" | "remote">) => placeTags(j).join(" · ");
 export const timeLabel = (j: Pick<Row, "hours_per_week" | "start_text" | "length_text" | "work_type">) => {
-  const bits = [j.hours_per_week ? `${j.hours_per_week} hrs a week` : "", j.length_text ? cap(j.length_text) : "", j.start_text ? `Starts ${cap(j.start_text)}` : ""].filter(Boolean);
+  const bits = [j.hours_per_week ? `${j.hours_per_week} hrs/week` : "", j.length_text ? cap(j.length_text) : "", j.start_text ? `Starts ${cap(j.start_text)}` : ""].filter(Boolean);
   if (!bits.length && j.work_type === "full-time") return "Full-time";
   return bits.slice(0, 2).join(" · ");
 };

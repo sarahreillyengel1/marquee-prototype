@@ -39,8 +39,9 @@ const REACH_PLATFORMS = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Substack
 // Onboarding guide — a layer ON TOP of the dashboard that walks a first-timer through the
 // same left-nav sections (profile first, then brand). The real editors stay in place; the
 // guide just advances the active section + narrates. Skippable at any point.
-const TOUR_STEPS = ALL_STEPS.filter((s) => s !== "Resume"); // the 13 build sections, in nav order
+const TOUR_STEPS = ALL_STEPS; // Import first, then the build sections, in nav order
 const TOUR_HINTS: Record<string, string> = {
+  "Resume": "Import your resume, LinkedIn or website to populate your profile.",
   "About You": "Your name, location, and the one line that says who you are.",
   "Experience": "The roles and projects that built you.",
   "Leadership": "How you lead — your archetype and style.",
@@ -198,13 +199,21 @@ export default function BuildPreview() {
   };
   const [refCopied, setRefCopied] = useState(false);
   useEffect(() => { fetch("/api/referrals").then(async (r) => { if (r.ok) setRefInfo(await r.json()); }).catch(() => null); }, []);
-  const tourGroup = (i: number) => (i < 9 ? "Build your profile" : "Build your brand");
+  const tourGroup = (i: number) => RAIL.find((p) => p.steps.includes(TOUR_STEPS[i]))?.label || "Start here";
   const startTour = () => { setTour(0); setActive(TOUR_STEPS[0]); };
   const tourGo = (i: number) => {
     if (i >= TOUR_STEPS.length) { setTour("done"); return; }
     setActive(TOUR_STEPS[i]);
     setTour(i);
   };
+  // The guide keeps up with the member: the on-screen Next, a rail click or finishing an import all move it along.
+  useEffect(() => {
+    if (typeof tour !== "number") return;
+    const i = TOUR_STEPS.indexOf(active);
+    if (i >= 0 && i !== tour) setTour(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+  const [importNudgeOff, setImportNudgeOff] = useState(false);
 
   // About You
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
@@ -660,11 +669,11 @@ export default function BuildPreview() {
           <div key={pi}>
             {phase.label && <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.13em] text-[#7d7a74] mt-4 mb-2 ml-2">{phase.label}</div>}
             {phase.steps.map((s) => {
-              const isActive = s === active, done = s === "Resume" || (BUILT.has(s) && s !== active);
-              const n = s === "Resume" ? "✓" : ALL_STEPS.indexOf(s);
+              const isActive = s === active, done = s === "Resume" ? entries.length > 0 : (BUILT.has(s) && s !== active);
+              const n = s === "Resume" ? (entries.length > 0 ? "✓" : "↓") : ALL_STEPS.indexOf(s);
               return (
                 <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
-                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
+                  <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" && entries.length > 0 ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
                   <span className={`font-sans text-[13px] leading-tight ${isActive ? "text-[#670821] font-semibold" : "text-[#3a352f]"}`}>{s === "Resume" ? "Import" : s === "Mobile Links" ? "Social Links" : s}{s === "Resume" ? <span className="block text-[11px] text-[#7d7a74] font-normal">Resume, LinkedIn or website</span> : null}</span>
                 </div>
               );
@@ -733,6 +742,12 @@ export default function BuildPreview() {
         </div>
 
         <main className="p-[40px_48px_120px] flex-1 max-w-[1100px]">
+          {loaded && active !== "Resume" && entries.length === 0 && !importNudgeOff && (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border border-brand-ink bg-white p-[14px_18px] mb-8 max-w-[980px]">
+              <button onClick={() => { setActive("Resume"); window.scrollTo(0, 0); }} className="flex-1 min-w-[260px] text-left font-sans text-[14px] font-semibold underline underline-offset-4 hover:text-[#670821]">Import your resume, LinkedIn or website to populate your profile.</button>
+              <button onClick={() => setImportNudgeOff(true)} aria-label="Hide" className="font-sans text-[18px] leading-none text-[#7d7a74] hover:text-brand-ink px-2">×</button>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-4 max-w-[980px] gap-3 flex-wrap">
             <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#670821] bg-[#EDE7FF] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
             {HIDEABLE[active] && (
@@ -1676,7 +1691,7 @@ export default function BuildPreview() {
           <div className="bg-white max-w-[440px] w-full p-8 text-center">
             <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#670821] mb-3">Welcome</div>
             <h2 className="font-sans text-[26px] font-semibold tracking-[-0.01em] mb-2 leading-[1.1]">Let’s build your Marquee.</h2>
-            <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">We’ll walk through it together — your profile first, then your brand. Everything stays editable, and you can skip anything and come back.</p>
+            <p className="text-[14px] text-[#57524c] leading-[1.55] mb-6">Import your resume, LinkedIn or website to populate your profile.</p>
             <button onClick={startTour} className="w-full font-sans bg-[#670821] text-white text-[14px] font-semibold py-[13px] mb-2 hover:bg-[#4E0619]">Start building →</button>
             <button onClick={() => setTour(null)} className="w-full font-sans text-[13px] text-[#7d7a74] py-2 hover:text-brand-ink">I’ll explore on my own</button>
           </div>
@@ -1687,7 +1702,7 @@ export default function BuildPreview() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[55] w-[min(560px,92vw)] bg-white border border-[#E1DED7] shadow-[0_18px_44px_rgba(20,10,60,0.18)] p-[18px_20px]">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#670821]">{tourGroup(tour)} · {tour + 1} of 13</div>
+              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#670821]">{tourGroup(tour)} · {tour + 1} of {TOUR_STEPS.length}</div>
               <div className="font-sans text-[15px] font-semibold mt-0.5">{TOUR_STEPS[tour]}</div>
               <div className="text-[12.5px] text-[#7d7a74] mt-0.5 leading-snug">{TOUR_HINTS[TOUR_STEPS[tour]]}</div>
             </div>
@@ -1697,7 +1712,7 @@ export default function BuildPreview() {
             </div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#670821] transition-all" style={{ width: `${((tour + 1) / 13) * 100}%` }} /></div>
+            <div className="h-[5px] bg-[#ECEAE4] flex-1"><div className="h-full bg-[#670821] transition-all" style={{ width: `${((tour + 1) / TOUR_STEPS.length) * 100}%` }} /></div>
             <button onClick={() => setTour(null)} className="font-sans text-[12px] text-[#a8a29a] hover:text-[#7d7a74] shrink-0">Skip tour</button>
           </div>
         </div>

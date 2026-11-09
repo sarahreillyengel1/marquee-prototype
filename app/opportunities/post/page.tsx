@@ -189,7 +189,7 @@ function Post() {
               <div className="mt-5 space-y-5 text-[15px] leading-[1.6]">
                 <div><div className={label}>Role</div>{d.title} at {d.company}{d.location ? ` · ${d.location}` : ""}{d.remote !== "unknown" ? ` · ${REMOTE_LABEL[d.remote]}` : ""}</div>
                 <div><div className={label}>Type</div>{TYPE_LABEL[d.work_type]}{d.function !== "other" ? ` · ${FUNCTION_LABEL[d.function]}` : ""}{d.seniority !== "other" ? ` · ${SENIORITY_LABEL[d.seniority]}` : ""}</div>
-                <div><div className={label}>Pay and time</div>{[payLabel({ pay_min: d.pay_min, pay_max: d.pay_max, pay_per: d.pay_per || null, pay_note: d.pay_note || null }), d.hours_per_week ? `${d.hours_per_week} hrs a week` : "", d.start_text ? `Starts ${d.start_text}` : "", d.length_text].filter(Boolean).join(" · ") || "Not stated"}</div>
+                <div><div className={label}>Pay and time</div>{[payLabel({ pay_min: d.pay_min, pay_max: d.pay_max, pay_per: d.pay_per || null, pay_note: d.pay_note || null }), d.hours_per_week ? `${d.hours_per_week} hrs/week` : "", d.start_text ? `Starts ${d.start_text}` : "", d.length_text].filter(Boolean).join(" · ") || "Not stated"}</div>
                 {d.description && <div><div className={label}>About the role</div><p className="whitespace-pre-line">{d.description}</p></div>}
                 {d.responsibilities.length > 0 && <div><div className={label}>What they&rsquo;ll do</div><ul className="list-disc pl-5">{d.responsibilities.map((r) => <li key={r}>{r}</li>)}</ul></div>}
                 {d.requirements.length > 0 && <div><div className={label}>What you&rsquo;re looking for</div><ul className="list-disc pl-5">{d.requirements.map((r) => <li key={r}>{r}</li>)}</ul></div>}
@@ -227,7 +227,7 @@ function Preview({ d }: { d: Draft }) {
         <div className="text-[13px] text-ink/65">{d.company || "Company"}{d.location ? ` · ${d.location}` : ""}{d.remote !== "unknown" ? ` · ${REMOTE_LABEL[d.remote]}` : ""}</div>
         <div className="mt-3 flex flex-wrap gap-2"><span className="text-[11.5px] font-semibold bg-[#EDE7FF] rounded-full px-[9px] py-[3px]">{TYPE_LABEL[d.work_type]}</span>{d.require_marquee === "yes" && <span className="text-[11.5px] font-semibold bg-dred text-white rounded-full px-[9px] py-[3px]">Marquee required</span>}</div>
         {pay && <div className="font-semibold text-[20px] text-dred tabular-nums mt-3">{pay}</div>}
-        <div className="text-[12.5px] text-ink/65 mt-1">{[d.hours_per_week ? `${d.hours_per_week} hrs a week` : "", d.length_text].filter(Boolean).join(" · ")}</div>
+        <div className="text-[12.5px] text-ink/65 mt-1">{[d.hours_per_week ? `${d.hours_per_week} hrs/week` : "", d.length_text].filter(Boolean).join(" · ")}</div>
         <div className="mt-4 inline-block text-[11px] font-bold tracking-[0.08em] uppercase bg-red text-white rounded-full px-4 py-[9px]">Apply on company site</div>
       </div>
     </div>

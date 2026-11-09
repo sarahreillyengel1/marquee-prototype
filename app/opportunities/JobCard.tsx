@@ -23,7 +23,7 @@ export default function JobCard({ j, saved, onSave }: { j: JobRow; saved?: boole
   const place = placeTags(j);
   const facts: [string, string][] = [
     ["Type", TYPE_LABEL[j.work_type] || j.work_type],
-    ["Hours", j.hours_per_week ? `${j.hours_per_week} a week` : j.work_type === "full-time" ? "Full-time" : "Not listed"],
+    ["Hours", j.hours_per_week ? `${j.hours_per_week} hrs/week` : j.work_type === "full-time" ? "Full-time" : "Not listed"],
     ["Location", place.join(" · ") || "Not listed"],
     j.start_text ? ["Start", cap(j.start_text)] : ["Length", j.length_text ? cap(j.length_text) : j.work_type === "full-time" ? "Ongoing" : "Not listed"],
   ];
