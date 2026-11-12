@@ -999,9 +999,9 @@ export default function BuildPreview() {
               <div className="mb-8">
                 <label className="font-sans text-[13px] font-semibold block mb-1">Your archetype</label>
                 <p className="text-[12.5px] text-[#7d7a74] mb-3">Pick up to {ARCH_MAX}.</p>
-                <div className="grid grid-cols-2 gap-[10px] max-w-[620px]">
+                <div className="grid grid-cols-3 gap-[12px] max-w-[980px]">
                   {ARCHETYPES.map((a) => { const on = arch.includes(a.name); return (
-                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
+                    <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[16px] border-[1.5px] flex flex-col justify-start ${on ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
                       <div className="font-sans text-[15px] font-semibold">{a.name}</div>
                       <div className="text-[12px] text-[#7d7a74] mt-0.5">{a.desc}</div>
                     </button>
