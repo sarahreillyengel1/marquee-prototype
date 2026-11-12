@@ -704,12 +704,18 @@ export default function BuildPreview() {
           <div key={pi}>
             {phase.label && <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.13em] text-[#7d7a74] mt-4 mb-2 ml-2">{phase.label}</div>}
             {phase.steps.map((s) => {
-              const isActive = s === active, done = s === "Resume" ? entries.length > 0 : (BUILT.has(s) && s !== active);
+              const isActive = s === active, done = s === "Resume" ? (imported || entries.length > 0) : (BUILT.has(s) && s !== active);
               const n = s === "Resume" ? (entries.length > 0 ? "✓" : "↓") : ALL_STEPS.indexOf(s);
               if (s === "Resume") return (
-                <button key={s} type="button" onClick={() => setActive(s)} className={`w-full text-left py-[10px] px-[12px] mb-1 border-[1.5px] ${isActive ? "border-[#670821] bg-[#EDE7FF]" : "border-brand-ink bg-white hover:bg-[#F4F2EF]"}`}>
-                  <div className={`flex items-center justify-between font-sans text-[11px] font-semibold uppercase tracking-[0.13em] ${isActive ? "text-[#670821]" : "text-brand-ink"}`}><span>Import</span><span aria-hidden="true">→</span></div>
-                  <div className="text-[11px] text-[#7d7a74] mt-[2px]">Resume, LinkedIn or website</div>
+                <button key={s} type="button" onClick={() => setActive(s)} className={`w-full text-left mb-1 bg-white ${done ? `py-[10px] px-[12px] border-[1.5px] ${isActive ? "border-[#670821] bg-[#EDE7FF]" : "border-brand-ink hover:bg-[#F4F2EF]"}` : `p-[14px] border-2 ${isActive ? "border-[#670821]" : "border-brand-ink hover:bg-[#F4F2EF]"}`}`}>
+                  {done ? (<>
+                    <div className={`flex items-center justify-between font-sans text-[11px] font-semibold uppercase tracking-[0.13em] ${isActive ? "text-[#670821]" : "text-brand-ink"}`}><span>Imported</span><span aria-hidden="true">✓</span></div>
+                    <div className="text-[11px] text-[#7d7a74] mt-[2px]">Resume, LinkedIn or website</div>
+                  </>) : (<>
+                    <div className="font-sans text-[12px] font-semibold uppercase tracking-[0.13em] text-brand-ink">Start here: Import</div>
+                    <div className="text-[11.5px] leading-[1.4] mt-[4px] text-[#57524c]">Your resume, LinkedIn or website fills most of your profile in a minute.</div>
+                    <span className="inline-block mt-[10px] bg-[#670821] text-white font-sans text-[11px] font-semibold uppercase tracking-[0.13em] py-[7px] px-[12px]">Import →</span>
+                  </>)}
                 </button>
               );
               return (
