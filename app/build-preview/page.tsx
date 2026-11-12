@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { ARCHETYPES, ARCH_MAX } from "@/lib/archetypes";
 import { BookingSetup } from "./BookingSetup";
 import { SiteScan } from "./SiteScan";
+import { mediaLabel } from "@/lib/media-labels";
 import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
 import { COMPANY_STAGES, COMPANY_INDUSTRY_MAX, INDUSTRY_SUGGESTIONS, PROJECT_TYPES as ENTRY_TYPES, ROLE_TYPES, ENTRY_KINDS } from "@/lib/company-tags";
 import type { WorkHistoryItem } from "@/types";
@@ -1490,7 +1491,7 @@ export default function BuildPreview() {
                   <div key={i} className={`p-[16px] border ${m.featured ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex flex-wrap gap-[6px]">
-                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{k}</button>)}
+                        {MEDIA_KINDS.map((k) => <button key={k} onClick={() => upMedia(i, { kind: k })} className={`font-sans text-[11.5px] py-[4px] px-[10px] border ${m.kind === k ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] bg-white text-[#7d7a74] hover:border-brand-ink"}`}>{mediaLabel(k)}</button>)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button onClick={() => toggleMediaFeatured(i)} className={`font-sans text-[11.5px] font-medium py-[4px] px-[10px] border ${m.featured ? "border-[#670821] bg-[#EDE7FF] text-[#670821]" : "border-[#E1DED7] text-[#7d7a74] hover:border-brand-ink hover:text-brand-ink"}`}>{m.featured ? "★ Featured" : "☆ Feature"}</button>

@@ -4,6 +4,7 @@
 // until they choose it.
 
 import { useState } from "react";
+import { mediaLabel } from "@/lib/media-labels";
 
 type Item = { kind: string; title: string; outlet: string; url: string; foundOn: string; check?: boolean };
 type Found = { site: string; siteTitle: string; pages: string[]; items: Item[]; socials: Record<string, string> };
@@ -80,14 +81,14 @@ export function SiteScan({ website, have, emptySocials, onAdd, onSocials, mode =
                   <button onClick={() => setOn({})} className="underline underline-offset-2 text-[#7d7a74] hover:text-brand-ink">Select none</button>
                 </div>
               </div>
-              {kinds.length > 1 && <div className="flex flex-wrap gap-[6px] mb-2">{kinds.map((k) => { const group = fresh.filter((i) => i.kind === k); const all = group.every((i) => on[i.url]); return <button key={k} aria-pressed={all} onClick={() => setOn((c) => ({ ...c, ...Object.fromEntries(group.map((i) => [i.url, !all])) }))} className={`font-sans text-[12px] py-[4px] px-[10px] border ${all ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#7d7a74]"}`}>{k} · {group.length}</button>; })}</div>}
+              {kinds.length > 1 && <div className="flex flex-wrap gap-[6px] mb-2">{kinds.map((k) => { const group = fresh.filter((i) => i.kind === k); const all = group.every((i) => on[i.url]); return <button key={k} aria-pressed={all} onClick={() => setOn((c) => ({ ...c, ...Object.fromEntries(group.map((i) => [i.url, !all])) }))} className={`font-sans text-[12px] py-[4px] px-[10px] border ${all ? "border-brand-ink bg-[#F1EEE8]" : "border-[#E1DED7] bg-white text-[#7d7a74]"}`}>{mediaLabel(k)} · {group.length}</button>; })}</div>}
               <div className="border border-[#E1DED7] bg-white max-h-[340px] overflow-y-auto">
                 {fresh.map((i) => (
                   <label key={i.url} className="flex items-start gap-[10px] py-[10px] px-[12px] border-b border-[#F1EEE8] last:border-b-0 cursor-pointer hover:bg-[#FFFFFF]">
                     <input type="checkbox" checked={!!on[i.url]} onChange={() => setOn((c) => ({ ...c, [i.url]: !c[i.url] }))} className="mt-[3px]" />
                     <span className="min-w-0">
                       <span className="block font-sans text-[13.5px] font-semibold leading-snug">{i.title}</span>
-                      <span className="block text-[12px] text-[#7d7a74] truncate">{i.kind}{i.outlet ? ` · ${i.outlet}` : ""} · {host(i.url)}</span>
+                      <span className="block text-[12px] text-[#7d7a74] truncate">{mediaLabel(i.kind)}{i.outlet ? ` · ${i.outlet}` : ""} · {host(i.url)}</span>
                       {i.check && <span className="block text-[12px] text-[#AB0000]">We couldn&apos;t open this page, so the title comes from its web address. Check it after adding.</span>}
                     </span>
                   </label>
