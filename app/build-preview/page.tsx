@@ -68,8 +68,8 @@ const MEDIA_COLORS: Record<string, string> = {
   Press: "#E6E2D0", Talk: "#C0DDFB", Podcast: "#A9C89A", Writing: "#D6E27B",
   Portfolio: "#B9E3A5", Video: "#FF5436", Deck: "#DBCDC4",
 };
-const VALUES = ["Accountability", "Adaptability", "Ambition", "Authenticity", "Autonomy", "Balance", "Boldness", "Candor", "Collaboration", "Courage", "Craft", "Creativity", "Curiosity", "Directness", "Discipline", "Efficiency", "Empathy", "Ethics", "Excellence", "Fairness", "Focus", "Generosity", "Gratitude", "Growth mindset", "Humility", "Impact", "Inclusion", "Independence", "Integrity", "Kindness", "Optimism", "Ownership", "Patience", "Pragmatism", "Resilience", "Rigor", "Service", "Simplicity", "Transparency", "Trust", "Vision"];
-const VAL_MAX = 12, VAL_FEATURED = 6;
+const VALUES = ["Accountability", "Adaptability", "Ambition", "Authenticity", "Autonomy", "Balance", "Boldness", "Candor", "Collaboration", "Community", "Compassion", "Contribution", "Courage", "Craft", "Creativity", "Curiosity", "Directness", "Discipline", "Efficiency", "Empathy", "Ethics", "Excellence", "Fairness", "Focus", "Generosity", "Gratitude", "Growth mindset", "Humility", "Impact", "Inclusion", "Independence", "Integrity", "Kindness", "Optimism", "Ownership", "Patience", "Pragmatism", "Purpose", "Resilience", "Rigor", "Service", "Simplicity", "Transparency", "Trust", "Vision"];
+const VAL_MAX = 14, VAL_FEATURED = 7;
 const SKILL_LEVELS = ["Foundational", "Proficient", "Advanced", "Expert"];
 // Ordered categories + auto-classification. In the real product this classification is done for the
 // user (lookup + AI) so they never tag hard/soft or pick a category — they only set proficiency.
@@ -761,7 +761,7 @@ export default function BuildPreview() {
             </div>
           )}
           <div className="flex items-center justify-between mb-4 max-w-[980px] gap-3 flex-wrap">
-            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#670821] bg-[#EDE7FF] py-[5px] px-[11px]">Step {stepNo + 1} of {ALL_STEPS.length} · {active}</span>
+            <span className="font-sans inline-block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#670821] bg-[#EDE7FF] py-[5px] px-[11px]">{active === "Resume" ? "Import" : `Step ${stepNo} of ${ALL_STEPS.length - 1}`} · {active}</span>
             {HIDEABLE[active] && (
               <button onClick={() => toggleHidden(HIDEABLE[active])} className="inline-flex items-center gap-2 font-sans text-[12px] text-[#57524c] hover:text-brand-ink">
                 <span className={`w-[34px] h-[19px] rounded-full relative transition-colors ${hidden.includes(HIDEABLE[active]) ? "bg-[#d8d4cc]" : "bg-[#670821]"}`}><span className={`absolute top-[2px] w-[15px] h-[15px] bg-white rounded-full transition-all ${hidden.includes(HIDEABLE[active]) ? "left-[2px]" : "left-[17px]"}`} /></span>
@@ -1452,7 +1452,7 @@ export default function BuildPreview() {
           {active === "Values" && (
             <>
               <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Your values.</h1>
-              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to 12, then feature the 4 that matter most — they lead your profile; the rest live in your bio.</p>
+              <p className="text-[15px] text-[#3a352f] max-w-[72ch] leading-[1.5] mb-7">The values that guide how you work. Choose up to {VAL_MAX}, then star the {VAL_FEATURED} you hold highest. Those lead your profile; the rest live in your bio.</p>
 
               <div className="mb-8 max-w-[980px]">
                 <div className="flex items-baseline justify-between mb-2">
@@ -1724,7 +1724,7 @@ export default function BuildPreview() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[55] w-[min(560px,92vw)] bg-white border border-[#E1DED7] shadow-[0_18px_44px_rgba(20,10,60,0.18)] p-[18px_20px]">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#670821]">{tourGroup(tour)} · {tour + 1} of {TOUR_STEPS.length}</div>
+              <div className="font-sans text-[10.5px] font-semibold uppercase tracking-[0.13em] text-[#670821]">{tourGroup(tour)} · {tour === 0 ? "Import" : `${tour} of ${TOUR_STEPS.length - 1}`}</div>
               <div className="font-sans text-[15px] font-semibold mt-0.5">{TOUR_STEPS[tour]}</div>
               <div className="text-[12.5px] text-[#7d7a74] mt-0.5 leading-snug">{TOUR_HINTS[TOUR_STEPS[tour]]}</div>
             </div>

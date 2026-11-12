@@ -722,7 +722,7 @@ function ProfilePage() {
         <div className="card col">
           <BlockHead title="Core Values" link={profile.singlePage ? undefined : "See all values"} onLink={() => gotoSection("values")} />
           <div className="vchips">
-          {starFirst(profile.values).slice(0, 6).map((v, i) => <span key={v.name} className={"hd-chip c" + ((i % 4) + 1)}>{v.name}</span>)}
+          {starFirst(profile.values).slice(0, 7).map((v, i) => <span key={v.name} className={"hd-chip c" + ((i % 4) + 1)}>{v.name}</span>)}
           </div>
         </div>
         )}
@@ -1040,10 +1040,10 @@ function ExperiencePage() {
       )}
 
       {profile.values.length > 0 && (
-        <XSec id="values" title="Values" total={profile.values.length} preview={6}>
+        <XSec id="values" title="Values" total={profile.values.length} preview={7}>
           {(all) => (
             <div className="vchips">
-              {(all ? allValues : allValues.slice(0, 6)).map((v, i) => <span key={v.name} className={"hd-chip " + (v.featured ? "c" + ((i % 4) + 1) : "plain")}>{v.name}</span>)}
+              {(all ? allValues : allValues.slice(0, 7)).map((v, i) => <span key={v.name} className={"hd-chip " + (v.featured ? "c" + ((i % 4) + 1) : "plain")}>{v.name}</span>)}
             </div>
           )}
         </XSec>
