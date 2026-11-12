@@ -4,7 +4,7 @@
 // Step-by-step build. Once approved, moves into /onboard with real state + persistence, reusing existing editors.
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { ARCHETYPES } from "@/lib/archetypes";
+import { ARCHETYPES, ARCH_MAX } from "@/lib/archetypes";
 import { BookingSetup } from "./BookingSetup";
 import { SiteScan } from "./SiteScan";
 import { SESSION_LENGTHS, parseMinutes, parsePriceCents, proRataDollars } from "@/lib/booking";
@@ -20,7 +20,7 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 
 const RAIL = [
   { label: null, steps: ["Resume"] },
-  { label: "Build your profile", steps: ["About You", "Long Bio", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education"] },
+  { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Long Bio", "Testimonials", "Education"] },
   { label: "Build your brand", steps: ["CTAs", "Work With Me", "Media", "Reach", "Shop", "Mobile Links"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
@@ -258,7 +258,7 @@ export default function BuildPreview() {
   const [largestTeam, setLargestTeam] = useState("50");
   const [orgs, setOrgs] = useState("5");
   const [philosophy, setPhilosophy] = useState("I build high-performing teams through clarity, trust, and a bias for action.");
-  const toggleArch = (a: string) => setArch((c) => (c.includes(a) ? c.filter((x) => x !== a) : c.length < 4 ? [...c, a] : c));
+  const toggleArch = (a: string) => setArch((c) => (c.includes(a) ? c.filter((x) => x !== a) : c.length < ARCH_MAX ? [...c, a] : c));
 
   // Work With Me
   const [ftEnabled, setFtEnabled] = useState(true);
@@ -998,7 +998,7 @@ export default function BuildPreview() {
 
               <div className="mb-8">
                 <label className="font-sans text-[13px] font-semibold block mb-1">Your archetype</label>
-                <p className="text-[12.5px] text-[#7d7a74] mb-3">Pick up to 4.</p>
+                <p className="text-[12.5px] text-[#7d7a74] mb-3">Pick up to {ARCH_MAX}.</p>
                 <div className="grid grid-cols-2 gap-[10px] max-w-[620px]">
                   {ARCHETYPES.map((a) => { const on = arch.includes(a.name); return (
                     <button key={a.name} onClick={() => toggleArch(a.name)} className={`text-left p-[14px] border-[1.5px] ${on ? "border-[#670821] bg-[#EDE7FF]" : "border-[#E1DED7] bg-white hover:border-[#3a352f]"}`}>
