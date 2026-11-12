@@ -12,7 +12,9 @@ import { parseMinutes, parsePriceCents } from "./booking";
 
 // The shape the builder autosaves (matches snapshot() in app/build-preview/page.tsx).
 export interface BuilderSnapshot {
-  types: string[]; name: string; headline: string; bio: string; photoUrl?: string; city: string; loc: string;
+  types: string[]; name: string; headline: string; company?: string; bio: string; photoUrl?: string; city: string; loc: string;
+  /** true once a resume, LinkedIn or website import has run; the builder stops nudging after that */
+  imported?: boolean;
   openNow: boolean; dob: string;
   socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string; spotify?: string; apple?: string };
   focus: string;
@@ -20,7 +22,7 @@ export interface BuilderSnapshot {
   arch: string[]; mbti: string; enn: string; ennWing?: string; disc: string;
   ledTeam: boolean; yearsLed: string; largestTeam: string; orgs: string; philosophy: string;
   ftEnabled: boolean; ftRoles: string;
-  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; booking: string; desc: string; url?: string; urlLabel?: string; duration: string; length: string; cadence: string; keywords?: string; extra?: { min: number; price: string }[] }[];
+  offers: { key: string; title: string; blurb: string; added: boolean; rate: string; unit: string; showRate: boolean; scoped?: boolean; booking: string; desc: string; url?: string; urlLabel?: string; duration: string; length: string; cadence: string; keywords?: string; extra?: { min: number; price: string }[] }[];
   impacts: { headline: string; context: string; story: string }[];
   skills: { name: string; level: string; top: boolean }[];
   industries: string[]; learning: string[];
@@ -153,8 +155,9 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
     key: OFFER_ENGAGEMENT[o.key] ?? "project",
     icon: OFFER_ICON[o.key] ?? "file",
     title: o.title,
-    price: o.showRate && o.rate ? `$${o.rate.trim().replace(/^\$+/, "")} ${o.unit}`.trim() : "Request",
-    rateDisplay: o.showRate && o.rate ? "show" : "contact",
+    // "To be scoped": the member names no number; the card says so and people send a request
+    price: o.scoped ? "To be scoped" : o.showRate && o.rate ? `$${o.rate.trim().replace(/^\$+/, "")} ${o.unit}`.trim() : "Request",
+    rateDisplay: o.scoped || (o.showRate && o.rate) ? "show" : "contact",
     blurb: o.desc || o.blurb || "",
     visible: true,
     flow: o.booking === "link" && absUrl(o.url) ? "link" : o.booking === "link" ? "message" : flowFor(o.booking),
@@ -216,6 +219,7 @@ export function builderToProfile(s: BuilderSnapshot, username: string): Profile 
   return {
     name: s.name || "",
     headline: s.headline || "",
+    company: (s.company || "").trim() || undefined,
     location: s.city || "",
     available: !!s.openNow,
     availableLabel: s.openNow ? "Open to opportunities" : "",

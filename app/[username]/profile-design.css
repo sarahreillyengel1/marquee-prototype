@@ -185,7 +185,9 @@
 .mq-root .hd-l .avail{ display:flex; }
 .mq-root .hd-name{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:min(var(--name-size,48px), 11.5vw); line-height:1.02; letter-spacing:-.02em; margin-bottom:18px; text-wrap:balance; color:var(--ink); }
 .mq-root .hd-title{ font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--h-accent); line-height:1.6; margin-bottom:14px; max-width:46ch; }
-.mq-root .hd-facts{ font-size:15px; line-height:1.6; color:var(--ink2); margin-bottom:24px; max-width:34em; white-space:pre-line; display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.mq-root .hd-title .hd-sep{ color:var(--gray); font-weight:400; }
+.mq-root .hd-title .hd-co{ color:var(--ink); }
+.mq-root .hd-facts{ font-size:15px; line-height:1.6; color:var(--ink2); margin-bottom:24px; max-width:34em; white-space:pre-line; display:-webkit-box; -webkit-line-clamp:6; line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; }
 .mq-root .hd-lbl{ font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
 .mq-root .hd-focus{ font-family:var(--font-canela),var(--font-lora),Georgia,serif; font-weight:400; font-size:var(--focus-size,19px); line-height:1.3; letter-spacing:-.01em; color:var(--ink); margin-bottom:26px; max-width:34em; text-wrap:pretty; }
 .mq-root .hd-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 26px; }

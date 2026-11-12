@@ -177,6 +177,8 @@ export type ProfileLook = 'classic' | 'warm' | 'mono' | 'bold'
 export interface Profile {
   name: string
   headline: string
+  /** The company the headline belongs to, shown after the title in the header ("Co-founder & CEO · Campsix"). */
+  company?: string
   location: string
   available: boolean
   availableLabel: string

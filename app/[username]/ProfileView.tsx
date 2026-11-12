@@ -391,8 +391,8 @@ export const photoStyle = (pos?: { x: number; y: number }, zoom?: number): CSSPr
   return { objectPosition: at, transformOrigin: at, transform: zoom && zoom > 1 ? `scale(${zoom})` : undefined };
 };
 const nameSize = (n: string) => (n.length <= 12 ? 56 : n.length <= 22 ? 48 : 40);
-// Currently can run to 240 characters: the longer it is, the smaller it sets
-const focusSize = (f: string) => (f.length <= 80 ? 21 : f.length <= 140 ? 19 : 17.5);
+// Currently can run to 350 characters: the longer it is, the smaller it sets
+const focusSize = (f: string) => (f.length <= 80 ? 21 : f.length <= 140 ? 19 : f.length <= 250 ? 17.5 : 16);
 
 function Hero() {
   const { profile } = useStore();
@@ -434,7 +434,7 @@ function Hero() {
           )}
           {profile.available && profile.availableLabel && <div className="avail"><span className="d" />{profile.availableLabel}</div>}
           <h1 className="hd-name" style={{ "--name-size": `${nameSize(profile.name)}px` } as CSSProperties}>{profile.name}</h1>
-          {profile.headline && <div className="hd-title">{profile.headline}</div>}
+          {(profile.headline || profile.company) && <div className="hd-title">{profile.headline}{profile.headline && profile.company ? <span className="hd-sep"> · </span> : null}{profile.company && <span className="hd-co">{profile.company}</span>}</div>}
           {profile.bioShort && <p className="hd-facts">{profile.bioShort}</p>}
           {profile.tagline && (
             <>
@@ -753,7 +753,7 @@ function ProfilePage() {
 
       {on("superpowers") && has(profile.superpowers) && (
         <section className="smt">
-          <BlockHead title="Superpowers" />
+          <BlockHead title="Superpowers" link={profile.singlePage || profile.superpowers.length <= 3 ? undefined : "See all superpowers"} onLink={() => gotoSection("superpowers")} />
           <div className="card col">
             {profile.superpowers.slice(0, 3).map((sp) => <div key={sp.title} className="sp"><div className="sp-ic"><Icon name={sp.icon} /></div><div><div className="sp-t">{sp.title}</div><div className="sp-d">{sp.blurb}</div><Affirm slug={profile.slug} superpower={sp.title} /></div></div>)}
           </div>

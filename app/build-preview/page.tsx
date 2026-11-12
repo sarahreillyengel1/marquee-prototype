@@ -114,7 +114,9 @@ function extractKeywords(text: string): string[] {
   return out;
 }
 
-type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; extra?: { min: number; price: string }[]; keywords: string; keywordsAuto?: boolean; url?: string; urlLabel?: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
+type Offer = { key: string; title: string; blurb: string; added: boolean; kind: string; length: string; duration: string; rate: string; unit: string; hoursPerMonth: string; showRate: boolean; scoped?: boolean; extra?: { min: number; price: string }[]; keywords: string; keywordsAuto?: boolean; url?: string; urlLabel?: string; date: string; cadence: string; stage?: string; industries?: string; booking: string; desc: string };
+// "To be scoped" rate option: shown in local dev only until Sarah has seen it and approved it for members.
+const SCOPED_RATE_LIVE = process.env.NODE_ENV !== "production";
 const UNITS = ["per hour", "per day", "per week", "per month", "per session", "per event", "per project"];
 const STAGES = ["Pre-seed", "Seed", "Series A", "Series B", "Growth", "Public"];
 const LINK_OPT = { v: "link", label: "Open a link" }; // your own page, form, store or booking tool
@@ -143,7 +145,7 @@ const BLANK_OFFERS: Offer[] = [
   { key: "content", title: "Content Partnership", blurb: "Creator & sponsored work.", added: false, kind: "", length: "", duration: "", rate: "", unit: "per post", hoursPerMonth: "", showRate: false, keywords: "", date: "", cadence: "", booking: "request", desc: "" },
 ];
 const BLANK = {
-  types: [] as string[], name: "", headline: "", bio: "", photoUrl: "", city: "", loc: "Remote", openNow: true, dob: "",
+  types: [] as string[], name: "", headline: "", company: "", bio: "", photoUrl: "", city: "", loc: "Remote", openNow: true, dob: "", imported: false,
   socials: { website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "", spotify: "", apple: "" },
   focus: "", entries: [] as Entry[], arch: [] as string[], mbti: "", enn: "", disc: "",
   ledTeam: false, yearsLed: "", largestTeam: "", orgs: "", philosophy: "",
@@ -219,6 +221,9 @@ export default function BuildPreview() {
   const [types, setTypes] = useState<string[]>(["Executive", "Entrepreneur"]);
   const [name, setName] = useState("Sarah Engel");
   const [headline, setHeadline] = useState("GTM Leader · Brand Builder · AI Operator");
+  const [company, setCompany] = useState("");
+  // set once an import has run (saved with the draft) so the import reminder stops
+  const [imported, setImported] = useState(false);
   const [bio, setBio] = useState("I build systems, brands, and communities that drive growth.");
   const [city, setCity] = useState("Westport, CT");
   const [loc, setLoc] = useState("Remote");
@@ -438,6 +443,7 @@ export default function BuildPreview() {
   const upPower = (i: number, patch: Partial<{ statement: string; proof: string; keywords: string[] }>) => setPowers((c) => c.map((x, j) => (j === i ? { ...x, ...patch } : x)));
   const addPower = () => setPowers((c) => (c.length < SP_MAX ? [...c, { statement: "", proof: "", keywords: [] }] : c));
   const rmPower = (i: number) => setPowers((c) => c.filter((_, j) => j !== i));
+  const movePower = (i: number, d: -1 | 1) => setPowers((c) => { const j = i + d; if (j < 0 || j >= c.length) return c; const n = [...c]; [n[i], n[j]] = [n[j], n[i]]; return n; });
   const suggestKw = (i: number) => upPower(i, { keywords: extractKeywords(`${powers[i].statement} ${powers[i].proof}`) });
   const addKw = (i: number) => { const v = (kwDraft[i] || "").trim(); if (v && !powers[i].keywords.includes(v)) upPower(i, { keywords: [...powers[i].keywords, v] }); setKwDraft((d) => ({ ...d, [i]: "" })); };
   const rmKw = (i: number, k: string) => upPower(i, { keywords: powers[i].keywords.filter((x) => x !== k) });
@@ -473,6 +479,8 @@ export default function BuildPreview() {
   const applyParsed = (p: ResumeParseResult) => {
     if (p.full_name) setName(p.full_name);
     if (p.current_title) setHeadline(p.current_title);
+    if (p.current_company) setCompany(p.current_company);
+    setImported(true);
     if (p.location) setCity(p.location);
     if (p.linkedin_url) setSocials((s) => ({ ...s, linkedin: p.linkedin_url as string }));
     if (p.skills_extracted?.length) setSkills(p.skills_extracted.slice(0, 20).map((n, i) => ({ name: n, level: "Proficient", top: i < 5 })));
@@ -519,7 +527,7 @@ export default function BuildPreview() {
       await parseResume(undefined, `Website: ${j.site}\nSite title: ${j.siteTitle}\n${j.text}`);
     } catch { setParseErr("Something went wrong. Try again."); setParsing(false); }
   };
-  const snapshot = () => ({ spotlight: spot, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
+  const snapshot = () => ({ spotlight: spot, types, name, headline, company, imported, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -547,7 +555,7 @@ export default function BuildPreview() {
     } finally { setUploading(false); }
   };
   const hydrate = (d: Partial<typeof BLANK>) => {
-    setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
+    setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setCompany(d.company ?? ""); setImported(d.imported ?? false); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
     setCity(d.city ?? ""); setLoc(d.loc ?? "Remote"); setOpenNow(d.openNow ?? true); setDob(d.dob ?? "");
     setSocials(d.socials ?? BLANK.socials); setFocus(d.focus ?? ""); setEntries((d.entries ?? []).map((e) => (e.ptype === "Accelerator" ? { ...e, ptype: "Program" } : e)));
     setArch(d.arch ?? []); setMbti(d.mbti ?? ""); setEnn(d.enn ?? ""); setDisc(d.disc ?? "");
@@ -615,7 +623,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, spot, types, name, headline, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
+  }, [loaded, spot, types, name, headline, company, imported, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   // Save bar: what autosave is doing, and whether the draft has moved past the live profile
@@ -656,6 +664,9 @@ export default function BuildPreview() {
   };
 
   const stepNo = ALL_STEPS.indexOf(active);
+  // how much of the profile is filled in: the rail's progress bar, and the import reminder stops at 50%
+  const progressParts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()];
+  const pct = Math.round((progressParts.filter(Boolean).length / progressParts.length) * 100);
 
   if (loadErr) return <div className="font-inter bg-brand-paper min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center"><div className="font-sans text-[15px] text-brand-ink max-w-[46ch]">{loadErr}</div><button onClick={() => window.location.reload()} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[10px] px-5">Refresh</button></div>;
   if (!loaded) return <div className="font-inter bg-brand-paper min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#670821] border-t-transparent rounded-full animate-spin" /></div>;
@@ -680,7 +691,7 @@ export default function BuildPreview() {
             })}
           </div>
         ))}
-        {(() => { const parts = [name.trim(), headline.trim(), entries.length, skills.length, vals.length, powers.some((p) => p.statement?.trim()), testis.some((t) => t.quote?.trim()), edu.length, offers.some((o) => o.added), media.length, longBio.trim()]; const pct = Math.round((parts.filter(Boolean).length / parts.length) * 100); const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#670821] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
+        {(() => { const title = pct >= 80 ? "Almost there" : pct >= 40 ? "Good progress" : "Getting started"; const sub = pct >= 80 ? "You're in the final stretch." : pct >= 40 ? "Keep going — it's taking shape." : "Add a few sections to bring it to life."; return <div className="mt-auto pt-5"><div className="border border-[#ECEAE4] p-[14px]"><div className="font-sans text-[14px] font-semibold">{title}</div><div className="text-[11.5px] text-[#7d7a74] mt-0.5 mb-[10px]">{sub}</div><div className="h-[6px] bg-[#ECEAE4]"><div className="h-full bg-[#670821] transition-all" style={{ width: `${pct}%` }} /></div><div className="text-[10.5px] text-[#a8a29a] mt-1">{pct}% complete</div></div></div>; })()}
         {refInfo && (
           <div className="mt-3 border border-[#E1DED7] bg-white p-[14px]">
             <div className="font-sans text-[13px] font-semibold">Refer friends, earn a $20 credit</div>
@@ -742,7 +753,7 @@ export default function BuildPreview() {
         </div>
 
         <main className="p-[40px_48px_120px] flex-1 max-w-[1100px]">
-          {loaded && active !== "Resume" && entries.length === 0 && !importNudgeOff && (
+          {loaded && active !== "Resume" && !imported && pct < 50 && !importNudgeOff && (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border border-brand-ink bg-white p-[14px_18px] mb-8 max-w-[980px]">
               <button onClick={() => { setActive("Resume"); window.scrollTo(0, 0); }} className="flex-1 min-w-[260px] text-left font-sans text-[14px] font-semibold underline underline-offset-4 hover:text-[#670821]">Import your resume, LinkedIn or website to populate your profile.</button>
               <button onClick={() => setImportNudgeOff(true)} aria-label="Hide" className="font-sans text-[18px] leading-none text-[#7d7a74] hover:text-brand-ink px-2">×</button>
@@ -867,9 +878,9 @@ export default function BuildPreview() {
                 {photoUrl && <PhotoFramer url={photoUrl} pos={photoPos} zoom={photoZoom} onPos={setPhotoPos} onZoom={setPhotoZoom} />}
               </div>
               <div className="grid grid-cols-2 gap-[18px] max-w-[600px]"><Field label="Name" value={name} onChange={setName} /><Field label="City / State" value={city} onChange={setCity} /></div>
-              <div className="max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /></div>
-              <div className="max-w-[600px] mt-[18px]"><Field label="Quick facts" value={bio} onChange={setBio} max={200} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">Up to three short lines, shown under your title. Press Enter to start a new line.</p></div>
-              <div className="max-w-[600px] mt-[18px]"><Field label="Currently" value={focus} onChange={setFocus} max={240} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">One or two sentences on what you are doing now. Shown in your header under the label “Currently”.</p></div>
+              <div className="grid grid-cols-2 gap-[18px] max-w-[600px] mt-[18px]"><Field label="Headline" value={headline} onChange={setHeadline} max={60} /><Field label="Company" value={company} onChange={setCompany} max={40} /></div>
+              <div className="max-w-[600px] mt-[18px]"><Field label="Quick facts" value={bio} onChange={setBio} max={350} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">Up to three short lines, shown under your title. Press Enter to start a new line.</p></div>
+              <div className="max-w-[600px] mt-[18px]"><Field label="Currently" value={focus} onChange={setFocus} max={350} textarea /><p className="text-[12px] text-[#7d7a74] mt-[6px]">One or two sentences on what you are doing now. Shown in your header under the label “Currently”.</p></div>
               <div className="max-w-[600px] mt-[18px]">
                 <div className="flex items-baseline justify-between mb-2"><label htmlFor="f-previous" className="font-sans text-[13px] font-semibold cursor-pointer">Previous</label><span className="text-[11px] text-[#7d7a74]">{previous.length} / {PREV_MAX}</span></div>
                 <div className="flex flex-wrap items-center gap-[6px] border border-[#E1DED7] bg-white py-[6px] px-[8px] focus-within:border-brand-ink">
@@ -1016,10 +1027,9 @@ export default function BuildPreview() {
                 </div>
                 {ledTeam && (
                   <div className="border border-[#E1DED7] p-[18px] max-w-[500px]">
-                    <div className="grid grid-cols-3 gap-[12px] mb-2">
+                    <div className="grid grid-cols-2 gap-[12px] mb-2">
                       <MiniStat label="Years leading" value={yearsLed} onChange={setYearsLed} />
                       <MiniStat label="Largest team" value={largestTeam} onChange={setLargestTeam} />
-                      <MiniStat label="Organizations" value={orgs} onChange={setOrgs} />
                     </div>
                     <div className="text-[11px] text-[#a8a29a] mb-4">These are searchable, they power recruiter filters.</div>
                     <div className="flex items-baseline justify-between mb-2"><label className="font-sans text-[13px] font-semibold">Leadership philosophy</label><span className="text-[11px] text-[#7d7a74]">{philosophy.length} / 280</span></div>
@@ -1170,10 +1180,12 @@ export default function BuildPreview() {
                     const showRate = o.key === "office" ? true : o.showRate;
                     const inp = "w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink";
                     const lab = "font-sans text-[12px] text-[#7d7a74] block mb-1";
+                    // Office Hours is booked and paid on the spot, so it always carries a number
+                    const rateMode: "amount" | "scoped" | "request" = o.key === "office" ? "amount" : o.scoped ? "scoped" : o.showRate ? "amount" : "request";
                     const rateCell = o.key === "advisory" ? null : (
                       <div>
-                        <div className="flex items-center justify-between mb-1"><label className="font-sans text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <button onClick={() => upOffer(o.key, { showRate: !o.showRate })} className="font-sans text-[11px] text-[#670821]">{o.showRate ? "Hide, take requests" : "Set a rate"}</button>}</div>
-                        {showRate ? <div className="flex items-center gap-2"><input value={o.rate} onChange={(e) => upOffer(o.key, { rate: e.target.value })} placeholder="Amount" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /><select value={o.unit} onChange={(e) => upOffer(o.key, { unit: e.target.value })} className="w-[128px] font-inter text-[12.5px] py-[9px] px-[8px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{UNITS.map((u) => <option key={u}>{u}</option>)}</select></div> : <div className="text-[12.5px] text-[#7d7a74] py-[9px]">People request, you quote later.</div>}
+                        <div className="flex items-center justify-between mb-1 gap-2 flex-wrap"><label className="font-sans text-[12px] text-[#7d7a74]">Rate (USD)</label>{o.key !== "office" && <div className="flex gap-[4px]">{([["amount", "Set a rate"], ["scoped", "To be scoped"], ["request", "Hide, take requests"]] as const).filter(([m]) => m !== "scoped" || SCOPED_RATE_LIVE).map(([m, t]) => <button key={m} onClick={() => upOffer(o.key, { showRate: m === "amount", scoped: m === "scoped" })} aria-pressed={rateMode === m} className={`font-sans text-[11px] py-[3px] px-[8px] border ${rateMode === m ? "border-brand-ink bg-[#F1EEE8] text-brand-ink" : "border-[#E1DED7] text-[#670821] hover:border-[#a8a29a]"}`}>{t}</button>)}</div>}</div>
+                        {rateMode === "scoped" ? <div className="text-[12.5px] text-[#7d7a74] py-[9px]">Shown as “To be scoped”. People send a request, you quote after scoping.</div> : showRate ? <div className="flex items-center gap-2"><input value={o.rate} onChange={(e) => upOffer(o.key, { rate: e.target.value })} placeholder="Amount" className="flex-1 font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] focus:outline-none focus:border-brand-ink" /><select value={o.unit} onChange={(e) => upOffer(o.key, { unit: e.target.value })} className="w-[128px] font-inter text-[12.5px] py-[9px] px-[8px] border border-[#E1DED7] bg-white focus:outline-none focus:border-brand-ink">{UNITS.map((u) => <option key={u}>{u}</option>)}</select></div> : <div className="text-[12.5px] text-[#7d7a74] py-[9px]">People request, you quote later.</div>}
                       </div>
                     );
                     return (
@@ -1409,7 +1421,13 @@ export default function BuildPreview() {
                   <div key={i} className={`p-[18px] border ${i < SP_SHOWCASE ? "border-[#E1DED7]" : "border-dashed border-[#DBD7CF] bg-[#FFFFFF]"}`}>
                     <div className="flex justify-between items-center mb-3">
                       <span className="font-sans text-[12px] font-semibold text-[#670821]">Superpower {String(i + 1).padStart(2, "0")}{i < SP_SHOWCASE ? "" : <span className="text-[#a8a29a] font-medium"> · shows in bio</span>}</span>
-                      <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>
+                      <div className="flex items-center gap-3">
+                        <span className="flex flex-col leading-none">
+                          <button onClick={() => movePower(i, -1)} disabled={i === 0} aria-label="Move up" className="text-[10px] leading-none text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▲</button>
+                          <button onClick={() => movePower(i, 1)} disabled={i === powers.length - 1} aria-label="Move down" className="text-[10px] leading-none text-[#a8a29a] hover:text-brand-ink disabled:opacity-30">▼</button>
+                        </span>
+                        <button onClick={() => rmPower(i)} className="font-sans text-[11px] text-[#7d7a74] hover:text-[#AB0000]">Remove</button>
+                      </div>
                     </div>
                     <textarea value={p.statement} onChange={(e) => upPower(i, { statement: e.target.value })} rows={2} placeholder="e.g. I spot unique white space for startups and build scalable business models that drive revenue." className="w-full font-sans font-semibold text-[15px] leading-snug py-[9px] px-[11px] border border-[#E1DED7] resize-none focus:outline-none focus:border-brand-ink" />
                     <textarea value={p.proof} onChange={(e) => upPower(i, { proof: e.target.value })} rows={2} placeholder="Short description (optional) — what this looks like in practice. Mention companies or keywords if you like." className="w-full font-inter text-[13.5px] py-[9px] px-[11px] border border-[#E1DED7] mt-2 resize-none focus:outline-none focus:border-brand-ink" />
@@ -1678,7 +1696,10 @@ export default function BuildPreview() {
           <div className="flex items-center justify-between mt-14 pt-6 border-t border-[#ECEAE4] max-w-[980px]">
             <button onClick={() => { const i = ALL_STEPS.indexOf(active); if (i > 0) setActive(ALL_STEPS[i - 1]); window.scrollTo(0, 0); }} disabled={ALL_STEPS.indexOf(active) <= 0} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink disabled:opacity-30 disabled:cursor-default">← Back</button>
             {ALL_STEPS.indexOf(active) < ALL_STEPS.length - 1
-              ? <button onClick={() => { const i = ALL_STEPS.indexOf(active); setActive(ALL_STEPS[i + 1]); window.scrollTo(0, 0); }} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-6">Next →</button>
+              ? <div className="flex items-center gap-5">
+                  <button onClick={() => { const i = ALL_STEPS.indexOf(active); setActive(ALL_STEPS[i + 1]); window.scrollTo(0, 0); }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip for now</button>
+                  <button onClick={() => { const i = ALL_STEPS.indexOf(active); setActive(ALL_STEPS[i + 1]); window.scrollTo(0, 0); }} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-6">Next →</button>
+                </div>
               : <button onClick={() => setShowPublish(true)} className="font-sans bg-[#670821] text-white text-[13px] font-medium py-[11px] px-6">{claimed ? "Update my profile →" : "Publish my profile →"}</button>}
           </div>
         </main>
@@ -1764,15 +1785,19 @@ export default function BuildPreview() {
         const notLive = !claimed || (!!draftAt && (!publishedAt || draftAt > publishedAt));
         const when = savedAt ? savedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
         return (
-          <div className="fixed bottom-0 right-0 left-[248px] z-30 bg-white border-t border-[#ECEAE4] px-10 py-[14px] flex items-center gap-5">
-            <div className="font-sans text-[13px] text-[#7d7a74] flex items-center gap-2">
+          <div className="fixed bottom-0 right-0 left-[248px] z-30 bg-white border-t border-[#ECEAE4] px-6 lg:px-10 py-[14px] flex flex-nowrap items-center gap-4 lg:gap-5 overflow-hidden">
+            <div className="font-sans text-[13px] text-[#7d7a74] hidden md:flex items-center gap-2 whitespace-nowrap shrink-0">
               <span className={`inline-block w-[8px] h-[8px] ${saveState === "saving" ? "bg-[#C7B5FF]" : "bg-[#670821]"}`} />
               {saveState === "saving" ? "Saving…" : saveState === "saved" ? `Draft saved${when ? ` at ${when}` : ""}` : "Draft saves as you type"}
             </div>
-            {notLive && <span className="font-sans text-[12px] font-semibold text-[#670821] bg-[#EDE7FF] py-[5px] px-[10px]">{claimed ? "Changes not on your live profile yet" : "Not published yet"}</span>}
-            <div className="ml-auto flex items-center gap-3">
-              <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Preview ↗</a>
-              <button onClick={() => setShowPublish(true)} className={`font-sans text-white text-[14px] font-semibold py-[12px] px-6 ${notLive ? "bg-[#670821] hover:bg-[#4E0619]" : "bg-brand-ink"}`}>{claimed ? "Update live profile →" : "Publish profile →"}</button>
+            {notLive && <span className="font-sans text-[12px] font-semibold text-[#670821] bg-[#EDE7FF] py-[5px] px-[10px] hidden xl:inline-block whitespace-nowrap shrink-0">{claimed ? "Changes not on your live profile yet" : "Not published yet"}</span>}
+            <div className="ml-auto flex items-center gap-3 shrink-0 whitespace-nowrap">
+              {/* the way forward is always in view: the same Back and Next as the foot of each step */}
+              {ALL_STEPS.indexOf(active) > 0 && <button onClick={() => { setActive(ALL_STEPS[ALL_STEPS.indexOf(active) - 1]); window.scrollTo(0, 0); }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">← Back</button>}
+              {ALL_STEPS.indexOf(active) < ALL_STEPS.length - 1 && <button onClick={() => { setActive(ALL_STEPS[ALL_STEPS.indexOf(active) + 1]); window.scrollTo(0, 0); }} className="font-sans text-[13px] font-semibold text-brand-ink border border-brand-ink py-[10px] px-5 hover:bg-[#F4F2EF]">Next →</button>}
+              <span className="w-px h-6 bg-[#E1DED7] hidden md:inline-block" aria-hidden="true" />
+              <a href="/build-preview/preview" target="_blank" rel="noopener" className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink hidden md:inline">Preview ↗</a>
+              <button onClick={() => setShowPublish(true)} className={`font-sans text-white text-[14px] font-semibold py-[12px] px-5 lg:px-6 ${notLive ? "bg-[#670821] hover:bg-[#4E0619]" : "bg-brand-ink"}`}>{claimed ? "Update live profile →" : "Publish profile →"}</button>
             </div>
           </div>
         );
