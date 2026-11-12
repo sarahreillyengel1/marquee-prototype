@@ -21,7 +21,7 @@ import { SKILLS_LIBRARY, SKILL_CATEGORIES as LIB_CATS } from "@/lib/skills-libra
 const RAIL = [
   { label: null, steps: ["Resume"] },
   { label: "Build your profile", steps: ["About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Long Bio", "Testimonials", "Education"] },
-  { label: "Build your brand", steps: ["CTAs", "Work With Me", "Media", "Reach", "Shop", "Mobile Links"] },
+  { label: "Build your brand", steps: ["CTAs", "Work With Me", "Shop", "Media", "Reach", "Mobile Links"] },
 ];
 const ALL_STEPS = RAIL.flatMap((p) => p.steps);
 const BUILT = new Set(["Resume", "About You", "Experience", "Leadership", "Impact", "Skills", "Superpowers", "Values", "Testimonials", "Education", "CTAs", "Mobile Links", "Work With Me", "Media", "Reach", "Shop", "Long Bio"]);
