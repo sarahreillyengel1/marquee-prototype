@@ -707,10 +707,10 @@ export default function BuildPreview() {
               const isActive = s === active, done = s === "Resume" ? entries.length > 0 : (BUILT.has(s) && s !== active);
               const n = s === "Resume" ? (entries.length > 0 ? "✓" : "↓") : ALL_STEPS.indexOf(s);
               if (s === "Resume") return (
-                <div key={s} onClick={() => setActive(s)} className={`py-[9px] px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
-                  <div className={`font-sans text-[11px] font-semibold uppercase tracking-[0.13em] ${isActive ? "text-[#670821]" : "text-brand-ink"}`}>Import</div>
+                <button key={s} type="button" onClick={() => setActive(s)} className={`w-full text-left py-[10px] px-[12px] mb-1 border-[1.5px] ${isActive ? "border-[#670821] bg-[#EDE7FF]" : "border-brand-ink bg-white hover:bg-[#F4F2EF]"}`}>
+                  <div className={`flex items-center justify-between font-sans text-[11px] font-semibold uppercase tracking-[0.13em] ${isActive ? "text-[#670821]" : "text-brand-ink"}`}><span>Import</span><span aria-hidden="true">→</span></div>
                   <div className="text-[11px] text-[#7d7a74] mt-[2px]">Resume, LinkedIn or website</div>
-                </div>
+                </button>
               );
               return (
                 <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
