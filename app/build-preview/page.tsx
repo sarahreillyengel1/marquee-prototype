@@ -147,6 +147,7 @@ const BLANK_OFFERS: Offer[] = [
 ];
 const BLANK = {
   types: [] as string[], name: "", headline: "", company: "", bio: "", photoUrl: "", city: "", loc: "Remote", openNow: true, dob: "", imported: false,
+  imports: {} as Record<string, { entries: number; skills: number; edu: number }>,
   socials: { website: "", linkedin: "", instagram: "", x: "", tiktok: "", youtube: "", substack: "", spotify: "", apple: "" },
   focus: "", entries: [] as Entry[], arch: [] as string[], mbti: "", enn: "", disc: "",
   ledTeam: false, yearsLed: "", largestTeam: "", orgs: "", philosophy: "",
@@ -225,6 +226,8 @@ export default function BuildPreview() {
   const [company, setCompany] = useState("");
   // set once an import has run (saved with the draft) so the import reminder stops
   const [imported, setImported] = useState(false);
+  // per source (file / linkedin / website): what its last run added, shown on the Import page
+  const [imports, setImports] = useState<Record<string, { entries: number; skills: number; edu: number }>>({});
   const [bio, setBio] = useState("I build systems, brands, and communities that drive growth.");
   const [city, setCity] = useState("Westport, CT");
   const [loc, setLoc] = useState("Remote");
@@ -476,29 +479,49 @@ export default function BuildPreview() {
   const [parseErr, setParseErr] = useState("");
   // What the reader found, waiting for the person to tick what goes in and say what each thing is.
   type Found = { w: WorkHistoryItem; on: boolean; kind: string };
-  const [found, setFound] = useState<{ items: Found[]; skills: number; edu: number } | null>(null);
+  const [found, setFound] = useState<{ items: Found[]; skills: number; edu: number; src: string } | null>(null);
+  // Each source adds to what is already there: basics fill only when empty, skills and education merge by name.
   const applyParsed = (p: ResumeParseResult) => {
-    if (p.full_name) setName(p.full_name);
-    if (p.current_title) setHeadline(p.current_title);
-    if (p.current_company) setCompany(p.current_company);
+    if (p.full_name) setName((c) => c.trim() ? c : p.full_name as string);
+    if (p.current_title) setHeadline((c) => c.trim() ? c : p.current_title as string);
+    if (p.current_company) setCompany((c) => c.trim() ? c : p.current_company as string);
     setImported(true);
-    if (p.location) setCity(p.location);
-    if (p.linkedin_url) setSocials((s) => ({ ...s, linkedin: p.linkedin_url as string }));
-    if (p.skills_extracted?.length) setSkills(p.skills_extracted.slice(0, 20).map((n, i) => ({ name: n, level: "Proficient", top: i < 5 })));
-    if (p.education?.length) setEdu(p.education.map((e) => ({ school: e.institution || "", degree: e.degree || "", field: "", year: e.graduation_year ? String(e.graduation_year) : "" })));
+    if (p.location) setCity((c) => c.trim() ? c : p.location as string);
+    if (p.linkedin_url) setSocials((s) => ({ ...s, linkedin: s.linkedin || (p.linkedin_url as string) }));
+    let skillsAdded = 0, eduAdded = 0;
+    if (p.skills_extracted?.length) setSkills((cur) => {
+      const have = new Set(cur.map((x) => x.name.trim().toLowerCase()));
+      const fresh = p.skills_extracted.filter((n) => n.trim() && !have.has(n.trim().toLowerCase())).slice(0, 20);
+      skillsAdded = fresh.length;
+      const starred = cur.filter((x) => x.top).length;
+      return [...cur, ...fresh.map((n, i) => ({ name: n, level: "Proficient", top: starred + i < 5 }))];
+    });
+    if (p.education?.length) setEdu((cur) => {
+      const key = (e: { school: string; degree: string }) => `${e.school}|${e.degree}`.toLowerCase();
+      const have = new Set(cur.map(key));
+      const fresh = p.education.map((e) => ({ school: e.institution || "", degree: e.degree || "", field: "", year: e.graduation_year ? String(e.graduation_year) : "" })).filter((e) => e.school.trim() && !have.has(key(e)));
+      eduAdded = fresh.length;
+      return [...cur, ...fresh];
+    });
     const items = (p.work_history || []).filter((w) => (w.company || w.role_title || "").trim()).map((w) => ({ w, on: true, kind: ENTRY_KINDS.includes(w.kind || "") ? (w.kind as string) : "Role" }));
-    setFound({ items, skills: p.skills_extracted?.length || 0, edu: p.education?.length || 0 });
+    const src = resumeMode === "text" ? "file" : resumeMode;
+    setFound({ items, skills: skillsAdded || (p.skills_extracted?.length || 0), edu: eduAdded || (p.education?.length || 0), src });
   };
+  // What a source added, for its row on the Import page.
+  const recordImport = (src: string, entries: number, skills: number, edu: number) => setImports((m) => ({ ...m, [src]: { entries, skills, edu } }));
+  const importSummary = (c: { entries: number; skills: number; edu: number }) => [c.entries ? `${c.entries} ${c.entries === 1 ? "experience" : "experiences"}` : "", c.skills ? `${c.skills} skills` : "", c.edu ? `${c.edu} education ${c.edu === 1 ? "entry" : "entries"}` : ""].filter(Boolean).join(", ") || "nothing new";
   const addFound = () => {
     if (!found) return;
     const picked = found.items.filter((f) => f.on);
-    setEntries((cur) => [...cur.filter((x) => x.primary.trim() || x.secondary.trim()), ...picked.map((f, i) => ({
+    recordImport(found.src, picked.length, found.skills, found.edu);
+    // an entry already on the timeline (same company and title) is not added twice
+    setEntries((cur) => [...cur.filter((x) => x.primary.trim() || x.secondary.trim()), ...picked.filter((f) => !cur.some((x) => x.primary.trim().toLowerCase() === (f.w.company || "").trim().toLowerCase() && x.secondary.trim().toLowerCase() === (f.w.role_title || "").trim().toLowerCase())).map((f, i) => ({
       kind: (ROLE_TYPES.includes(f.kind) ? "role" : "project") as "role" | "project", ptype: f.kind,
       primary: f.w.company || "", secondary: f.w.role_title || "",
       dates: [f.w.start_date, f.w.end_date].filter(Boolean).join(" – "),
       desc: Array.isArray(f.w.bullets) ? f.w.bullets.join(" ") : "", result: "", featured: i === 0 && f.kind === "Role",
     }))]);
-    setFound(null); setActive("About You");
+    setFound(null); window.scrollTo(0, 0);
   };
   const parseResume = async (file?: File, textOverride?: string) => {
     setParseErr(""); setParsing(true);
@@ -528,7 +551,7 @@ export default function BuildPreview() {
       await parseResume(undefined, `Website: ${j.site}\nSite title: ${j.siteTitle}\n${j.text}`);
     } catch { setParseErr("Something went wrong. Try again."); setParsing(false); }
   };
-  const snapshot = () => ({ spotlight: spot, types, name, headline, company, imported, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
+  const snapshot = () => ({ spotlight: spot, types, name, headline, company, imported, imports, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, ennWing, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom });
   const uploadImg = async (file: File, prefix: string): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -556,7 +579,7 @@ export default function BuildPreview() {
     } finally { setUploading(false); }
   };
   const hydrate = (d: Partial<typeof BLANK>) => {
-    setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setCompany(d.company ?? ""); setImported(d.imported ?? false); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
+    setTypes(d.types ?? []); setName(d.name ?? ""); setHeadline(d.headline ?? ""); setCompany(d.company ?? ""); setImported(d.imported ?? false); setImports(d.imports ?? {}); setBio(d.bio ?? ""); setPhotoUrl(d.photoUrl ?? "");
     setCity(d.city ?? ""); setLoc(d.loc ?? "Remote"); setOpenNow(d.openNow ?? true); setDob(d.dob ?? "");
     setSocials(d.socials ?? BLANK.socials); setFocus(d.focus ?? ""); setEntries((d.entries ?? []).map((e) => (e.ptype === "Accelerator" ? { ...e, ptype: "Program" } : e)));
     setArch(d.arch ?? []); setMbti(d.mbti ?? ""); setEnn(d.enn ?? ""); setDisc(d.disc ?? "");
@@ -624,7 +647,7 @@ export default function BuildPreview() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, spot, types, name, headline, company, imported, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
+  }, [loaded, spot, types, name, headline, company, imported, imports, bio, photoUrl, city, loc, openNow, dob, socials, focus, entries, arch, mbti, enn, disc, ledTeam, yearsLed, largestTeam, orgs, philosophy, ftEnabled, ftRoles, offers, impacts, skills, industries, learning, vals, vFeatured, media, testis, edu, certs, products, longBio, powers, hidden, reach, audAge, audGender, audGeo, calLink, actions, look, previous, photoPos, photoZoom, ennWing]);
 
   // Publish (Milestone 3) — map the snapshot to a Profile and write it live.
   // Save bar: what autosave is doing, and whether the draft has moved past the live profile
@@ -683,6 +706,12 @@ export default function BuildPreview() {
             {phase.steps.map((s) => {
               const isActive = s === active, done = s === "Resume" ? entries.length > 0 : (BUILT.has(s) && s !== active);
               const n = s === "Resume" ? (entries.length > 0 ? "✓" : "↓") : ALL_STEPS.indexOf(s);
+              if (s === "Resume") return (
+                <div key={s} onClick={() => setActive(s)} className={`py-[9px] px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
+                  <div className={`font-sans text-[11px] font-semibold uppercase tracking-[0.13em] ${isActive ? "text-[#670821]" : "text-brand-ink"}`}>Import</div>
+                  <div className="text-[11px] text-[#7d7a74] mt-[2px]">Resume, LinkedIn or website</div>
+                </div>
+              );
               return (
                 <div key={s} onClick={() => setActive(s)} className={`flex items-center gap-[11px] py-2 px-[10px] cursor-pointer ${isActive ? "bg-[#EDE7FF]" : "hover:bg-[#F4F2EF]"}`}>
                   <span className={`w-[22px] h-[22px] rounded-full flex-none flex items-center justify-center text-[11px] font-semibold border-[1.5px] ${s === "Resume" && entries.length > 0 ? "bg-brand-ink border-brand-ink text-white" : isActive ? "bg-[#670821] border-[#670821] text-white" : "border-[#E1DED7] text-[#7d7a74] bg-white"}`}>{s === "Resume" ? "✓" : n}</span>
@@ -772,7 +801,7 @@ export default function BuildPreview() {
 
           {active === "Resume" && (
             <>
-              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px]">Start with what you have.</h1>
+              <h1 className="font-lora text-[34px] font-normal tracking-[-0.01em] leading-[1.05] mb-[10px] max-w-[22ch]">Import your resume, LinkedIn or website to populate your profile.</h1>
               <p className="text-[15px] text-[#3a352f] max-w-[60ch] leading-[1.5] mb-7">A resume, your LinkedIn, or your own website. We read it and pre-fill your experience, skills, education and links; you can edit everything after. Or skip and build from scratch.</p>
               {found ? (
                 <div className="max-w-[980px]">
@@ -799,15 +828,21 @@ export default function BuildPreview() {
                   )}
                   <div className="flex items-center gap-3">
                     <button onClick={addFound} className="font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5">Add {found.items.filter((f) => f.on).length} to my experience →</button>
-                    <button onClick={() => { setFound(null); setActive("About You"); }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip these</button>
+                    <button onClick={() => { recordImport(found.src, 0, found.skills, found.edu); setFound(null); window.scrollTo(0, 0); }} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip these</button>
                     <button onClick={() => setFound(null)} className="font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink ml-auto">Read something else</button>
                   </div>
                 </div>
               ) : (<>
-              <div className="inline-flex flex-wrap gap-1 bg-[#F4F2EF] p-1 mb-5">
-                {([["file", "Resume"], ["linkedin", "LinkedIn"], ["website", "My website"], ["text", "Paste text"]] as const).map(([k, t]) => (
-                  <button key={k} onClick={() => { setResumeMode(k); setParseErr(""); }} className={`font-sans text-[13px] font-medium py-[8px] px-[16px] ${resumeMode === k ? "bg-brand-ink text-white" : "text-[#3a352f]"}`}>{t}</button>
-                ))}
+              <div className="max-w-[760px] border border-[#E1DED7] bg-white mb-5">
+                {([["file", "Resume", "PDF or text file", "Upload"], ["linkedin", "LinkedIn", "Save your profile as a PDF on LinkedIn, drop it here", "Upload"], ["website", "My website", "We read your home and about pages", "Enter address"]] as const).map(([k, t, sub, go]) => {
+                  const done = imports[k]; const on = resumeMode === k || (k === "file" && resumeMode === "text");
+                  return (
+                    <button key={k} onClick={() => { setResumeMode(k); setParseErr(""); }} aria-pressed={on} className={`w-full flex items-center gap-[14px] text-left py-[13px] px-[16px] border-b border-[#F1EEE8] last:border-b-0 ${on ? "bg-[#F4F2EF]" : "hover:bg-[#FAF9F6]"}`}>
+                      <span className="flex-1 min-w-0"><span className="block font-sans text-[14px] font-semibold">{t}</span><span className={`block text-[12.5px] ${done ? "text-[#3a352f]" : "text-[#7d7a74]"}`}>{done ? `Added · ${importSummary(done)}` : sub}</span></span>
+                      <span className={`font-sans text-[11px] font-semibold uppercase tracking-[0.1em] py-[7px] px-[12px] border whitespace-nowrap ${done ? "border-[#E1DED7] text-[#7d7a74]" : "border-[#670821] text-[#670821]"}`}>{done ? "Import again" : go}</span>
+                    </button>
+                  );
+                })}
               </div>
               {resumeMode === "linkedin" ? (
                 <div className="max-w-[760px]">
@@ -848,6 +883,7 @@ export default function BuildPreview() {
                   <button onClick={() => parseResume()} disabled={parsing || !resumeText.trim()} className="mt-3 font-sans bg-brand-ink text-white text-[13px] font-medium py-[11px] px-5 disabled:opacity-40">{parsing ? "Reading…" : "Read my resume →"}</button>
                 </div>
               )}
+              {resumeMode !== "text" && <button onClick={() => { setResumeMode("text"); setParseErr(""); }} className="block mt-3 font-sans text-[12.5px] text-[#7d7a74] underline underline-offset-4 hover:text-brand-ink">Paste text</button>}
               {parseErr && <div className="text-[13px] text-[#AB0000] mt-3 max-w-[760px]">{parseErr}</div>}
               <button onClick={() => setActive("About You")} className="block mt-6 font-sans text-[13px] text-[#7d7a74] hover:text-brand-ink">Skip — I&apos;ll build from scratch →</button>
               </>)}

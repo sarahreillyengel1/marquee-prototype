@@ -15,6 +15,8 @@ export interface BuilderSnapshot {
   types: string[]; name: string; headline: string; company?: string; bio: string; photoUrl?: string; city: string; loc: string;
   /** true once a resume, LinkedIn or website import has run; the builder stops nudging after that */
   imported?: boolean;
+  /** per source (file / linkedin / website): what its last run added */
+  imports?: Record<string, { entries: number; skills: number; edu: number }>;
   openNow: boolean; dob: string;
   socials: { website: string; linkedin: string; instagram: string; x: string; tiktok: string; youtube: string; substack: string; spotify?: string; apple?: string };
   focus: string;
